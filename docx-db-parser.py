@@ -9,35 +9,16 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import func
 import sqlalchemy
 
+import ContractLocation
+
 HEADER_CELL_ZERO = "Proj-Id"
 engine = sqlalchemy.create_engine('sqlite:///test.sqlite')
-base   = declarative_base()
 sm = sessionmaker(bind=engine)
-
-class ContractLocation(base):
-    __tablename__ = "contract_locations"
-    year          = Column(Integer)
-    laufNr        = Column(Integer)
-    projectId     = Column(Integer, primary_key=True)
-    firma         = Column(String)
-    bereich       = Column(String)
-    geschlect     = Column(String)
-    vorname       = Column(String)
-    nachname      = Column(String)
-    adresse_FA    = Column(String)
-    PLZ_FA        = Column(Integer)
-    ort_FA        = Column(String)
-    tel_1         = Column(String)
-    mobil         = Column(String)
-    fax           = Column(String)
-    auftragsort   = Column(String)
-    auftragsdatum = Column(String)
-    lfn           = Column(Integer)
 
 def rowCellsToContractLocation(cells):
     cells = list([c.text.replace("-","") for c in cells])
     try:
-        return ContractLocation(
+        return ContractLocation.ContractLocation(
             year          = int(cells[0]),
             laufNr        = int(cells[1]),
             projectId     = int(cells[0] + cells[1]),
@@ -82,7 +63,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     document = docx.Document(args.FILE)
-    base.metadata.create_all(engine)
+    ContractLocation.getBase().metadata.create_all(engine)
 
     for table in document.tables:
         parseTable(table)

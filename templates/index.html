@@ -11,19 +11,14 @@
             cellspacing="0">
         <thead>
             <tr>
-                <th class="th-sm font-weight-bold">Name</th>
                 <th class="th-sm font-weight-bold"></th>
             </tr>
         </thead>
         <tbody>
-            {% for u in users %}
+            {% for el in list %}
             <tr>
-               <td style="line-height: 45px;">{{ u.username }}</td>
+               <td style="line-height: 45px;"></td>
                <td>
-                    <button class="btn btn-danger button-delete-fix"
-                            onclick="deleteUser('{{ u.username }}')">
-                            x
-                    </button>
                </td>
            </tr>
            {% endfor %}

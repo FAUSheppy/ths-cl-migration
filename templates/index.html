@@ -11,23 +11,23 @@
             cellspacing="0">
         <thead>
             <tr>
-                <th class="th-sm font-weight-bold"></th>
+                {% for item in headerCol %}
+                <th class="th-sm font-weighIt-bold">{{ item }}</th>
+                {% endfor %}
             </tr>
         </thead>
-        <tbody>
-            {% for el in list %}
-            <tr>
-               <td style="line-height: 45px;"></td>
-               <td>
-               </td>
-           </tr>
-           {% endfor %}
-        </tbody>
+        <!-- tbody serverside processing -->
     </table>    
 
     <script defer>
         $(document).ready(function () {
-            $('#tableMain').DataTable();
+            $('#tableMain').DataTable({
+                serverSide: true,
+                    ajax: {
+                    url: '/data-source',
+                    type: 'POST'
+                }
+            });
             $('.dataTables_length').addClass('bs-select');
         });
     </script>

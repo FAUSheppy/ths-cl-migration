@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 
 import flask
+import json
 import argparse
-import glob
 import os
 import datetime
 import os.path
@@ -21,9 +21,19 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.sqlite'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-@app.route("/", methods=["GET", "POST"])
+HEADER_NAMES = ["Jahr", "Lauf Nr.", "Project Id", "Firma", "Bereich",
+                "Geschlecht", "Vorname", "Nachname", "Adresse FA",
+                "PLZ FA", "Ort FA", "Telefon", "Mobil", "Fax", "Auftragsort",
+                "LFN"]
+
+@app.route("/", methods=["GET"])
 def root():
-    return flask.render_template("index.html", listContent=allFiles)
+    return flask.render_template("index.html", headerCol=HEADER_NAMES)
+
+@app.route("/data-source", methods=["POST"])
+def dataSource():
+    print(flask.request.form)
+    return flask.Response(json.dumps(dict()), 200, mimetype='application/json')
 
 @app.before_first_request
 def init():

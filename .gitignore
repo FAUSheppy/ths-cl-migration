@@ -1,0 +1,4 @@
+*.sqlite
+*.swp
+*.docx
+*.sqlite-journal

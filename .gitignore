@@ -2,3 +2,5 @@
 *.swp
 *.docx
 *.sqlite-journal
+
+__pycache__/

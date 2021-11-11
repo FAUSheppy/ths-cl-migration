@@ -4,3 +4,4 @@
 *.sqlite-journal
 
 __pycache__/
+static/

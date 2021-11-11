@@ -32,13 +32,36 @@ def root():
 
 @app.route("/data-source", methods=["POST"])
 def dataSource():
-    print(flask.request.form)
+    dt = DataTable(flask.request.form.to_dict())
     return flask.Response(json.dumps(dict()), 200, mimetype='application/json')
 
 @app.before_first_request
 def init():
     app.config["DB"] = db
     db.create_all()
+
+    TRIGGER_FOR_SEARCHABLE_STRING_1 = '''
+        CREATE TRIGGER IF NOT EXISTS populate_searchable_insert
+            AFTER INSERT ON contract_locations
+        BEGIN
+            INSERT INTO searchHelper (
+                NEW.projectId, (NEW.year + NEW.firma + NEW.projectId +
+                                NEW.bereich + NEW.vorname + NEW.nachname +
+                                NEW.adresse_FA + NEW.PLZ_FA + NEW.ort_FA + 
+                                NEW.tel_1 + mobil + fax + auftragsort + auftragsdatum)
+            )
+        END'''
+
+    TRIGGER_FOR_SEARCHABLE_STRING_2 = '''
+        CREATE TRIGGER IF NOT EXISTS populate_searchable_update
+            AFTER UPDATE ON contract_locations
+        BEGIN
+            UPDATE searchHelper where projectId = NEW.projectId
+                SET fullString = ( NEW.year + NEW.firma + NEW.projectId +
+                                NEW.bereich + NEW.vorname + NEW.nachname +
+                                NEW.adresse_FA + NEW.PLZ_FA + NEW.ort_FA + 
+                                NEW.tel_1 + mobil + fax + auftragsort + auftragsdatum)
+        END'''
 
 class ContractLocation(db.Model):
     __tablename__ = "contract_locations"
@@ -59,6 +82,27 @@ class ContractLocation(db.Model):
     auftragsort   = Column(String)
     auftragsdatum = Column(String)
     lfn           = Column(Integer)
+
+class DataTable():
+    
+    def __init__(self, d):
+        self.draw  = d["draw"]
+        self.start = d["start"]
+        self.length = d["length"]
+        self.searchValue = d["search[value]"]
+        self.searchIsRegex = d["search[regex]"]
+
+    def __build(results, recordsTotal, recordsFiltered):
+        d = dict()
+        d.update({ "draw" : self.draw })
+        d.update({ "recordsTotal" :  recordsTotal })
+        d.update({ "recordsFiltered" :  recordsFiltered })
+        d.update({ "data" : results })
+
+    def get():
+        if self.searchValue:
+        results = db.session.query(ContractLocation)
+        # query db here #
 
 if __name__ == "__main__":
 

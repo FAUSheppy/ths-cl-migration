@@ -12,7 +12,7 @@ import sqlalchemy
 import ContractLocation
 
 HEADER_CELL_ZERO = "Proj-Id"
-engine = sqlalchemy.create_engine('sqlite:///test.sqlite')
+engine = sqlalchemy.create_engine('sqlite:///database.sqlite')
 sm = sessionmaker(bind=engine)
 
 def rowCellsToContractLocation(cells):
@@ -39,8 +39,9 @@ def rowCellsToContractLocation(cells):
         )
     except Exception as e:
         print(e)
-    finally:
         return None
+
+    raise AssertionError("WTF")
 
 def parseTable(table):
     for row in table.rows:
@@ -52,6 +53,7 @@ def parseTable(table):
         cl = rowCellsToContractLocation(row.cells)
         if not cl:
             continue
+        print(cl.adresse_FA)
         session = sm()
         session.add(cl)
         session.commit()

@@ -44,24 +44,53 @@ def init():
         CREATE TRIGGER IF NOT EXISTS populate_searchable_insert
             AFTER INSERT ON contract_locations
         BEGIN
-            INSERT INTO searchHelper (
-                NEW.projectId, (NEW.year + NEW.firma + NEW.projectId +
-                                NEW.bereich + NEW.vorname + NEW.nachname +
-                                NEW.adresse_FA + NEW.PLZ_FA + NEW.ort_FA + 
-                                NEW.tel_1 + mobil + fax + auftragsort + auftragsdatum)
-            )
-        END'''
+            INSERT INTO searchHelper VALUES (
+                NEW.projectId, ( 
+                                    COALESCE(NEW.year,'')
+                                 || COALESCE(NEW.firma,'')
+                                 || COALESCE(NEW.projectId,'')
+                                 || COALESCE(NEW.bereich,'')
+                                 || COALESCE(NEW.vorname,'')
+                                 || COALESCE(NEW.nachname,'')
+                                 || COALESCE(NEW.adresse_FA,'')
+                                 || COALESCE(NEW.PLZ_FA,'')
+                                 || COALESCE(NEW.ort_FA,'')
+                                 || COALESCE(NEW.tel_1,'')
+                                 || COALESCE(NEW.mobil,'')
+                                 || COALESCE(NEW.fax,'')
+                                 || COALESCE(NEW.auftragsort,'')
+                                 || COALESCE(NEW.auftragsdatum,'')
+                              )
+            );
+        END;'''
 
     TRIGGER_FOR_SEARCHABLE_STRING_2 = '''
         CREATE TRIGGER IF NOT EXISTS populate_searchable_update
             AFTER UPDATE ON contract_locations
         BEGIN
             UPDATE searchHelper where projectId = NEW.projectId
-                SET fullString = ( NEW.year + NEW.firma + NEW.projectId +
-                                NEW.bereich + NEW.vorname + NEW.nachname +
-                                NEW.adresse_FA + NEW.PLZ_FA + NEW.ort_FA + 
-                                NEW.tel_1 + mobil + fax + auftragsort + auftragsdatum)
-        END'''
+                SET fullString = (
+                                    COALESCE(NEW.year,'')
+                                 || COALESCE(NEW.firma,'')
+                                 || COALESCE(NEW.projectId,'')
+                                 || COALESCE(NEW.bereich,'')
+                                 || COALESCE(NEW.vorname,'')
+                                 || COALESCE(NEW.nachname,'')
+                                 || COALESCE(NEW.adresse_FA,'')
+                                 || COALESCE(NEW.PLZ_FA,'')
+                                 || COALESCE(NEW.ort_FA,'')
+                                 || COALESCE(NEW.tel_1,'')
+                                 || COALESCE(NEW.mobil,'')
+                                 || COALESCE(NEW.fax,'')
+                                 || COALESCE(NEW.auftragsort,'')
+                                 || COALESCE(NEW.auftragsdatum,'')
+                                );
+        END;'''
+
+    triggerInsert = sqlalchemy.DDL(TRIGGER_FOR_SEARCHABLE_STRING_1)
+    triggerUpdate = sqlalchemy.DDL(TRIGGER_FOR_SEARCHABLE_STRING_2)
+    sqlalchemy.event.listen(ContractLocation, 'after_insert', triggerInsert)
+    sqlalchemy.event.listen(ContractLocation, 'after_update', triggerUpdate)
 
 class ContractLocation(db.Model):
     __tablename__ = "contract_locations"

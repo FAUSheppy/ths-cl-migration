@@ -136,12 +136,13 @@ class DataTable():
         self.searchValue = d["search[value]"]
         self.searchIsRegex = d["search[regex]"]
 
-    def __build(self, results):
+    def __build(self, results, total, filtered):
 
         self.cacheResults = results
         
         count = 0
         resultDicts = [ r.toDict() for r in results ]
+        values = [ list(r.values()) for r in resultDicts ]
         #for r in resultDicts:
         #    r.update({ "DT_RowID"   : "row_{}".format(count) })
         #    r.update({ "DT_RowData" : { "pkey" : count }     })
@@ -149,18 +150,34 @@ class DataTable():
 
         d = dict()
         d.update({ "draw" : self.draw })
-        d.update({ "recordsTotal" : 150  })
-        d.update({ "recordsFiltered" :  len(results) })
-        d.update({ "data" : [ list(r.values()) for r in resultDicts ] })
+        d.update({ "recordsTotal" : total })
+        d.update({ "recordsFiltered" :  filtered })
+        d.update({ "data" : values })
 
         return d
 
     def get(self):
-        if self.searchValue:
-            search = "%{}%".format(self.searchValue)
-            projectIdList = db.session.query(SearchHelper.projectId).filter(
-                                SearchHelper.fullString.like(search)).all()
 
+        filtered = 0
+        total    = 0
+        if self.searchValue:
+
+            # search string #
+            search        = "%{}%".format(self.searchValue)
+
+            # base query
+            query         = db.session.query(SearchHelper.projectId)
+            total         = query.count()
+
+            # filte query
+            filterQuery   = query.filter(SearchHelper.fullString.like(search))
+            projectIdList = filterQuery.all()
+            filtered      = filterQuery.count()
+
+            # get relevant pIds from searchHelper #
+            projectIdList = filterQuery.offset(self.start).limit(self.length).all()
+
+            # use pIds to retrive full information #
             results = []
             for pIdTup in projectIdList:
                 pId = pIdTup[0]
@@ -169,9 +186,15 @@ class DataTable():
                 if singleResult:
                     results.append(singleResult)
         else:
-            results = db.session.query(ContractLocation).offset(self.start).limit(self.length).all()
+            query    = db.session.query(ContractLocation)
+            results  = query.offset(self.start).limit(self.length).all()
+            total    = query.count()
+            filtered = total
 
-        return self.__build(results)
+
+        print(filtered)
+        print(total)
+        return self.__build(results, total, filtered)
 
 if __name__ == "__main__":
 

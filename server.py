@@ -28,7 +28,8 @@ HEADER_NAMES = ["Jahr", "Lauf Nr.", "Project Id", "Firma", "Bereich",
 
 @app.route("/", methods=["GET"])
 def root():
-    return flask.render_template("index.html", headerCol=HEADER_NAMES)
+    header = list(ContractLocation.__table__.columns.keys())
+    return flask.render_template("index.html", headerCol=header, headerDisplayNames=HEADER_NAMES)
 
 @app.route("/data-source", methods=["POST"])
 def dataSource():
@@ -102,7 +103,7 @@ class ContractLocation(db.Model):
     projectId     = Column(Integer, primary_key=True)
     firma         = Column(String)
     bereich       = Column(String)
-    geschlecht    = Column(String)
+    geschlect    = Column(String)
     vorname       = Column(String)
     nachname      = Column(String)
     adresse_FA    = Column(String)
@@ -138,12 +139,19 @@ class DataTable():
     def __build(self, results):
 
         self.cacheResults = results
+        
+        count = 0
+        resultDicts = [ r.toDict() for r in results ]
+        #for r in resultDicts:
+        #    r.update({ "DT_RowID"   : "row_{}".format(count) })
+        #    r.update({ "DT_RowData" : { "pkey" : count }     })
+        #    count += 1
 
         d = dict()
         d.update({ "draw" : self.draw })
         d.update({ "recordsTotal" : 150  })
         d.update({ "recordsFiltered" :  len(results) })
-        d.update({ "data" : [ r.toDict() for r in results] })
+        d.update({ "data" : [ list(r.values()) for r in resultDicts ] })
 
         return d
 

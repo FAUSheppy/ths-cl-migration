@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+	{% include 'head.html' %}
+</head>
+
+<body>
+  {% include 'navbar.html' %}
+  <div style="font-size: 16px; font-weight: 300;" class="mt-5 mb-3 container" role="main">
+    <form action="/some_url" method="POST">
+        {% for label, field in fieldLabelTupels %}
+            <div style="display: none;">{{ label }}</div>
+            <div class="w-50">
+                <p>{{ label }}</p>
+                <input type="text" name="{{ field.args[0] }}"></input>
+            </div>
+        {% endfor %}
+    </form>
+  </div>
+</body>
+
+</html>

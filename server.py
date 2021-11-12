@@ -15,16 +15,21 @@ from sqlalchemy.sql import func
 import sqlalchemy
 from flask_sqlalchemy import SQLAlchemy
 
+import flask_wtf as fwtf
+import wtforms as forms
+import wtforms.validators as validators
+
 
 app = flask.Flask("THS-ContractLocations")
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.sqlite'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = "secret"
 db = SQLAlchemy(app)
 
 HEADER_NAMES = ["Jahr", "Lauf Nr.", "Project Id", "Firma", "Bereich",
                 "Geschlecht", "Vorname", "Nachname", "Adresse FA",
                 "PLZ FA", "Ort FA", "Telefon", "Mobil", "Fax", "Auftragsort",
-                "LFN"]
+                "LFN", "OVERFLOW", "OVERFLOW_2"]
 
 @app.route("/", methods=["GET"])
 def root():
@@ -32,6 +37,18 @@ def root():
     # TODO add new dataset popup
     header = list(ContractLocation.__table__.columns.keys())
     return flask.render_template("index.html", headerCol=header, headerDisplayNames=HEADER_NAMES)
+
+@app.route("/add", methods=["GET"])
+def addData():
+    
+    header = list(ContractLocation.__table__.columns.keys())
+    fieldLabelTupels = []
+    for i in range(0, len(header)):
+        fieldLabelTupels.append((header[i], forms.StringField(HEADER_NAMES[i])))
+
+    fieldLabelTupels.append(("Speicher", forms.SubmitField('Speichern')))
+
+    return flask.render_template("add.html", fieldLabelTupels=fieldLabelTupels)
 
 @app.route("/data-source", methods=["POST"])
 def dataSource():

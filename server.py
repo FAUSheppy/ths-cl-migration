@@ -129,9 +129,9 @@ class SearchHelper(db.Model):
 class DataTable():
     
     def __init__(self, d):
-        self.draw  = d["draw"]
-        self.start = d["start"]
-        self.length = d["length"]
+        self.draw  = int(d["draw"])
+        self.start = int(d["start"])
+        self.length = int(d["length"])
         self.trueLength = -1
         self.searchValue = d["search[value]"]
         self.searchIsRegex = d["search[regex]"]
@@ -162,9 +162,10 @@ class DataTable():
                                 SearchHelper.fullString.like(search)).all()
 
             results = []
-            for pId in projectIdList:
+            for pIdTup in projectIdList:
+                pId = pIdTup[0]
                 singleResult = db.session.query(ContractLocation).filter(
-                                    ContractLocation.projectId == pId).first()
+                                    ContractLocation.projectId == int(pId)).first()
                 if singleResult:
                     results.append(singleResult)
         else:

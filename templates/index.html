@@ -30,6 +30,13 @@
             });
             $('.dataTables_length').addClass('bs-select');
         });
+
+        $('#tableMain').on('click', 'tbody td', function() {
+              //get textContent of the TD
+              console.log('TD cell textContent : ', this.textContent)
+              //get the value of the TD using the API
+              console.log('location : ', this.parentNode.rowIndex, this.cellIndex)
+        })
     </script>
   </div>
 </body>

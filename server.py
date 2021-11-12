@@ -28,6 +28,8 @@ HEADER_NAMES = ["Jahr", "Lauf Nr.", "Project Id", "Firma", "Bereich",
 
 @app.route("/", methods=["GET"])
 def root():
+    # TODO delete function
+    # TODO add new dataset popup
     header = list(ContractLocation.__table__.columns.keys())
     return flask.render_template("index.html", headerCol=header, headerDisplayNames=HEADER_NAMES)
 
@@ -35,7 +37,6 @@ def root():
 def dataSource():
     dt = DataTable(flask.request.form.to_dict())
     jsonDict = dt.get()
-    print(jsonDict)
     return flask.Response(json.dumps(jsonDict), 200, mimetype='application/json')
 
 @app.before_first_request
@@ -160,6 +161,8 @@ class DataTable():
 
         filtered = 0
         total    = 0
+
+        # TODO more permissive multi word search #
         if self.searchValue:
 
             # search string #
@@ -192,8 +195,6 @@ class DataTable():
             filtered = total
 
 
-        print(filtered)
-        print(total)
         return self.__build(results, total, filtered)
 
 if __name__ == "__main__":

@@ -33,7 +33,9 @@ def root():
 @app.route("/data-source", methods=["POST"])
 def dataSource():
     dt = DataTable(flask.request.form.to_dict())
-    return flask.Response(json.dumps(dict()), 200, mimetype='application/json')
+    jsonDict = dt.get()
+    print(jsonDict)
+    return flask.Response(json.dumps(jsonDict), 200, mimetype='application/json')
 
 @app.before_first_request
 def init():
@@ -68,7 +70,7 @@ def init():
         CREATE TRIGGER IF NOT EXISTS populate_searchable_update
             AFTER UPDATE ON contract_locations
         BEGIN
-            UPDATE searchHelper where projectId = NEW.projectId
+            UPDATE searchHelper
                 SET fullString = (
                                     COALESCE(NEW.year,'')
                                  || COALESCE(NEW.firma,'')
@@ -84,13 +86,14 @@ def init():
                                  || COALESCE(NEW.fax,'')
                                  || COALESCE(NEW.auftragsort,'')
                                  || COALESCE(NEW.auftragsdatum,'')
-                                );
+                                )
+                WHERE projectId = NEW.projectId;
         END;'''
 
-    triggerInsert = sqlalchemy.DDL(TRIGGER_FOR_SEARCHABLE_STRING_1)
-    triggerUpdate = sqlalchemy.DDL(TRIGGER_FOR_SEARCHABLE_STRING_2)
-    sqlalchemy.event.listen(ContractLocation, 'after_insert', triggerInsert)
-    sqlalchemy.event.listen(ContractLocation, 'after_update', triggerUpdate)
+    db.session.commit()
+    db.session.execute(TRIGGER_FOR_SEARCHABLE_STRING_1)
+    db.session.execute(TRIGGER_FOR_SEARCHABLE_STRING_2)
+    print("Init Done")
 
 class ContractLocation(db.Model):
     __tablename__ = "contract_locations"
@@ -99,7 +102,7 @@ class ContractLocation(db.Model):
     projectId     = Column(Integer, primary_key=True)
     firma         = Column(String)
     bereich       = Column(String)
-    geschlect     = Column(String)
+    geschlecht    = Column(String)
     vorname       = Column(String)
     nachname      = Column(String)
     adresse_FA    = Column(String)
@@ -112,26 +115,54 @@ class ContractLocation(db.Model):
     auftragsdatum = Column(String)
     lfn           = Column(Integer)
 
+    def toDict(self):
+        tmpDict = dict(self.__dict__)
+        tmpDict.pop("_sa_instance_state")
+        return tmpDict
+
+class SearchHelper(db.Model):
+    __tablename__ = "searchHelper"
+    projectId     = Column(Integer, primary_key=True)
+    fullString    = Column(String)
+
 class DataTable():
     
     def __init__(self, d):
         self.draw  = d["draw"]
         self.start = d["start"]
         self.length = d["length"]
+        self.trueLength = -1
         self.searchValue = d["search[value]"]
         self.searchIsRegex = d["search[regex]"]
 
-    def __build(results, recordsTotal, recordsFiltered):
+    def __build(self, results):
+
+        self.cacheResults = results
+
         d = dict()
         d.update({ "draw" : self.draw })
-        d.update({ "recordsTotal" :  recordsTotal })
-        d.update({ "recordsFiltered" :  recordsFiltered })
-        d.update({ "data" : results })
+        d.update({ "recordsTotal" : 150  })
+        d.update({ "recordsFiltered" :  len(results) })
+        d.update({ "data" : [ r.toDict() for r in results] })
 
-    def get():
+        return d
+
+    def get(self):
         if self.searchValue:
-        results = db.session.query(ContractLocation)
-        # query db here #
+            search = "%{}%".format(self.searchValue)
+            projectIdList = db.session.query(SearchHelper.projectId).filter(
+                                SearchHelper.fullString.like(search)).all()
+
+            results = []
+            for pId in projectIdList:
+                singleResult = db.session.query(ContractLocation).filter(
+                                    ContractLocation.projectId == pId).first()
+                if singleResult:
+                    results.append(singleResult)
+        else:
+            results = db.session.query(ContractLocation).offset(self.start).limit(self.length).all()
+
+        return self.__build(results)
 
 if __name__ == "__main__":
 

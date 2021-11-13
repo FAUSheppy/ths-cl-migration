@@ -30,25 +30,46 @@ HEADER_NAMES = ["Jahr", "Lauf Nr.", "Project Id", "Firma", "Bereich",
                 "Geschlecht", "Vorname", "Nachname", "Adresse FA",
                 "PLZ FA", "Ort FA", "Telefon", "Mobil", "Fax", "Auftragsort",
                 "LFN", "OVERFLOW", "OVERFLOW_2"]
+IS_INT_TYPE = ["year", "laufNr", "projectId", "PLZ_FA", "lfn"]
 
-@app.route("/", methods=["GET"])
+@app.route("/", methods=["GET", "POST", "DELETE", "PATCH"])
 def root():
-    # TODO delete function
-    # TODO add new dataset popup
     header = list(ContractLocation.__table__.columns.keys())
-    return flask.render_template("index.html", headerCol=header, headerDisplayNames=HEADER_NAMES)
+    if flask.request.method == "GET":
+        fieldLabelTupels = []
+        for i in range(0, len(header)):
+            fieldLabelTupels.append((header[i], forms.StringField(HEADER_NAMES[i])))
 
-@app.route("/add", methods=["GET"])
-def addData():
-    
-    header = list(ContractLocation.__table__.columns.keys())
-    fieldLabelTupels = []
-    for i in range(0, len(header)):
-        fieldLabelTupels.append((header[i], forms.StringField(HEADER_NAMES[i])))
-
-    fieldLabelTupels.append(("Speicher", forms.SubmitField('Speichern')))
-
-    return flask.render_template("add.html", fieldLabelTupels=fieldLabelTupels)
+        return flask.render_template("index.html", headerCol=header, 
+                                                    headerDisplayNames=HEADER_NAMES,
+                                                    fieldLabelTupels=fieldLabelTupels)
+    elif flask.request.method == "POST":
+        cl = ContractLocation()
+        print(flask.request.form)
+        for col, name in zip(header, HEADER_NAMES):
+            value = flask.request.form[name]
+            if col in IS_INT_TYPE:
+                if value == "":
+                    value = 0
+                else:
+                    value = int(value)
+            setattr(cl, col, value)
+        db.session.add(cl)
+        db.session.commit()
+        return ("", 204)
+    elif flask.request.method == "DELETE":
+        projectId = flask.request.form["id"]
+        print(projectId)
+        cl = db.session.query(ContractLocation).filter(
+                        ContractLocation.projectId == projectId).first()
+        if not cl:
+            return ("No such project", 404)
+        db.session.delete(cl)
+        db.session.commit()
+        return ("", 204)
+    else:
+        return (405, "{} not allowed".format(flask.request.method))
+        
 
 @app.route("/data-source", methods=["POST"])
 def dataSource():

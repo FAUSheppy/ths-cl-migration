@@ -23,26 +23,42 @@
     </table>    
 
     <script defer>
+        var dt = null
         $(document).ready(function () {
-            $('#tableMain').DataTable({
+            dt = $('#tableMain').DataTable({
                 serverSide: true,
                     ajax: {
                     url: '/data-source',
                     type: 'POST'
                 }
             });
+            console.log(dt)
             $('.dataTables_length').addClass('bs-select');
         });
 
         $('#tableMain').on('click', 'tbody td', function() {
-              //get textContent of the TD
-              console.log('TD cell textContent : ', this.textContent)
-              //get the value of the TD using the API
-              console.log('location : ', this.parentNode.rowIndex, this.cellIndex)
-              $('#dataModal').modal("toggle")
-              /* TODO: get data from table and put it into the modal form  */
-              /* TODO: enable the delete button */
-              /* TODO: assoitated documents */
+
+            colNames = {{ headerCol | safe }}
+            row = this.parentNode.rowIndex
+            clickedCol = this.cellIndex
+
+            /* set existing data */
+            for(i in colNames){
+                tmpContent = dt.row(row).data()[i]
+                inputField = document.getElementById(colNames[i] + "-input")
+                if(tmpContent != ""){
+                    inputField.value = tmpContent
+                }
+            }
+
+            /* set delete button */
+            deleteButton = document.getElementById("modal-delete-button")
+            deleteButton.disabled = false
+
+            /* TODO: assoitated documents */
+
+            /* open modal */
+            $('#dataModal').modal("toggle")
         })
     </script>
   </div>

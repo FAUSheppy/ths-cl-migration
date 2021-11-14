@@ -9,7 +9,8 @@
           <div style="display: none;">{{ label }}</div>
           <div style="display: inline-block;" class="">
               <p style="margin-bottom: 0px;">{{ label }}</p>
-              <input id="{{ label }}" class="mb-2" type="text" name="{{ field.args[0] }}"></input>
+              <input id="{{ label }}-input" class="mb-2"
+                     type="text" name="{{ field.args[0] }}"></input>
           </div>
       {% endfor %}
   </form>

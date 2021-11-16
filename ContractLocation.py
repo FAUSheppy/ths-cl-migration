@@ -4,7 +4,6 @@ base   = declarative_base()
 
 class ContractLocation(base):
     __tablename__ = "contract_locations"
-    year          = Column(Integer)
     laufNr        = Column(Integer)
     projectId     = Column(Integer, primary_key=True)
     firma         = Column(String)

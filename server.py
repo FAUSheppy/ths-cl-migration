@@ -19,6 +19,8 @@ import flask_wtf as fwtf
 import wtforms as forms
 import wtforms.validators as validators
 
+from constants import *
+from formentry import FormEntry
 
 app = flask.Flask("THS-ContractLocations")
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.sqlite'
@@ -27,12 +29,24 @@ app.config['SECRET_KEY'] = "secret"
 app.config['UPLOAD_FOLDER'] = "uploads/"
 db = SQLAlchemy(app)
 
-HEADER_NAMES = ["Jahr", "Lauf Nr.", "Project Id", "Firma", "Bereich",
-                "Geschlecht", "Vorname", "Nachname", "Adresse FA",
-                "PLZ FA", "Ort FA", "Telefon", "Mobil", "Fax", "Auftragsort",
-                "LFN", "OVERFLOW", "OVERFLOW_2"]
-IS_INT_TYPE = ["year", "laufNr", "projectId", "PLZ_FA", "lfn"]
+@app.route('/entry-content', methods=['GET', 'POST'])
+def entryContentBig():
+    projectId = flask.request.args.get("projectId")
+    
+    # check request parameter #
+    if not projectId:
+        return ("Missing projectId in request", 405)
 
+    # look for project id in db #
+    cl = db.session.query(ContractLocation).filter(ContractLocation.projectId == projectId).first()
+    if not cl:
+        return ("No such project", 404)
+    else:
+        # get column names #
+        colKeys = list(ContractLocation.__table__.columns.keys())
+        formEntries = formEntryArrayFromColNames(colKeys)
+        return flask.render_template("entry-content-full.html", entry=cl, formEntries=formEntries)
+    
 @app.route('/files', methods=['GET', 'POST'])
 def upload_file():
     if flask.request.method == 'POST':
@@ -40,8 +54,6 @@ def upload_file():
             flash('No file part')
             return redirect(flask.request.url)
         uploadFile = flask.request.files['file']
-        # If the user does not select a file, the browser submits an
-        # empty file without a filename.
         if uploadFile.filename == '':
             flask.flash('No selected file')
             return flask.redirect(request.url)
@@ -57,13 +69,8 @@ def upload_file():
 def root():
     header = list(ContractLocation.__table__.columns.keys())
     if flask.request.method == "GET":
-        fieldLabelTupels = []
-        for i in range(0, len(header)):
-            fieldLabelTupels.append((header[i], forms.StringField(HEADER_NAMES[i])))
-
         return flask.render_template("index.html", headerCol=header, 
-                                                    headerDisplayNames=HEADER_NAMES,
-                                                    fieldLabelTupels=fieldLabelTupels)
+                                                    headerDisplayNames=HEADER_NAMES)
     elif flask.request.method == "POST":
         cl = ContractLocation()
         print(flask.request.form)
@@ -109,8 +116,7 @@ def init():
         BEGIN
             INSERT INTO searchHelper VALUES (
                 NEW.projectId, ( 
-                                    COALESCE(NEW.year,'')
-                                 || COALESCE(NEW.firma,'')
+                                    COALESCE(NEW.firma,'')
                                  || COALESCE(NEW.projectId,'')
                                  || COALESCE(NEW.bereich,'')
                                  || COALESCE(NEW.vorname,'')
@@ -133,8 +139,7 @@ def init():
         BEGIN
             UPDATE searchHelper
                 SET fullString = (
-                                    COALESCE(NEW.year,'')
-                                 || COALESCE(NEW.firma,'')
+                                    COALESCE(NEW.firma,'')
                                  || COALESCE(NEW.projectId,'')
                                  || COALESCE(NEW.bereich,'')
                                  || COALESCE(NEW.vorname,'')
@@ -158,7 +163,6 @@ def init():
 
 class ContractLocation(db.Model):
     __tablename__ = "contract_locations"
-    year          = Column(Integer)
     laufNr        = Column(Integer)
     projectId     = Column(Integer, primary_key=True)
     firma         = Column(String)

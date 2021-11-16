@@ -1,17 +1,33 @@
 <div style="font-size: 16px; font-weight: 300; overflow-y: scroll;" class="p-2" role="main">
   <form id="data-form" action="/" method="POST" style="float: left;">
-      {% for label, field in fieldLabelTupels %}
+      {% for formEntry in formEntries %}
 
           {% if label == "projectId" %}
           <div style="display: none;" id="projectid-helper">23123</div>
           {% endif %}
 
-          <div style="display: none;">{{ label }}</div>
           <div style="display: inline-block;" class="">
-              <p style="margin-bottom: 0px;">{{ label }}</p>
-              <input id="{{ label }}-input" class="mb-2"
-                     type="text" name="{{ field.args[0] }}"></input>
+              <p style="margin-bottom: 0px;">{{ formEntry.displayName }}</p>
+              {% if not formEntry.options %}
+              <input id="{{ formEntry.displayName }}-input" class="mb-2"
+                    type="{{ formEntry.typeAsText }}" name="{{ formEntry.colName }}"></input>
+              {% else %}
+              <input id="{{ formEntry.displayName }}-input" class="mb-2"
+                     type="text" list="{{ formEntry.colName}}-datalist"
+                     name="{{ formEntry.colName }}"></input>
+              <datalist id="{{ formEntry.colName }}-datalist">
+                {% for option in formEntries.options %}
+                <option value="{{ option }}">
+                {% endfor %}
+              </datalist>
+              {% endif %}
           </div>
       {% endfor %}
   </form>
+  <hr>
+  <div class="drop-zone" id="drop-zone"
+          ondrop="dropHandler(event);"
+          ondragover="dragOverHandler(event);">
+    <p>Drag one or more files to this Drop Zone ...</p>
+  </div>
 </div>

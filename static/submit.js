@@ -58,7 +58,12 @@ function dropHandler(ev) {
         file =  ev.dataTransfer.files[i]
         formData = new FormData()
         formData.append('file', file)
-        fetch("/files", {
+        projectId = document.getElementById("projectId-input").value
+        if(!projectId){
+            alert("Projekt ID muss gesetzt sein!")
+            return;
+        }
+        fetch("/files?projectId=" + projectId, {
             method: 'POST',
             body: formData
         })

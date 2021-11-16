@@ -1,17 +1,18 @@
 from constants import *
 
-def formEntryArrayFromColNames(colNames):
+def formEntryArrayFromColNames(colNames, contractLocation):
     formEntries = []
-    for i in range(0, len(colKeys)):
-        formEntries += FormEntry(colNames[i])
+    for i in range(0, len(colNames)):
+        formEntries.append(FormEntry(colNames[i], contractLocation))
     return formEntries
 
 class FormEntry:
-    def __init__(self, colName, typeAsText):
+    def __init__(self, colName, contractLocation):
         self.colName     = colName
-        self.displayName = getDisplayNameSafe(colName)
-        self.typeAsText  = getColTypeSafe(colName)
-        self.options     = getOptionsSafe(colName)
+        self.value       = getattr(contractLocation, colName)
+        self.displayName = FormEntry.getDisplayNameSafe(colName)
+        self.typeAsText  = FormEntry.getColTypeSafe(colName)
+        self.options     = FormEntry.getOptionsSafe(colName)
 
     def getDisplayNameSafe(colName):
         if colName in COLS_TO_DISPLAY_NAME:
@@ -21,11 +22,11 @@ class FormEntry:
 
     def getColTypeSafe(colName):
         typeAsText = "text"
-        if colKeys[i] in IS_INT_TYPE:
+        if colName in IS_INT_TYPE:
             typeAsText  = "number"
-        if colKeys[i] in IS_DATE_TYPE:
+        if colName in IS_DATE_TYPE:
             typeAsText  = "date"
-        if colKeys[i] in IS_TEL_TYPE:
+        if colName in IS_TEL_TYPE:
             typeAsText  = "tel"
         return typeAsText
 

@@ -8,7 +8,7 @@ class ContractLocation(base):
     projectId     = Column(Integer, primary_key=True)
     firma         = Column(String)
     bereich       = Column(String)
-    geschlect     = Column(String)
+    geschlecht    = Column(String)
     vorname       = Column(String)
     nachname      = Column(String)
     adresse_FA    = Column(String)

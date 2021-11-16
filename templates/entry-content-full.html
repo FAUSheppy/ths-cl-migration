@@ -9,10 +9,10 @@
           <div style="display: inline-block;" class="">
               <p style="margin-bottom: 0px;">{{ formEntry.displayName }}</p>
               {% if not formEntry.options %}
-              <input id="{{ formEntry.displayName }}-input" class="mb-2"
+              <input id="{{ formEntry.colName }}-input" value="{{ formEntry.value }}" class="mb-2"
                     type="{{ formEntry.typeAsText }}" name="{{ formEntry.colName }}"></input>
               {% else %}
-              <input id="{{ formEntry.displayName }}-input" class="mb-2"
+              <input id="{{ formEntry.colName }}-input" value="{{ formEntry.value }}" class="mb-2"
                      type="text" list="{{ formEntry.colName}}-datalist"
                      name="{{ formEntry.colName }}"></input>
               <datalist id="{{ formEntry.colName }}-datalist">
@@ -24,10 +24,28 @@
           </div>
       {% endfor %}
   </form>
-  <hr>
-  <div class="drop-zone" id="drop-zone"
-          ondrop="dropHandler(event);"
-          ondragover="dragOverHandler(event);">
-    <p>Drag one or more files to this Drop Zone ...</p>
-  </div>
+</div>
+<hr>
+<div class="extra-files">
+    <div class="drop-zone" id="drop-zone"
+            ondrop="dropHandler(event);"
+            ondragover="dragOverHandler(event);">
+      <p>Drag one or more files to this Drop Zone ...</p>
+    </div>
+    <div class="file-list" id="file-list">
+        <table>
+        <tr>
+            <th>File</th>
+            <th>Type</th>
+            <th>Delete</th>
+        </tr>
+        {% for fileListItem in fileListItems %}
+        <tr>
+                <td>{{ fileListItem.name }}</td>
+                <td>{{ fileListItem.fileType }}</td>
+                <td><button onclick="deleteFile({{ fileListItem.fullpath }})">Delete</button></td>
+        </tr>
+        {% endfor %}
+        </table>
+    </div>
 </div>

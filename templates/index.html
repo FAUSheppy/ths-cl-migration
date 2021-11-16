@@ -39,7 +39,7 @@
         $('#tableMain').on('click', 'tbody td', function() {
             
             colNames = {{ headerCol | safe }}
-            row = this.parentNode.rowIndex
+            row = this.parentNode.rowIndex - 1
             clickedCol = this.cellIndex
 
             /* fetch modal-content from server */
@@ -51,30 +51,21 @@
                     return Promise.reject()
                 }
                 r.text().then( s => {
-                    console.log(s)
                     modalBody.innerHTML = s
+                }).then(() => {
+
+                    /* set delete button */
+                    deleteButton = document.getElementById("modal-delete-button")
+                    deleteButton.disabled = false
+
+                    /* open modal */
+                    $('#dataModal').modal("toggle")
+               
+                /* end post modal set */
                 })
-            }).then(() => {
-
-                /* set existing data */
-                for(i in colNames){
-                    tmpContent = dt.row(row).data()[i]
-                    inputField = document.getElementById(colNames[i] + "-input")
-                    if(tmpContent != ""){
-                        inputField.value = tmpContent
-                    }
-                }
-
-                /* set delete button */
-                deleteButton = document.getElementById("modal-delete-button")
-                deleteButton.disabled = false
-
-                /* TODO: assoitated documents */
-
-                /* open modal */
-                $('#dataModal').modal("toggle")
-
+            /* end fetch */
             })
+        /* end onclick */
         })
     </script>
   </div>

@@ -20,7 +20,8 @@ import wtforms as forms
 import wtforms.validators as validators
 
 from constants import *
-from formentry import FormEntry
+from formentry import FormEntry, formEntryArrayFromColNames
+import filesystem
 
 app = flask.Flask("THS-ContractLocations")
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.sqlite'
@@ -44,12 +45,17 @@ def entryContentBig():
     else:
         # get column names #
         colKeys = list(ContractLocation.__table__.columns.keys())
-        formEntries = formEntryArrayFromColNames(colKeys)
-        return flask.render_template("entry-content-full.html", entry=cl, formEntries=formEntries)
+        formEntries   = formEntryArrayFromColNames(colKeys, cl)
+        files = db.session.query(AssotiatedFile).filter(AssotiatedFile.projectId == projectId).all()
+        fileListItems = filesystem.itemsArrayFromDbEntries(files)
+        return flask.render_template("entry-content-full.html", entry=cl, formEntries=formEntries,
+                                        fileListItems=fileListItems)
     
 @app.route('/files', methods=['GET', 'POST'])
 def upload_file():
     if flask.request.method == 'POST':
+        projectId = flask.request.args.get("projectId")
+        print(projectId)
         if 'file' not in flask.request.files:
             flash('No file part')
             return redirect(flask.request.url)
@@ -58,16 +64,34 @@ def upload_file():
             flask.flash('No selected file')
             return flask.redirect(request.url)
         elif uploadFile:
-            filename = werkzeug.utils.secure_filename(uploadFile.filename)
-            uploadFile.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+            # build filename/path #
+            filename      = werkzeug.utils.secure_filename(uploadFile.filename)
+            projectIdSafe = werkzeug.utils.secure_filename(projectId)
+            projectDir    = os.path.join(app.config["UPLOAD_FOLDER"], projectIdSafe)
+            fullpath      = os.path.join(projectDir, filename)
+            
+            # create project directory if not exits #
+            if not os.path.isdir(projectDir):
+                os.mkdir(projectDir)
+
+            # save file #
+            uploadFile.save(fullpath)
+
+            # record file in database #
+            fileType = "unknown"
+            db.session.add(AssotiatedFile(fullpath=fullpath, sha512=0, 
+                                projectId=projectIdSafe, fileType=fileType))
             return ("", 204)
         else:
             return ("Bad Upload (POST) Request", 405)
-    return ("", 204)
+
+    return ("GET not implemented", 405)
 
 @app.route("/", methods=["GET", "POST", "DELETE", "PATCH"])
 def root():
     header = list(ContractLocation.__table__.columns.keys())
+    print(header)
     if flask.request.method == "GET":
         return flask.render_template("index.html", headerCol=header, 
                                                     headerDisplayNames=HEADER_NAMES)
@@ -101,7 +125,8 @@ def root():
 
 @app.route("/data-source", methods=["POST"])
 def dataSource():
-    dt = DataTable(flask.request.form.to_dict())
+    cols = list(ContractLocation.__table__.columns.keys())
+    dt = DataTable(flask.request.form.to_dict(), cols)
     jsonDict = dt.get()
     return flask.Response(json.dumps(jsonDict), 200, mimetype='application/json')
 
@@ -161,13 +186,20 @@ def init():
     db.session.execute(TRIGGER_FOR_SEARCHABLE_STRING_2)
     print("Init Done")
 
+class AssotiatedFile(db.Model):
+    __tablename__ = "files"
+    fullpath      = Column(String, primary_key=True)
+    sha512        = Column(String)
+    projectId     = Column(Integer)
+    fileType      = Column(String)
+
 class ContractLocation(db.Model):
     __tablename__ = "contract_locations"
     laufNr        = Column(Integer)
     projectId     = Column(Integer, primary_key=True)
     firma         = Column(String)
     bereich       = Column(String)
-    geschlect    = Column(String)
+    geschlecht    = Column(String)
     vorname       = Column(String)
     nachname      = Column(String)
     adresse_FA    = Column(String)
@@ -192,13 +224,14 @@ class SearchHelper(db.Model):
 
 class DataTable():
     
-    def __init__(self, d):
+    def __init__(self, d, cols):
         self.draw  = int(d["draw"])
         self.start = int(d["start"])
         self.length = int(d["length"])
         self.trueLength = -1
         self.searchValue = d["search[value]"]
         self.searchIsRegex = d["search[regex]"]
+        self.cols = cols
 
     def __build(self, results, total, filtered):
 
@@ -206,17 +239,20 @@ class DataTable():
         
         count = 0
         resultDicts = [ r.toDict() for r in results ]
-        values = [ list(r.values()) for r in resultDicts ]
-        #for r in resultDicts:
-        #    r.update({ "DT_RowID"   : "row_{}".format(count) })
-        #    r.update({ "DT_RowData" : { "pkey" : count }     })
-        #    count += 1
+
+        # data list must have the correct order (same as table scheme) #
+        rows = []
+        for r in resultDicts:
+            singleRow = []
+            for key in self.cols:
+                singleRow.append(r[key])
+            rows.append(singleRow)
 
         d = dict()
         d.update({ "draw" : self.draw })
         d.update({ "recordsTotal" : total })
         d.update({ "recordsFiltered" :  filtered })
-        d.update({ "data" : values })
+        d.update({ "data" : rows })
 
         return d
 

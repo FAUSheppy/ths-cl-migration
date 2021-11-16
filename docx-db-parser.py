@@ -19,12 +19,11 @@ def rowCellsToContractLocation(cells):
     cells = list([c.text.replace("-","") for c in cells])
     try:
         return ContractLocation.ContractLocation(
-            year          = int(cells[0]),
             laufNr        = int(cells[1]),
-            projectId     = int(cells[0] + cells[1]),
+            projectId     = int(cells[0].replace("-","") + cells[1]),
             firma         = cells[2], 
             bereich       = cells[3], 
-            geschlect     = cells[4], 
+            geschlecht    = cells[4], 
             vorname       = cells[5], 
             nachname      = cells[6], 
             adresse_FA    = cells[7], 

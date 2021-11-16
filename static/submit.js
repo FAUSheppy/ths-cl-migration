@@ -1,7 +1,7 @@
 function submitForm(){
 
     /* check input fields */
-    pIdField = document.getElementById("projectId")
+    pIdField = document.getElementById("projectId-input")
 
     pIdField.style.borderColor = "gray"
 
@@ -39,6 +39,43 @@ function deleteEntry(){
     formData = new FormData();
     formData.append("id", projectId)
     xhr.send(formData);
+}
+
+function dropHandler(ev) {
+  console.log('File(s) dropped');
+
+  // Prevent default behavior (Prevent file from being opened)
+  ev.preventDefault();
+
+  if (ev.dataTransfer.items) {
+
+    for (var i = 0; i < ev.dataTransfer.items.length; i++) {
+      
+      /* check if is file */
+      if (ev.dataTransfer.items[i].kind === 'file') {
+        var file = ev.dataTransfer.items[i].getAsFile();
+        console.log('... file[' + i + '].name = ' + file.name);
+        file =  ev.dataTransfer.files[i]
+        formData = new FormData()
+        formData.append('file', file)
+        fetch("/files", {
+            method: 'POST',
+            body: formData
+        })
+      }
+
+    }
+  } else {
+    /* Use DataTransfer interface to access the file(s) */
+    for (var i = 0; i < ev.dataTransfer.files.length; i++) {
+        console.log('... file[' + i + '].name = ' + ev.dataTransfer.files[i].name);
+    }
+  }
+}
+
+function dragOverHandler(ev) {
+  /* prevent file from being opened */
+  ev.preventDefault();
 }
 
 function formSubmitFinished(event){ 

@@ -24,6 +24,7 @@ app = flask.Flask("THS-ContractLocations")
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.sqlite'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = "secret"
+app.config['UPLOAD_FOLDER'] = "uploads/"
 db = SQLAlchemy(app)
 
 HEADER_NAMES = ["Jahr", "Lauf Nr.", "Project Id", "Firma", "Bereich",
@@ -31,6 +32,26 @@ HEADER_NAMES = ["Jahr", "Lauf Nr.", "Project Id", "Firma", "Bereich",
                 "PLZ FA", "Ort FA", "Telefon", "Mobil", "Fax", "Auftragsort",
                 "LFN", "OVERFLOW", "OVERFLOW_2"]
 IS_INT_TYPE = ["year", "laufNr", "projectId", "PLZ_FA", "lfn"]
+
+@app.route('/files', methods=['GET', 'POST'])
+def upload_file():
+    if flask.request.method == 'POST':
+        if 'file' not in flask.request.files:
+            flash('No file part')
+            return redirect(flask.request.url)
+        uploadFile = flask.request.files['file']
+        # If the user does not select a file, the browser submits an
+        # empty file without a filename.
+        if uploadFile.filename == '':
+            flask.flash('No selected file')
+            return flask.redirect(request.url)
+        elif uploadFile:
+            filename = werkzeug.utils.secure_filename(uploadFile.filename)
+            uploadFile.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return ("", 204)
+        else:
+            return ("Bad Upload (POST) Request", 405)
+    return ("", 204)
 
 @app.route("/", methods=["GET", "POST", "DELETE", "PATCH"])
 def root():

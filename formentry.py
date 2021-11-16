@@ -7,9 +7,13 @@ def formEntryArrayFromColNames(colNames, contractLocation):
     return formEntries
 
 class FormEntry:
-    def __init__(self, colName, contractLocation):
-        self.colName     = colName
-        self.value       = getattr(contractLocation, colName)
+
+    def __init__(self, colName, contractLocation=None):
+        self.colName = colName
+        self.value = ""
+        if contractLocation:
+            self.value = getattr(contractLocation, colName)
+
         self.displayName = FormEntry.getDisplayNameSafe(colName)
         self.typeAsText  = FormEntry.getColTypeSafe(colName)
         self.options     = FormEntry.getOptionsSafe(colName)

@@ -30,13 +30,18 @@ app.config['SECRET_KEY'] = "secret"
 app.config['UPLOAD_FOLDER'] = "uploads/"
 db = SQLAlchemy(app)
 
+def getDbSchema():
+    return list(ContractLocation.__table__.columns.keys())
+
 @app.route('/entry-content', methods=['GET', 'POST'])
 def entryContentBig():
     projectId = flask.request.args.get("projectId")
+    colKeys = list(ContractLocation.__table__.columns.keys())
     
-    # check request parameter #
+    # empty form if no project id #
     if not projectId:
-        return ("Missing projectId in request", 405)
+        formEntries = formEntryArrayFromColNames(colKeys, None)
+        return flask.render_template("entry-content-full.html", formEntries=formEntries)
 
     # look for project id in db #
     cl = db.session.query(ContractLocation).filter(ContractLocation.projectId == projectId).first()
@@ -44,13 +49,27 @@ def entryContentBig():
         return ("No such project", 404)
     else:
         # get column names #
-        colKeys = list(ContractLocation.__table__.columns.keys())
-        formEntries   = formEntryArrayFromColNames(colKeys, cl)
-        files = db.session.query(AssotiatedFile).filter(AssotiatedFile.projectId == projectId).all()
-        fileListItems = filesystem.itemsArrayFromDbEntries(files)
-        return flask.render_template("entry-content-full.html", entry=cl, formEntries=formEntries,
-                                        fileListItems=fileListItems)
-    
+        formEntries = formEntryArrayFromColNames(colKeys, cl)
+        return flask.render_template("entry-content-full.html", entry=cl, formEntries=formEntries)
+
+@app.route("/schema")
+def schema():
+    header = getDbSchema()
+    return flask.Response(json.dumps(header), 200, mimetype="application/json")
+
+
+@app.route('/file-list')
+def fileList():
+    projectId = flask.request.args.get("projectId")
+    if not projectId:
+        return ("", 200)
+    files = db.session.query(AssotiatedFile).filter(AssotiatedFile.projectId == projectId).all()
+    fileListItems = filesystem.itemsArrayFromDbEntries(files)
+    if fileListItems:
+        return flask.render_template("file-list.html", fileListItems=fileListItems)
+    else:
+        return ("Keine weiteren Dateien verfügbar", 200)
+
 @app.route('/files', methods=['GET', 'POST'])
 def upload_file():
     if flask.request.method == 'POST':
@@ -80,8 +99,9 @@ def upload_file():
 
             # record file in database #
             fileType = "unknown"
-            db.session.add(AssotiatedFile(fullpath=fullpath, sha512=0, 
+            db.session.merge(AssotiatedFile(fullpath=fullpath, sha512=0, 
                                 projectId=projectIdSafe, fileType=fileType))
+            db.session.commit()
             return ("", 204)
         else:
             return ("Bad Upload (POST) Request", 405)
@@ -90,8 +110,7 @@ def upload_file():
 
 @app.route("/", methods=["GET", "POST", "DELETE", "PATCH"])
 def root():
-    header = list(ContractLocation.__table__.columns.keys())
-    print(header)
+    header = getDbSchema()
     if flask.request.method == "GET":
         return flask.render_template("index.html", headerCol=header, 
                                                     headerDisplayNames=HEADER_NAMES)
@@ -125,7 +144,7 @@ def root():
 
 @app.route("/data-source", methods=["POST"])
 def dataSource():
-    cols = list(ContractLocation.__table__.columns.keys())
+    cols = getDbSchema()
     dt = DataTable(flask.request.form.to_dict(), cols)
     jsonDict = dt.get()
     return flask.Response(json.dumps(jsonDict), 200, mimetype='application/json')

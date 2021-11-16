@@ -13,7 +13,7 @@ def itemsArrayFromDbEntries(dbEntries):
     
     fileListItems = []
     for entry in dbEntries:
-        fileListItems.append(FileItem(dbEntries.fullpath, dbEntries.fileType))
+        fileListItems.append(FileItem(entry.fullpath, entry.fileType))
 
     return fileListItems
 

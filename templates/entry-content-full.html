@@ -1,4 +1,4 @@
-<div style="font-size: 16px; font-weight: 300; overflow-y: scroll;" class="p-2" role="main">
+<div style="font-size: 16px; font-weight: 300; display: inline-grid;" class="p-2" role="main">
   <form id="data-form" action="/" method="POST" style="float: left;">
       {% for formEntry in formEntries %}
 
@@ -32,20 +32,8 @@
             ondragover="dragOverHandler(event);">
       <p>Drag one or more files to this Drop Zone ...</p>
     </div>
-    <div class="file-list" id="file-list">
-        <table>
-        <tr>
-            <th>File</th>
-            <th>Type</th>
-            <th>Delete</th>
-        </tr>
-        {% for fileListItem in fileListItems %}
-        <tr>
-                <td>{{ fileListItem.name }}</td>
-                <td>{{ fileListItem.fileType }}</td>
-                <td><button onclick="deleteFile({{ fileListItem.fullpath }})">Delete</button></td>
-        </tr>
-        {% endfor %}
-        </table>
+
+    <div id="filelist-target">
     </div>
+
 </div>

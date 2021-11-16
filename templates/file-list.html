@@ -1,0 +1,19 @@
+{% if fileListItems %}
+<hr class="my-3">
+<div class="file-list" id="file-list">
+    <table class="w-100">
+    <tr>
+        <th>File</th>
+        <th>Type</th>
+        <th></th>
+    </tr>
+    {% for fileListItem in fileListItems %}
+    <tr>
+        <td>{{ fileListItem.name }}</td>
+        <td>{{ fileListItem.fileType }}</td>
+        <td><button onclick="deleteFile({{ fileListItem.fullpath }})">Delete</button></td>
+    </tr>
+    {% endfor %}
+    </table>
+</div>
+{% endif %}

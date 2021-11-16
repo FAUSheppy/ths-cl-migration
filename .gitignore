@@ -1,4 +1,5 @@
 *.sqlite
+*.swo
 *.bak
 *.swp
 *.docx

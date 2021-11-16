@@ -94,3 +94,58 @@ function formSubmitFinished(event){
 function showErrorMessage(target){
     alert(target.responseText)
 }
+
+function modalSpawn(){
+
+    colNames = []
+    fetch("/schema", r => {
+        r.json().then( json => {
+            colNames = json.data()
+        })
+    })
+
+    row = -1
+    clickedCol = -1
+    entryUrl = "/entry-content"
+    if(typeof this.parentNode != 'undefined'){
+        row = this.parentNode.rowIndex - 1
+        clickedCol = this.cellIndex
+        entryUrl += "?projectId=" + dt.row(row).data()[1]
+    }
+    
+    /* fetch modal-content from server */
+    modalBody = document.getElementById("modal-body")
+    fetch(entryUrl).then( r => {
+        if(r.status < 200 || r.status >= 300){
+            console.log("Bad answer for this entry, cannot create modal")
+            alert("Serverfehler: Keine Daten verfügbar oder falsche Anfrage.")
+            return Promise.reject()
+        }
+        r.text().then( s => {
+            modalBody.innerHTML = s
+        }).then(() => {
+    
+            /* set delete button */
+            deleteButton = document.getElementById("modal-delete-button")
+            deleteButton.disabled = false
+            deleteButton.style.display = "block"
+    
+            /* fetch file list */
+            fileListContainer = document.getElementById("filelist-target")
+            projectId = document.getElementById("projectId-input").value
+            fetch("/file-list?projectId=" + projectId).then( r => {
+                r.text().then( content => {
+                    fileListContainer.innerHTML = content
+                })
+            })
+    
+            /* open modal */
+            $('#dataModal').modal("toggle")
+       
+        /* end post modal set */
+        })
+    /* end fetch */
+    })
+}
+
+$('#tableMain').on('click', 'tbody td', modalSpawn)

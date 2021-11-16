@@ -36,37 +36,6 @@
             $('.dataTables_length').addClass('bs-select');
         });
 
-        $('#tableMain').on('click', 'tbody td', function() {
-            
-            colNames = {{ headerCol | safe }}
-            row = this.parentNode.rowIndex - 1
-            clickedCol = this.cellIndex
-
-            /* fetch modal-content from server */
-            modalBody = document.getElementById("modal-body")
-            fetch("/entry-content?projectId=" + dt.row(row).data()[1]).then( r => {
-                if(r.status < 200 || r.status >= 300){
-                    console.log("Bad answer for this entry, cannot create modal")
-                    alert("Serverfehler: Keine Daten verfügbar oder falsche Anfrage.")
-                    return Promise.reject()
-                }
-                r.text().then( s => {
-                    modalBody.innerHTML = s
-                }).then(() => {
-
-                    /* set delete button */
-                    deleteButton = document.getElementById("modal-delete-button")
-                    deleteButton.disabled = false
-
-                    /* open modal */
-                    $('#dataModal').modal("toggle")
-               
-                /* end post modal set */
-                })
-            /* end fetch */
-            })
-        /* end onclick */
-        })
     </script>
   </div>
 </body>

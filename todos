@@ -1,5 +1,7 @@
-- reset modal on new entry
-- assotiated files in modal
-    - drag and drop area
-- save draged and dropped other files
-- show/retrive other files
+- implement assotiated files deletion
+- implement assotiated files type detection
+- implement multi keyword search
+- implement datatabel sorting
+- fix datalist type input for adressment
+- fix data input preset value
+- do not display entry delete button if unessesary (i.e. when creating new entry)

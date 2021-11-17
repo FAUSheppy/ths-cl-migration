@@ -206,7 +206,7 @@ def newDocumentFromTemplate():
                                         projectId=projectId)
     else:
         # TODO defenitly verify the path somehow
-        name = "{}_{}.docx".format(os.path.basename(template), projectId)
+        name = "{}_{}.docx".format(os.path.basename(template).replace(".docx",""), projectId)
         instance = filesystem.getDocumentInstanceFromTemplate(template, projectId)
         response = flask.make_response(instance)
         response.headers.set('Content-Type', MS_WORD_MIME)

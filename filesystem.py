@@ -1,6 +1,8 @@
 import os.path
+import subprocess
 import glob
 import docx
+import shutil
 
 class FileItem:
 
@@ -34,25 +36,41 @@ def getTemplates():
 
 def getDocumentInstanceFromTemplate(path, projectId):
     # unzip docx
-    raise NotImplementedError("This probs not safe yet")
+    #raise NotImplementedError("This probs not safe yet")
+
     tmpDir = "tmp-{}".format(projectId)
-    os.mkdir(tmpDir)
-    fullTempPath = os.path.join(tmpDir, path)
-    os.copy(path, fullTempPath)
-    os.system("unzip {}".format(fullTempPath))
-    os.system('''sed -i 's/val="55"/val="{}"/ {}"'''.format(
+    try:
+        os.mkdir(tmpDir)
+    except FileExistsError:
+        pass
+
+    fullTempPath = os.path.join(tmpDir, os.path.basename(path))
+    shutil.copy2(path, fullTempPath)
+
+    # unpack docx-d is outdir and -o is overwrite
+    print("unzip -o {} -d {}".format(fullTempPath, tmpDir))
+    os.system("unzip -o {} -d {}".format(fullTempPath, tmpDir))
+
+    # edit xml
+    print('''sed -i 's/val="55"/val="{}"/' {}'''.format(
                     projectId, os.path.join(tmpDir, "word/settings.xml")))
+    os.system('''sed -i 's/val="55"/val="{}"/' {}'''.format(
+                    projectId, os.path.join(tmpDir, "word/settings.xml")))
+
+    # remove old file
+    print(fullTempPath)
     os.remove(fullTempPath)
-    os.system("zip -r {target} {tmpDir}/*".format(target=fullTempPath, tmpDir=tmpDir))
-    
+
+    # repack into new docx
+    p = subprocess.Popen(["/usr/bin/zip","-r", os.path.basename(fullTempPath), "."], cwd=tmpDir)
+    p.communicate()
+   
+    # transform new file into bitstream
     content = None
-    with open("fullTempPath", "rb") as f:
+    with open(fullTempPath, "rb") as f:
         content = f.read()
 
-    # xmllint --format word/settings.xml
-    # replace <w:activeRecord w:val="55"/>
-    # replace  <w:query w:val="SELECT * FROM C:\THS\Korrespo\THS_Auftragsorte.docx"/>
-    # re-zip
-    # load as bystream
+    # remove new file
+    # os.remove(fullTempPath)
 
     return content

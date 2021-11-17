@@ -266,6 +266,11 @@ class ContractLocation(db.Model):
         tmpDict.pop("_sa_instance_state")
         return tmpDict
 
+    def getColByNumber(self, nr):
+        nr = int(nr)
+        value = getattr(self, getDbSchema()[nr])
+        return value
+
 class SearchHelper(db.Model):
     __tablename__ = "searchHelper"
     projectId     = Column(Integer, primary_key=True)
@@ -281,6 +286,17 @@ class DataTable():
         self.searchValue = d["search[value]"]
         self.searchIsRegex = d["search[regex]"]
         self.cols = cols
+        self.orderByCol = int(d["order[0][column]"])
+        self.orderDirection = d["order[0][dir]"]
+
+        # order variable for use with pythong sorted etc #
+        self.orderAsc = self.orderDirection == "asc"
+
+        # oder variable for use with sqlalchemy
+        if self.orderAsc:
+            self.orderAscDbClass = sqlalchemy.asc
+        else:
+            self.orderAscDbClass = sqlalchemy.desc
 
     def __build(self, results, total, filtered):
 
@@ -336,8 +352,14 @@ class DataTable():
                                     ContractLocation.projectId == int(pId)).first()
                 if singleResult:
                     results.append(singleResult)
+                results = sorted(results, key=lambda cl: cl.getColByNumber(self.orderByCol), 
+                                    reverse=not self.orderAsc)
         else:
+
             query    = db.session.query(ContractLocation)
+            if self.orderByCol:
+                query  = query.order_by(self.orderAscDbClass(
+                                            list(ContractLocation.__table__.c)[self.orderByCol]))
             results  = query.offset(self.start).limit(self.length).all()
             total    = query.count()
             filtered = total

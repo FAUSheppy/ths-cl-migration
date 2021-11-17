@@ -151,15 +151,38 @@ function modalSpawn(){
     
             /* set delete button */
             deleteButton = document.getElementById("modal-delete-button")
+            createDocButton = document.getElementById("modal-create-doc-button")
             if(typeof this.parentNode != 'undefined'){
+
                 deleteButton.disabled = false
                 deleteButton.style.display = "block"
+                createDocButton.disabled = false
+                createDocButton.style.display = "block"
     
                 /* fetch file list */
                 reloadFileList()
+
             }else{
+                /* meaning this is a new entry */
                 deleteButton.disabled = true
                 deleteButton.style.display = "none"
+                createDocButton.disabled = true
+                createDocButton.style.display = "none"
+
+                /* sugest a projectId & lfn */
+                lfnInput = document.getElementById("lfn-input")
+                projectIdInput = document.getElementById("projectId-input")
+                laufNr = document.getElementById("laufNr-input")
+                fetch("/id-suggestions").then( r => {
+                    r.json().then( json => {
+                        lfnNew = json["max"]
+                        projectIdNew = json["projectId"]
+                        console.log("LFN: " + lfnNew + " suggested PDI: " + projectIdNew)
+                        lfnInput.placeholder = lfnNew
+                        laufNr.placeholder = lfnNew
+                        projectIdInput.placeholder = projectIdNew
+                    })
+                })
             }
 
             /* open modal */

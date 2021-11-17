@@ -7,6 +7,7 @@ import os
 import datetime
 import os.path
 import werkzeug.utils
+import datetime
 
 from sqlalchemy import Column, Integer, String, Boolean, or_, and_
 from sqlalchemy.orm import sessionmaker
@@ -172,6 +173,20 @@ def dataSource():
     dt = DataTable(flask.request.form.to_dict(), cols)
     jsonDict = dt.get()
     return flask.Response(json.dumps(jsonDict), 200, mimetype='application/json')
+
+@app.route("/id-suggestions")
+def curMaxSequenceNumber():
+    order = db.session.query(ContractLocation.lfn).order_by(sqlalchemy.desc(ContractLocation.lfn))
+    maxNr = order.first()[0] + 1
+    if not maxNr:
+        maxNr = 0
+
+    today = datetime.datetime.today()
+    monthId = today.month *   10000
+    dayId   = today.day   * 1000000
+    projectId = dayId + monthId + maxNr
+    return flask.Response(json.dumps({ "max" : maxNr,  "projectId" : projectId }), 
+                            200, mimetype='application/json')
 
 @app.route('/static/<path:path>')
 def send_js(path):

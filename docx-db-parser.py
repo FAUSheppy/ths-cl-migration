@@ -54,7 +54,7 @@ def parseTable(table):
             continue
         print(cl.adresse_FA)
         session = sm()
-        session.add(cl)
+        session.merge(cl)
         session.commit()
 
 

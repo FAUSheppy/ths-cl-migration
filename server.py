@@ -207,7 +207,7 @@ def newDocumentFromTemplate():
     else:
         # TODO defenitly verify the path somehow
         name = "{}_{}.docx".format(os.path.basename(template).replace(".docx",""), projectId)
-        instance = filesystem.getDocumentInstanceFromTemplate(template, projectId)
+        instance = filesystem.getDocumentInstanceFromTemplate(template, projectId, entry.lfn)
         response = flask.make_response(instance)
         response.headers.set('Content-Type', MS_WORD_MIME)
         response.headers.set('Content-Disposition', 'attachment', filename=name)

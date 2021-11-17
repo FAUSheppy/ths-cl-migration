@@ -34,7 +34,7 @@ def getTemplates():
     print(templateList)
     return templateList
 
-def getDocumentInstanceFromTemplate(path, projectId):
+def getDocumentInstanceFromTemplate(path, projectId, lfn):
     # unzip docx
     #raise NotImplementedError("This probs not safe yet")
 
@@ -48,14 +48,11 @@ def getDocumentInstanceFromTemplate(path, projectId):
     shutil.copy2(path, fullTempPath)
 
     # unpack docx-d is outdir and -o is overwrite
-    print("unzip -o {} -d {}".format(fullTempPath, tmpDir))
     os.system("unzip -o {} -d {}".format(fullTempPath, tmpDir))
 
     # edit xml
-    print('''sed -i 's/val="55"/val="{}"/' {}'''.format(
-                    projectId, os.path.join(tmpDir, "word/settings.xml")))
     os.system('''sed -i 's/val="55"/val="{}"/' {}'''.format(
-                    projectId, os.path.join(tmpDir, "word/settings.xml")))
+                    lfn, os.path.join(tmpDir, "word/settings.xml")))
 
     # remove old file
     print(fullTempPath)

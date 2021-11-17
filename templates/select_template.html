@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+	{% include 'head.html' %}
+</head>
+
+<body>
+  {% include 'navbar.html' %}
+  <div class="container">
+    {% for template in dtList %}
+    <a href="/new-document?projectId={{ projectId }}&template={{ template.fullpath }}"
+       class="m-3" style="background: lightgreen; color: black;">{{ template.name }}</a>
+
+    {% endfor %}
+  </div>
+</body>
+
+</html>

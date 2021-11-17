@@ -17,3 +17,5 @@ COL_NAMES_TO_OPTIONS = { "geschlecht" : ["Herr", "Frau", "z.H. Herr",
                                             "z.H. Frau", "Herr und Frau", "N/A"],
                          "placeholder" : ["placeholder_A", "placeholder_B"]
                         }
+
+MS_WORD_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"

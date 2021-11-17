@@ -4,6 +4,7 @@
 *.swp
 *.docx
 *.sqlite-journal
+*.dotx
 
 __pycache__/
 static/

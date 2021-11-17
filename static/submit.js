@@ -194,4 +194,10 @@ function modalSpawn(){
     })
 }
 
+function documentCreation(){
+    projectId = document.getElementById("projectId-input").value
+    url = "/new-document?projectId=" + projectId
+    window.open(url, '_blank').focus();
+}
+
 $('#tableMain').on('click', 'tbody td', modalSpawn)

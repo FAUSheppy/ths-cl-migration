@@ -24,7 +24,13 @@ class FormEntry:
         print(self.options)
 
         if self.typeAsText == "date":
-            self.value = dt.strptime(self.value, DB_DATE_FORMAT).strftime(HTML_DATE_FORMAT)
+            if self.value:
+                try:
+                    self.value = dt.strptime(self.value, DB_DATE_FORMAT).strftime(HTML_DATE_FORMAT)
+                except ValueError as e:
+                    print("Bad format: {}".format(e))
+            else:
+                self.value = dt.today().strftime(HTML_DATE_FORMAT)
 
     def getDisplayNameSafe(colName):
         if colName in COLS_TO_DISPLAY_NAME:

@@ -188,6 +188,31 @@ def curMaxSequenceNumber():
     return flask.Response(json.dumps({ "max" : maxNr,  "projectId" : projectId }), 
                             200, mimetype='application/json')
 
+@app.route("/new-document")
+def newDocumentFromTemplate():
+    projectId = flask.request.args.get("projectId")
+    template = flask.request.args.get("template")
+    if not projectId:
+        return ("Missing projectId as URL-arg", 400)
+
+    entry = db.session.query(ContractLocation).filter(
+                    ContractLocation.projectId == projectId).first()
+    if not entry:
+        return ("Project not found", 404)
+
+    if not template:
+        documentTemplateList = filesystem.getTemplates()
+        return flask.render_template("select_template.html", dtList=documentTemplateList,
+                                        projectId=projectId)
+    else:
+        # TODO defenitly verify the path somehow
+        name = "{}_{}.docx".format(os.path.basename(template), projectId)
+        instance = filesystem.getDocumentInstanceFromTemplate(template, projectId)
+        response = flask.make_response(instance)
+        response.headers.set('Content-Type', MS_WORD_MIME)
+        response.headers.set('Content-Disposition', 'attachment', filename=name)
+        return response
+        
 @app.route('/static/<path:path>')
 def send_js(path):
     response = flask.send_from_directory('static', path)

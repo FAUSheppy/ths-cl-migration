@@ -310,18 +310,18 @@ class DataTable():
         filtered = 0
         total    = 0
 
-        # TODO more permissive multi word search #
         if self.searchValue:
-
-            # search string #
-            search        = "%{}%".format(self.searchValue)
 
             # base query
             query         = db.session.query(SearchHelper.projectId)
             total         = query.count()
 
-            # filte query
-            filterQuery   = query.filter(SearchHelper.fullString.like(search))
+            # search string (search for all substrings individually #
+            filterQuery = query
+            for substr in self.searchValue.split(" "):
+                searchSubstr = "%{}%".format(substr.strip())
+                filterQuery  = filterQuery.filter(SearchHelper.fullString.like(searchSubstr))
+
             projectIdList = filterQuery.all()
             filtered      = filterQuery.count()
 

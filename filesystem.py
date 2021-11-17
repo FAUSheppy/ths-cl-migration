@@ -62,7 +62,7 @@ def getDocumentInstanceFromTemplate(path, projectId):
     os.remove(fullTempPath)
 
     # repack into new docx
-    p = subprocess.Popen(["/usr/bin/zip","-r", os.path.basename(fullTempPath), "."], cwd=tmpDir)
+    p = subprocess.Popen(["/usr/bin/zip", "-r", os.path.basename(fullTempPath), "."], cwd=tmpDir)
     p.communicate()
    
     # transform new file into bitstream

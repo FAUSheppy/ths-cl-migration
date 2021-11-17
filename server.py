@@ -21,7 +21,9 @@ import wtforms.validators as validators
 
 from constants import *
 from formentry import FormEntry, formEntryArrayFromColNames
+
 import filesystem
+import filedetection
 
 app = flask.Flask("THS-ContractLocations", static_folder=None)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.sqlite'
@@ -97,8 +99,10 @@ def upload_file():
             # save file #
             uploadFile.save(fullpath)
 
+            # try to determine contents of the file #
+            fileType = filedetection.detectType(fullpath)
+
             # record file in database #
-            fileType = "unknown"
             db.session.merge(AssotiatedFile(fullpath=fullpath, sha512=0, 
                                 projectId=projectIdSafe, fileType=fileType))
             db.session.commit()

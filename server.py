@@ -23,7 +23,7 @@ from constants import *
 from formentry import FormEntry, formEntryArrayFromColNames
 import filesystem
 
-app = flask.Flask("THS-ContractLocations")
+app = flask.Flask("THS-ContractLocations", static_folder=None)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.sqlite'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = "secret"
@@ -70,11 +70,11 @@ def fileList():
     else:
         return ("Keine weiteren Dateien verfügbar", 200)
 
-@app.route('/files', methods=['GET', 'POST'])
+@app.route('/files', methods=['GET', 'POST', 'DELETE'])
 def upload_file():
+    projectId = flask.request.args.get("projectId")
+    print(projectId)
     if flask.request.method == 'POST':
-        projectId = flask.request.args.get("projectId")
-        print(projectId)
         if 'file' not in flask.request.files:
             flash('No file part')
             return redirect(flask.request.url)
@@ -105,8 +105,28 @@ def upload_file():
             return ("", 204)
         else:
             return ("Bad Upload (POST) Request", 405)
-
-    return ("GET not implemented", 405)
+    elif flask.request.method == 'GET':
+        fullpath = flask.request.args.get("fullpath")
+        fileEntry = db.session.query(AssotiatedFile).filter(
+                        AssotiatedFile.fullpath == fullpath).first()
+        print(fileEntry)
+        if fileEntry:
+            relativePathInUploadDir = fileEntry.fullpath.replace(app.config["UPLOAD_FOLDER"], "")
+            return flask.send_from_directory(app.config["UPLOAD_FOLDER"], relativePathInUploadDir)
+    elif flask.request.method == 'DELETE':
+        fullpath = flask.request.args.get("fullpath")
+        fileEntry = db.session.query(AssotiatedFile).filter(
+                        AssotiatedFile.fullpath == fullpath).first()
+        if fileEntry:
+            db.session.delete(fileEntry)
+            # always use a secure path here !! (the db path is secure)#
+            os.remove(fileEntry.fullpath)
+            db.session.commit()
+            return ("", 204)
+        else:
+            return ("No such file: {}".format(fullpath), 404)
+    else:
+        return ("{} not implemented".format(flask.request.method), 405)
 
 @app.route("/", methods=["GET", "POST", "DELETE", "PATCH"])
 def root():
@@ -148,6 +168,12 @@ def dataSource():
     dt = DataTable(flask.request.form.to_dict(), cols)
     jsonDict = dt.get()
     return flask.Response(json.dumps(jsonDict), 200, mimetype='application/json')
+
+@app.route('/static/<path:path>')
+def send_js(path):
+    response = flask.send_from_directory('static', path)
+    #response.headers['Cache-Control'] = "max-age=2592000"
+    return response
 
 @app.before_first_request
 def init():

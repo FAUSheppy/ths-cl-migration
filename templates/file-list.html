@@ -11,7 +11,7 @@
     <tr>
         <td>{{ fileListItem.name }}</td>
         <td>{{ fileListItem.fileType }}</td>
-        <td><button onclick="deleteFile({{ fileListItem.fullpath }})">Delete</button></td>
+        <td><button onclick="deleteFile('{{ fileListItem.fullpath }}')">Delete</button></td>
     </tr>
     {% endfor %}
     </table>

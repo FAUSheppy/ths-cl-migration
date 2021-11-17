@@ -1,4 +1,8 @@
 from constants import *
+from datetime import datetime as dt
+
+DB_DATE_FORMAT = "%d.%m.%Y"
+HTML_DATE_FORMAT = "%Y-%m-%d"
 
 def formEntryArrayFromColNames(colNames, contractLocation):
     formEntries = []
@@ -17,6 +21,10 @@ class FormEntry:
         self.displayName = FormEntry.getDisplayNameSafe(colName)
         self.typeAsText  = FormEntry.getColTypeSafe(colName)
         self.options     = FormEntry.getOptionsSafe(colName)
+        print(self.options)
+
+        if self.typeAsText == "date":
+            self.value = dt.strptime(self.value, DB_DATE_FORMAT).strftime(HTML_DATE_FORMAT)
 
     def getDisplayNameSafe(colName):
         if colName in COLS_TO_DISPLAY_NAME:

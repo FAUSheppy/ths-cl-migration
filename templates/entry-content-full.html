@@ -14,12 +14,12 @@
               {% else %}
               <input id="{{ formEntry.colName }}-input" value="{{ formEntry.value }}" class="mb-2"
                      type="text" list="{{ formEntry.colName}}-datalist"
-                     name="{{ formEntry.colName }}"></input>
-              <datalist id="{{ formEntry.colName }}-datalist">
-                {% for option in formEntries.options %}
-                <option value="{{ option }}">
-                {% endfor %}
-              </datalist>
+                     name="{{ formEntry.colName }}">
+                <datalist id="{{ formEntry.colName }}-datalist">
+                  {% for option in formEntry.options %}
+                  <option value="{{ option }}"></option>
+                  {% endfor %}
+                </datalist>
               {% endif %}
           </div>
       {% endfor %}

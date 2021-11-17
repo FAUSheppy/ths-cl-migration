@@ -41,6 +41,28 @@ function deleteEntry(){
     xhr.send(formData);
 }
 
+function deleteFile(fullpath){
+    console.log("DELETE: " + fullpath)
+    fetch("/files?fullpath=" + fullpath, { method : "DELETE" }).then(r => {
+        if(r.status == 204){
+            reloadFileList()
+        }else{
+            alert("Unable to delete file, see server logs for details.")
+        }
+    })
+}
+
+function reloadFileList(){
+    console.log("reloading file list")
+    fileListContainer = document.getElementById("filelist-target")
+    projectId = document.getElementById("projectId-input").value
+    fetch("/file-list?projectId=" + projectId).then( r => {
+        r.text().then( content => {
+            fileListContainer.innerHTML = content
+        })
+    })
+}
+
 function dropHandler(ev) {
   console.log('File(s) dropped');
 
@@ -66,6 +88,8 @@ function dropHandler(ev) {
         fetch("/files?projectId=" + projectId, {
             method: 'POST',
             body: formData
+        }).then( () => {
+            reloadFileList()
         })
       }
 
@@ -127,18 +151,17 @@ function modalSpawn(){
     
             /* set delete button */
             deleteButton = document.getElementById("modal-delete-button")
-            deleteButton.disabled = false
-            deleteButton.style.display = "block"
+            if(typeof this.parentNode != 'undefined'){
+                deleteButton.disabled = false
+                deleteButton.style.display = "block"
     
-            /* fetch file list */
-            fileListContainer = document.getElementById("filelist-target")
-            projectId = document.getElementById("projectId-input").value
-            fetch("/file-list?projectId=" + projectId).then( r => {
-                r.text().then( content => {
-                    fileListContainer.innerHTML = content
-                })
-            })
-    
+                /* fetch file list */
+                reloadFileList()
+            }else{
+                deleteButton.disabled = true
+                deleteButton.style.display = "none"
+            }
+
             /* open modal */
             $('#dataModal').modal("toggle")
        

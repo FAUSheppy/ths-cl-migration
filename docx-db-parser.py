@@ -60,7 +60,7 @@ def parseTable(table):
         cl = rowCellsToContractLocation(row.cells)
         if not cl:
             continue
-        print(cl.adresse_FA)
+
         session = sm()
         session.merge(cl)
         session.commit()
@@ -68,11 +68,12 @@ def parseTable(table):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Parse a docx with a table database')
-    parser.add_argument('FILE', help='The docx-file to parse')
+    parser.add_argument('FILE', nargs='+', help='The docx-file to parse')
     args = parser.parse_args()
 
-    document = docx.Document(args.FILE)
-    ContractLocation.getBase().metadata.create_all(engine)
+    for f in args.FILE:
+        document = docx.Document(f)
+        ContractLocation.getBase().metadata.create_all(engine)
 
-    for table in document.tables:
-        parseTable(table)
+        for table in document.tables:
+            parseTable(table)

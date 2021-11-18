@@ -77,6 +77,11 @@ def fileList():
 
 @app.route('/smb-file-list')
 def smbFileList():
+
+    # check samba enabled #
+    if not app.config["SAMBA"]:
+        return ("", 204)
+
     projectId = flask.request.args.get("projectId")
     if not projectId:
         return ("", 200)
@@ -284,7 +289,14 @@ def send_js(path):
 
 @app.before_first_request
 def init():
-    samba.initClient(app.config["SMB_SERVER"], app.config["SMB_USER"], app.config["SMB_PASS"], app)
+    try:
+        samba.initClient(app.config["SMB_SERVER"], app.config["SMB_USER"],
+                            app.config["SMB_PASS"], app)
+        app.config["SAMBA"] = True
+    except AttributeError as e:
+        print("Cannot init samba client: {}".format(e))
+        app.config["SAMBA"] = False
+    
     app.config["DB"] = db
     db.create_all()
 
@@ -485,7 +497,7 @@ if __name__ == "__main__":
     parser.add_argument('--smbserver', help='SMB Server Target')
     parser.add_argument('--smbuser',   help='SMB User')
     parser.add_argument('--smbpass',   help='SMB Password')
-    parser.add_argument('--smbshare', default="THS", help='SMB Password')
+    parser.add_argument('--smbshare',  default="THS", help='SMB Password')
 
     args = parser.parse_args()
 

@@ -6,10 +6,11 @@ import shutil
 
 class FileItem:
 
-    def __init__(self, fullpath, fileType):
+    def __init__(self, fullpath, fileType, samba=False):
         self.fullpath = fullpath
         self.name = os.path.basename(fullpath)
         self.fileType = fileType
+        self.deletetable = not samba
 
 def itemsArrayFromDbEntries(dbEntries):
     if not dbEntries:

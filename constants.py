@@ -19,3 +19,6 @@ COL_NAMES_TO_OPTIONS = { "geschlecht" : ["Herr", "Frau", "z.H. Herr",
                         }
 
 MS_WORD_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+DB_DATE_FORMAT = "%d.%m.%Y"
+HTML_DATE_FORMAT = "%Y-%m-%d"

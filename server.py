@@ -8,6 +8,7 @@ import datetime
 import os.path
 import werkzeug.utils
 import datetime
+import samba
 
 from sqlalchemy import Column, Integer, String, Boolean, or_, and_
 from sqlalchemy.orm import sessionmaker
@@ -72,6 +73,24 @@ def fileList():
         return flask.render_template("file-list.html", fileListItems=fileListItems)
     else:
         return ("Keine weiteren Dateien verfügbar", 200)
+
+@app.route('/smb-file-list')
+def smbFileList():
+    projectId = flask.request.args.get("projectId")
+    if not projectId:
+        return ("", 200)
+    cl = db.session.query(ContractLocation).filter(
+                    ContractLocation.projectId == projectId).first()
+    smbPath, projectDir, year = samba.buildPath(cl)
+    files = samba.find(smbPath, projectDir, year, app)
+    if not files:
+        return ("No project dir found on share", 404)
+    else:
+        fileListItems = samba.filesToFileItems(files)
+        if fileListItems:
+            return flask.render_template("file-list.html", fileListItems=fileListItems)
+        else:
+            return ("Keine weiteren Dateien im Netzwerk verfügbar", 200)
 
 @app.route('/files', methods=['GET', 'POST', 'DELETE'])
 def upload_file():
@@ -221,6 +240,7 @@ def send_js(path):
 
 @app.before_first_request
 def init():
+    samba.initClient(app.config["SMB_SERVER"], app.config["SMB_USER"], app.config["SMB_PASS"], app)
     app.config["DB"] = db
     db.create_all()
 
@@ -412,7 +432,17 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Start THS-Contract Locations')
     parser.add_argument('--interface', default="localhost", help='Interface to run on')
     parser.add_argument('--port', default="5000", help='Port to run on')
-   
-    
+
+    parser.add_argument('--smbserver', help='SMB Server Target')
+    parser.add_argument('--smbuser',   help='SMB User')
+    parser.add_argument('--smbpass',   help='SMB Password')
+    parser.add_argument('--smbshare', default="THS", help='SMB Password')
+
     args = parser.parse_args()
+
+    app.config["SMB_SERVER"] = args.smbserver
+    app.config["SMB_USER"]   = args.smbuser
+    app.config["SMB_PASS"]   = args.smbpass
+    app.config["SMB_SHARE"]  = args.smbshare
+
     app.run(host=args.interface, port=args.port)

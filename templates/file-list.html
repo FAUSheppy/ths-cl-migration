@@ -11,7 +11,9 @@
     <tr>
         <td>{{ fileListItem.name }}</td>
         <td>{{ fileListItem.fileType }}</td>
+        {% if fileListItem.deletable %}
         <td><button onclick="deleteFile('{{ fileListItem.fullpath }}')">Delete</button></td>
+        {% endif %}
     </tr>
     {% endfor %}
     </table>

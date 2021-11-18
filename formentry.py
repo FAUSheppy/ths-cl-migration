@@ -1,9 +1,6 @@
 from constants import *
 from datetime import datetime as dt
 
-DB_DATE_FORMAT = "%d.%m.%Y"
-HTML_DATE_FORMAT = "%Y-%m-%d"
-
 def formEntryArrayFromColNames(colNames, contractLocation):
     formEntries = []
     for i in range(0, len(colNames)):

@@ -205,16 +205,15 @@ def root():
                                                     headerDisplayNames=HEADER_NAMES)
     elif flask.request.method == "POST":
         cl = ContractLocation()
-        print(flask.request.form)
         for col, name in zip(header, HEADER_NAMES):
-            value = flask.request.form[name]
+            value = flask.request.form[col]
             if col in IS_INT_TYPE:
                 if value == "":
                     value = 0
                 else:
                     value = int(value)
             setattr(cl, col, value)
-        db.session.add(cl)
+        db.session.merge(cl)
         db.session.commit()
         return ("", 204)
     elif flask.request.method == "DELETE":

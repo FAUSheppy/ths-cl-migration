@@ -1,11 +1,17 @@
 {% if fileListItems %}
 <hr class="my-3">
 <div class="file-list" id="file-list">
+    {% if basePath %}
+    <h5 style="font-weight: bold;">Pfad</h5>
+    <p style="font-size: 20px !important;" class="p-4 border">
+        {{ basePath }}
+    </p>
+    {% endif %}
     <table class="w-100">
     <tr>
-        <th>File</th>
-        <th>Type</th>
-        <th></th>
+        <th style="font-size: 20px !important;">Dateinamen</th>
+        <th style="font-size: 20px !important;">Typ</th>
+        <th style="font-size: 20px !important;"></th>
     </tr>
     {% for fileListItem in fileListItems %}
     <tr>

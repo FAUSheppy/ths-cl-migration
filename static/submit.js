@@ -66,8 +66,10 @@ function reloadFileList(){
     fileListContainerSamba.innerHTML = '<div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div>'
     fetch("/smb-file-list?projectId=" + projectId).then( r => {
         r.text().then( content => {
-            fileListContainerSamba.innerHTML = content
-            sambaLoaded = true
+            /* make sure modal/id hasn't changed in the meantime */
+            if(projectId == document.getElementById("projectId-input").value){
+                fileListContainerSamba.innerHTML = content
+            }
         })
     })
     

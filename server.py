@@ -38,6 +38,24 @@ db = SQLAlchemy(app)
 def getDbSchema():
     return list(ContractLocation.__table__.columns.keys())
 
+
+@app.route('/submit-project-path', methods=['POST'])
+def submitProjectPath():
+    print(flask.request.form)
+    path = flask.request.form.path
+    projectId = flask.request.form.projectId
+    if path.startswith("T:"):
+        replace  = "\\\\{}\\{}".format(app.config["SMB_SERVER"], app.config["SMB_SHARE"])
+        withThis = "T:"
+        path = path.replace(replace, withThis)
+        files = samba.find(path, None, 0, app, [], startInProjectDir=True, isFqPath=True)
+        if not files:
+            return ("Bad path", 400)
+        else:
+            db.session.merge(ProjectPath(projectId=projectId, sambaPath=path))
+            db.session.commit()
+            return ("", 204)
+
 @app.route('/entry-content', methods=['GET', 'POST'])
 def entryContentBig():
     projectId = flask.request.args.get("projectId")
@@ -112,8 +130,9 @@ def smbFileList():
 
         files = samba.find(smbPath, projectDir, year, app, prioKeywords)
     if not files:
-        return ("Keine Netzwerkordner gefunden (gesucht wurde nach '{}' in '{}')".format(
-                    projectDir, smbPath), 200)
+        return flask.render_template("samba-file-not-found.html", projectDir=projectDir,
+                                        searchPath=smbPath, keywords=prioKeywords,
+                                        projectId=projectId)
     else:
 
         # record project dir #
@@ -124,7 +143,11 @@ def smbFileList():
         # generate response
         fileListItems = samba.filesToFileItems(files)
         if fileListItems:
-            return flask.render_template("file-list.html", fileListItems=fileListItems)
+            replace  = "\\\\{}\\{}".format(app.config["SMB_SERVER"], app.config["SMB_SHARE"])
+            withThis = "T:"
+            displayPath = trueProjectDir.replace("/", "\\").replace(replace, withThis)
+            return flask.render_template("file-list.html", fileListItems=fileListItems,
+                                            basePath=displayPath)
         else:
             return ("Keine weiteren Dateien im Netzwerk verfügbar", 200)
 

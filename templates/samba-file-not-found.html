@@ -1,0 +1,16 @@
+<div class="smb_fail">
+    <p>
+        Keine Netzwerkordner gefunden: </br>
+        Gesuchter Ordner: {{ projectDir }} </br>
+        Suche in: {{ searchPath }} </br>
+		Erwartete Stichwörter (mindestens 1): {{ keywords }} </br>
+    </p>
+
+	<h3>Einen Pfad angeben:</h3>
+	<form action="/submit-project-path" method="POST">
+		<input id="path" class="w-100" type=text placeholder="Pfad"></input>
+        <input style="display: none;" id="projectId" value="{{ projectId }}" type=text></input>
+		<input class="mt-3" value="Neuen Pfad Speichern" type=submit></input>
+	</form>
+
+</div>

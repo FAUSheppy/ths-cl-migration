@@ -60,7 +60,7 @@ def buildPath(cl, app):
     print(pathToReturn, projectDir, year, cl.nachname)
     return (pathToReturn, projectDir, year)
 
-def _recursiveFind(base, projectDirToLookFor, inProjectDir, prioKeywords):
+def _recursiveFind(base, projectDirToLookFor, inProjectDir, prioKeywords, isHighPrioPath):
 
     files = []
     isDir = stat.S_ISDIR(smbclient.lstat(base).st_mode)
@@ -84,22 +84,25 @@ def _recursiveFind(base, projectDirToLookFor, inProjectDir, prioKeywords):
         for subPath in highPrio:
             files += _recursiveFind(base + "/" + subPath, projectDirToLookFor,
                                         inProjectDir or projectDirToLookFor == subPath,
-                                        prioKeywords)
+                                        prioKeywords, True)
         if files:
             return files
-        else:
+        elif isHighPrioPath:
             for subPath in lowPrio:
                 files += _recursiveFind(base + "/" + subPath, projectDirToLookFor,
                                         inProjectDir or projectDirToLookFor == subPath,
-                                        prioKeywords)
+                                        prioKeywords, isHighPrioPath)
             return files
+        else:
+            return []
 
 def find(path, projectDir, year, app, prioKeywords, startInProjectDir=False, isFqPath=False):
     base = path
     if not isFqPath:
         base = _buildSmbPath(path, app)
     try:
-        files = _recursiveFind(base, projectDir, startInProjectDir, prioKeywords)
+        files = _recursiveFind(base, projectDir, startInProjectDir,
+                                prioKeywords, False or isFqPath)
     except smbprotocol.exceptions.SMBOSError as e:
         print("Find {} failed {}".format(base, e))
         return []

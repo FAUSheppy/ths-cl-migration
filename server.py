@@ -9,6 +9,7 @@ import os.path
 import werkzeug.utils
 import datetime
 import samba
+import mimetypes
 
 from sqlalchemy import Column, Integer, String, Boolean, or_, and_
 from sqlalchemy.orm import sessionmaker
@@ -72,7 +73,7 @@ def fileList():
     if fileListItems:
         return flask.render_template("file-list.html", fileListItems=fileListItems)
     else:
-        return ("Keine weiteren Dateien verfügbar", 200)
+        return ("", 200)
 
 @app.route('/smb-file-list')
 def smbFileList():
@@ -81,10 +82,20 @@ def smbFileList():
         return ("", 200)
     cl = db.session.query(ContractLocation).filter(
                     ContractLocation.projectId == projectId).first()
-    smbPath, projectDir, year = samba.buildPath(cl)
-    files = samba.find(smbPath, projectDir, year, app)
+    smbPath, projectDir, year = samba.buildPath(cl, app)
+
+    # generate path keywords to speed up search #
+    prioKeywords = [cl.nachname, cl.firma, cl.auftragsort]
+    prioKeywords += list(filter(lambda x: len(x)>=4, cl.firma.split(" ")))
+    prioKeywords = list(map(lambda s: s.strip(), prioKeywords))
+
+    # filter out keywords that are too common #
+    prioKeywords = list(filter(lambda x: not x.lower() in ["gmbh"], prioKeywords))
+
+    files = samba.find(smbPath, projectDir, year, app, prioKeywords)
     if not files:
-        return ("No project dir found on share", 404)
+        return ("Keine Netzwerkordner gefunden (gesucht wurde nach '{}' in '{}')".format(
+                    projectDir, smbPath), 200)
     else:
         fileListItems = samba.filesToFileItems(files)
         if fileListItems:
@@ -95,7 +106,6 @@ def smbFileList():
 @app.route('/files', methods=['GET', 'POST', 'DELETE'])
 def upload_file():
     projectId = flask.request.args.get("projectId")
-    print(projectId)
     if flask.request.method == 'POST':
         if 'file' not in flask.request.files:
             flash('No file part')
@@ -130,13 +140,28 @@ def upload_file():
         else:
             return ("Bad Upload (POST) Request", 405)
     elif flask.request.method == 'GET':
+        
+        # get path arg #
         fullpath = flask.request.args.get("fullpath")
-        fileEntry = db.session.query(AssotiatedFile).filter(
-                        AssotiatedFile.fullpath == fullpath).first()
-        print(fileEntry)
-        if fileEntry:
-            relativePathInUploadDir = fileEntry.fullpath.replace(app.config["UPLOAD_FOLDER"], "")
-            return flask.send_from_directory(app.config["UPLOAD_FOLDER"], relativePathInUploadDir)
+        if not fullpath:
+            return ("Missing fullpath arg in URL", 405)
+       
+        # determine path type #
+        isSamba = fullpath.startswith("\\\\")
+
+        if isSamba:
+            response = flask.make_response(samba.getFile(fullpath))
+            response.headers.set('Content-Type', mimetypes.guess_type(fullpath))
+            name = os.path.basename(fullpath)
+            response.headers.set('Content-Disposition', 'attachment', filename=name)
+            return response
+        else:
+            fileEntry = db.session.query(AssotiatedFile).filter(
+                            AssotiatedFile.fullpath == fullpath).first()
+            print(fileEntry)
+            if fileEntry:
+                relativePathInUploadDir = fileEntry.fullpath.replace(app.config["UPLOAD_FOLDER"], "")
+                return flask.send_from_directory(app.config["UPLOAD_FOLDER"], relativePathInUploadDir)
     elif flask.request.method == 'DELETE':
         fullpath = flask.request.args.get("fullpath")
         fileEntry = db.session.query(AssotiatedFile).filter(

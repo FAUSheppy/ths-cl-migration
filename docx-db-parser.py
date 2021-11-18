@@ -18,16 +18,24 @@ sm = sessionmaker(bind=engine)
 def rowCellsToContractLocation(cells):
     cells = list([c.text.replace("-","") for c in cells])
     try:
+        laufNrStr = cells[1].replace("JS","")
+        plzStr = cells[8]
+        plzNr  = None
+        try:
+            plzNr = int(plzStr)
+        except ValueError:
+            pass
+
         return ContractLocation.ContractLocation(
-            laufNr        = int(cells[1]),
-            projectId     = int(cells[0].replace("-","") + cells[1]),
+            laufNr        = int(laufNrStr),
+            projectId     = int(cells[0].replace("-", "") + laufNrStr),
             firma         = cells[2], 
             bereich       = cells[3], 
             geschlecht    = cells[4], 
             vorname       = cells[5], 
             nachname      = cells[6], 
             adresse_FA    = cells[7], 
-            PLZ_FA        = int(cells[8]), 
+            PLZ_FA        = plzNr,
             ort_FA        = cells[9], 
             tel_1         = cells[10],
             mobil         = cells[11], 

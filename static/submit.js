@@ -30,6 +30,28 @@ function submitForm(){
     xhr.send(formData);
 }
 
+function submitProjectPath(){
+    formData = new FormData(document.getElementById("form-submit-project-path")); 
+    fetch("/submit-project-path", { body: formData, method: "POST" }).then( r => {
+        if(r.status == 200){
+            reloadFileList()
+        }else{
+            console.log("Cannot set path") //TODO error message from response set to html
+        }
+    })
+}
+
+function deleteProjectPath(){
+    formData = new FormData(document.getElementById("form-delete-project-path")); 
+    fetch("/submit-project-path", { body: formData, method: "DELETE" }).then( r => {
+        if(r.status == 200){
+            reloadFileList()
+        }else{
+            console.log("Cannot delete path") //TODO error message from response set to html
+        }
+    })
+}
+
 function deleteEntry(){
     projectId = document.getElementById("projectId-input").value
     console.log(projectId)

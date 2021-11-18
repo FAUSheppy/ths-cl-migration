@@ -38,23 +38,32 @@ db = SQLAlchemy(app)
 def getDbSchema():
     return list(ContractLocation.__table__.columns.keys())
 
-
-@app.route('/submit-project-path', methods=['POST'])
+@app.route('/submit-project-path', methods=['POST', 'DELETE'])
 def submitProjectPath():
     print(flask.request.form)
-    path = flask.request.form.path
-    projectId = flask.request.form.projectId
-    if path.startswith("T:"):
-        replace  = "\\\\{}\\{}".format(app.config["SMB_SERVER"], app.config["SMB_SHARE"])
-        withThis = "T:"
-        path = path.replace(replace, withThis)
-        files = samba.find(path, None, 0, app, [], startInProjectDir=True, isFqPath=True)
-        if not files:
-            return ("Bad path", 400)
-        else:
-            db.session.merge(ProjectPath(projectId=projectId, sambaPath=path))
+    if flask.request.method == "POST":
+        path = flask.request.form.path
+        projectId = flask.request.form.projectId
+        if path.startswith("T:"):
+            replace  = "\\\\{}\\{}".format(app.config["SMB_SERVER"], app.config["SMB_SHARE"])
+            withThis = "T:"
+            path = path.replace(replace, withThis)
+            files = samba.find(path, None, 0, app, [], startInProjectDir=True, isFqPath=True)
+            if not files:
+                return ("Bad path", 400)
+            else:
+                db.session.merge(ProjectPath(projectId=projectId, sambaPath=path))
+                db.session.commit()
+                return ("", 200)
+    elif flask.request.method == "DELETE":
+        projectId = flask.request.form.projectId
+        pp = db.session.query(ProjectPath).filter(ProjectPath.projectId == projectId).first()
+        if pp:
+            db.session.delete(pp)
             db.session.commit()
-            return ("", 204)
+            return ("", 200)
+        else:
+            return ("No samba path in DB for this project-id", 404)
 
 @app.route('/entry-content', methods=['GET', 'POST'])
 def entryContentBig():

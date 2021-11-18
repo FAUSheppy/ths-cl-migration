@@ -1,7 +1,5 @@
-- implement assotiated files type detection
 - implement section to create documents
     - section to create table
     - section freetext top
     - section freetext bottom
 - implement document generation (docx) in backend based on section to create documents
-- implement samba project files integration

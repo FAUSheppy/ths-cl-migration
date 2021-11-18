@@ -74,7 +74,8 @@ def _recursiveFind(base, projectDirToLookFor, inProjectDir, prioKeywords):
         listing = smbclient.listdir(base)
 
         # define high and low prio list #
-        highPrioLambda = lambda x: any([keyword in x for keyword in prioKeywords]) or inProjectDir
+        highPrioLambda = lambda x: any( [w in x.lower() for w in prioKeywords]) or inProjectDir
+
         lowPrioLambda = lambda x: not highPrioLambda(x)
         highPrio = filter(highPrioLambda, listing)
         lowPrio = filter(lowPrioLambda, listing)
@@ -93,12 +94,12 @@ def _recursiveFind(base, projectDirToLookFor, inProjectDir, prioKeywords):
                                         prioKeywords)
             return files
 
-def find(path, projectDir, year, app, prioKeywords):
-    print(prioKeywords)
-    base = _buildSmbPath(path, app)
+def find(path, projectDir, year, app, prioKeywords, startInProjectDir=False, isFqPath=False):
+    base = path
+    if not isFqPath:
+        base = _buildSmbPath(path, app)
     try:
-        files = _recursiveFind(base, projectDir, False, prioKeywords)
-        print(files)
+        files = _recursiveFind(base, projectDir, startInProjectDir, prioKeywords)
     except smbprotocol.exceptions.SMBOSError as e:
         print("Find {} failed {}".format(base, e))
         return []

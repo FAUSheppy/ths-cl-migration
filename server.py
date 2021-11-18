@@ -80,23 +80,43 @@ def smbFileList():
     projectId = flask.request.args.get("projectId")
     if not projectId:
         return ("", 200)
-    cl = db.session.query(ContractLocation).filter(
-                    ContractLocation.projectId == projectId).first()
-    smbPath, projectDir, year = samba.buildPath(cl, app)
 
-    # generate path keywords to speed up search #
-    prioKeywords = [cl.nachname, cl.firma, cl.auftragsort]
-    prioKeywords += list(filter(lambda x: len(x)>=4, cl.firma.split(" ")))
-    prioKeywords = list(map(lambda s: s.strip(), prioKeywords))
+    files = None
+    # check if path is known #
+    pp = db.session.query(ProjectPath).filter(ProjectPath.projectId == projectId).first()
+    if pp:
+        files = samba.find(pp.sambaPath, None, 0, app, [], startInProjectDir=True, isFqPath=True)
+        # delete db entry if fail #
+        if not files:
+            db.session.delete(pp)
+            db.session.commit()
 
-    # filter out keywords that are too common #
-    prioKeywords = list(filter(lambda x: not x.lower() in ["gmbh"], prioKeywords))
+    # search for project if fail #
+    if not files:
+        cl = db.session.query(ContractLocation).filter(
+                        ContractLocation.projectId == projectId).first()
+        smbPath, projectDir, year = samba.buildPath(cl, app)
 
-    files = samba.find(smbPath, projectDir, year, app, prioKeywords)
+        # generate path keywords to speed up search #
+        prioKeywords = [cl.nachname, cl.firma, cl.auftragsort]
+        prioKeywords += list(filter(lambda x: len(x)>=3, cl.firma.split(" ")))
+        prioKeywords = list(map(lambda s: s.strip().lower(), prioKeywords))
+
+        # filter out keywords that are too common #
+        prioKeywords = list(filter(lambda x: not x.lower() in ["gmbh"], prioKeywords))
+
+        files = samba.find(smbPath, projectDir, year, app, prioKeywords)
     if not files:
         return ("Keine Netzwerkordner gefunden (gesucht wurde nach '{}' in '{}')".format(
                     projectDir, smbPath), 200)
     else:
+
+        # record project dir #
+        trueProjectDir = os.path.dirname(files[0])
+        db.session.merge(ProjectPath(projectId=projectId, sambaPath=trueProjectDir))
+        db.session.commit()
+
+        # generate response
         fileListItems = samba.filesToFileItems(files)
         if fileListItems:
             return flask.render_template("file-list.html", fileListItems=fileListItems)
@@ -360,6 +380,11 @@ class SearchHelper(db.Model):
     __tablename__ = "searchHelper"
     projectId     = Column(Integer, primary_key=True)
     fullString    = Column(String)
+
+class ProjectPath(db.Model):
+    __tablename__ = "sambaPaths"
+    projectId     = Column(Integer, primary_key=True)
+    sambaPath     = Column(String)
 
 class DataTable():
     

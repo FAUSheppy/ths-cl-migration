@@ -62,11 +62,15 @@ function reloadFileList(){
             fileListContainer.innerHTML = content
         })
     })
+
+    fileListContainerSamba.innerHTML = '<div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div>'
     fetch("/smb-file-list?projectId=" + projectId).then( r => {
         r.text().then( content => {
             fileListContainerSamba.innerHTML = content
+            sambaLoaded = true
         })
     })
+    
 }
 
 function dropHandler(ev) {

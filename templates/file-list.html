@@ -9,8 +9,10 @@
     </tr>
     {% for fileListItem in fileListItems %}
     <tr>
-        <td><a href="/files?fullpath={{ fileListItem.fullpath }}">{{ fileListItem.name }}</a></td>
-        <td>{{ fileListItem.fileType }}</td>
+        <td style="font-size: 20px">
+            <a href="/files?fullpath={{ fileListItem.fullpath }}">{{ fileListItem.name }}</a>
+        </td>
+        <td style="font-size: 20px">{{ fileListItem.fileType }}</td>
         {% if fileListItem.deletable %}
         <td><button onclick="deleteFile('{{ fileListItem.fullpath }}')">Delete</button></td>
         {% endif %}

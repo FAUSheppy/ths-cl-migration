@@ -17,16 +17,17 @@
 
       </div>
       <div class="modal-footer">
-        <button style="display: none;" disabled="" id="modal-delete-button" type="button"
-                class="btn btn-alert float-left" onclick="deleteEntry()">
+        <button style="display: none; float: left;" 
+                disabled="" id="modal-delete-button" type="button"
+                class="btn btn-danger float-left" onclick="deleteEntry()">
                 Diesen Eintrag Löschen
         </button>
         <button style="display: none;" disabled="" id="modal-create-doc-button" type="button"
-                class="btn btn-alert float-left" onclick="documentCreation()">
+                class="btn btn-info float-left" onclick="documentCreation()">
                 Neues Dokument für diesem Eintrag
         </button>
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" onclick="submitForm()">Save changes</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Abbrechen</button>
+        <button type="button" class="btn btn-primary" onclick="submitForm()">Speichern</button>
       </div>
     </div>
   </div>

@@ -7,6 +7,17 @@ COLS_TO_DISPLAY_NAME = {    "projectId"  : "Project Id",
                             "firma"      : "Firma",
                             "bereich"    : "Bereich",
                             "geschlecht" : "Anrede",
+                            "vorname"    : "Vorname",
+                            "nachname"   : "Nachname",
+                            "adresse_FA" : "Adresse FA",
+                            "ort_FA"     : "Ort FA",
+                            "tel_1"      : "Festnetz",
+                            "mobil"      : "Mobil",
+                            "fax"        : "Fax",
+                            "auftragsort": "Auftragsort",
+                            "auftragsdatum" : "Auftragsdatum",
+                            "lfn"        : "LFN",
+                            "laufNr"     : "Lauf Nr."
                 }
 
 IS_INT_TYPE  = ["laufNr", "projectId", "PLZ_FA", "lfn"]

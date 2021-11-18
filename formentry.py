@@ -10,6 +10,7 @@ def formEntryArrayFromColNames(colNames, contractLocation):
 class FormEntry:
 
     def __init__(self, colName, contractLocation=None):
+        self.unsafeEntryInfo = None
         self.colName = colName
         self.value = ""
         if contractLocation:
@@ -18,13 +19,14 @@ class FormEntry:
         self.displayName = FormEntry.getDisplayNameSafe(colName)
         self.typeAsText  = FormEntry.getColTypeSafe(colName)
         self.options     = FormEntry.getOptionsSafe(colName)
-        print(self.options)
 
         if self.typeAsText == "date":
             if self.value:
                 try:
                     self.value = dt.strptime(self.value, DB_DATE_FORMAT).strftime(HTML_DATE_FORMAT)
                 except ValueError as e:
+                    self.unsafeEntryInfo = "Änderung des Eintrags deaktivert. Grund: Datum komisch"
+                    self.typeAsText = "text"
                     print("Bad format: {}".format(e))
             else:
                 self.value = dt.today().strftime(HTML_DATE_FORMAT)

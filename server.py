@@ -105,34 +105,39 @@ def smbFileList():
         return ("", 200)
 
     files = None
+    dbPathEmpty = False
     # check if path is known #
     pp = db.session.query(ProjectPath).filter(ProjectPath.projectId == projectId).first()
     if pp:
-        files = samba.find(pp.sambaPath, None, 0, app, [], startInProjectDir=True, isFqPath=True)
+        dbPathEmpty = not bool(pp.sambaPath)
         # delete db entry if fail #
         if not files:
             db.session.delete(pp)
             db.session.commit()
 
     # search for project if fail #
-    if not files:
-        cl = db.session.query(ContractLocation).filter(
-                        ContractLocation.projectId == projectId).first()
-        smbPath, projectDir, year = samba.buildPath(cl, app)
+    cl = db.session.query(ContractLocation).filter(
+                    ContractLocation.projectId == projectId).first()
+    smbPath, projectDir, year = samba.buildPath(cl, app)
 
-        # generate path keywords to speed up search #
-        prioKeywords = [cl.nachname, cl.firma, cl.auftragsort]
-        prioKeywords += list(filter(lambda x: len(x)>=3, cl.firma.split(" ")))
-        prioKeywords = list(map(lambda s: s.strip().lower(), prioKeywords))
+    # generate path keywords to speed up search #
+    prioKeywords = [cl.nachname, cl.firma, cl.auftragsort]
+    prioKeywords += list(filter(lambda x: len(x)>=3, cl.firma.split(" ")))
+    prioKeywords = list(map(lambda s: s.strip().lower(), prioKeywords))
 
-        # filter out keywords that are too common #
-        prioKeywords = list(filter(lambda x: not x.lower() in ["gmbh"], prioKeywords))
+    # filter out keywords that are too common #
+    prioKeywords = list(filter(lambda x: not x.lower() in ["gmbh"], prioKeywords))
 
+    if not files and not dbPathEmpty:
         files = samba.find(smbPath, projectDir, year, app, prioKeywords)
+
     if not files:
+        db.session.merge(ProjectPath(projectId=projectId, sambaPath=""))
+        db.session.commit()
         return flask.render_template("samba-file-not-found.html", projectDir=projectDir,
                                         searchPath=smbPath, keywords=prioKeywords,
-                                        projectId=projectId)
+                                        projectId=projectId,
+                                        showResetButton=dbPathEmpty)
     else:
 
         # record project dir #
@@ -246,13 +251,28 @@ def root():
         return ("", 204)
     elif flask.request.method == "DELETE":
         projectId = flask.request.form["id"]
-        print(projectId)
+
+        # delete the contract location entry #
         cl = db.session.query(ContractLocation).filter(
                         ContractLocation.projectId == projectId).first()
         if not cl:
             return ("No such project", 404)
-        db.session.delete(cl)
+        else:
+            db.session.delete(cl)
+        
+        # delete the search helper #
+        sh = db.session.query(SearchHelper).filter(SearchHelper.projectId == projectId).first()
+        if sh:
+            db.session.delete(sh)
+
+        # delete the path if exits #
+        pp = db.session.query(ProjectPath).filter(ProjectPath.projectId == projectId).first()
+        if pp:
+            db.session.delete(pp)
+
+        # commit changes #
         db.session.commit()
+
         return ("", 204)
     else:
         return (405, "{} not allowed".format(flask.request.method))

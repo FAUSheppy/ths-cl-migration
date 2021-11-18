@@ -190,9 +190,17 @@ function modalSpawn(){
                         lfnNew = json["max"]
                         projectIdNew = json["projectId"]
                         console.log("LFN: " + lfnNew + " suggested PDI: " + projectIdNew)
+
+                        /* set placeholders and values */
+                        projectIdInput.placeholder = projectIdNew
                         lfnInput.placeholder = lfnNew
                         laufNr.placeholder = lfnNew
-                        projectIdInput.placeholder = projectIdNew
+
+                        projectIdInput.value = projectIdNew
+                        lfnInput.value = lfnNew
+                        laufNr.value = lfnNew
+
+                        updateModalTitle(true)
                     })
                 })
             }
@@ -206,10 +214,28 @@ function modalSpawn(){
     })
 }
 
+function updateModalTitle(updateListener){
+
+    if(updateListener){
+        document.getElementById("projectId-input").removeEventListener('input', pIdInput)
+        document.getElementById("projectId-input").addEventListener('input', pIdInput)
+    }
+
+    titleContainer = document.getElementById("dataModalLabel")
+    pIdString = "" + document.getElementById("projectId-input").value
+    part1 = pIdString.substring(0,4)
+    part2 = pIdString.substring(4)
+    titleContainer.innerHTML = "Vorschlag Projektname: P-" + part1 + "-" + part2
+}
+
 function documentCreation(){
     projectId = document.getElementById("projectId-input").value
     url = "/new-document?projectId=" + projectId
     window.open(url, '_blank').focus();
+}
+
+function pIdInput(){
+    updateModalTitle(false)
 }
 
 $('#tableMain').on('click', 'tbody td', modalSpawn)

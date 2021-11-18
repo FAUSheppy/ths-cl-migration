@@ -5,12 +5,17 @@
           {% if label == "projectId" %}
           <div style="display: none;" id="projectid-helper">23123</div>
           {% endif %}
-
+		  
           <div style="display: inline-block;" class="">
               <p style="margin-bottom: 0px;">{{ formEntry.displayName }}</p>
               {% if not formEntry.options %}
               <input id="{{ formEntry.colName }}-input" value="{{ formEntry.value }}" class="mb-2"
-                    type="{{ formEntry.typeAsText }}" name="{{ formEntry.colName }}"></input>
+                    type="{{ formEntry.typeAsText }}" name="{{ formEntry.colName }}"
+                    {% if formEntry.unsafeEntryInfo %}
+					disabled
+					style="color: orange;"
+					{% endif %}
+					></input>
               {% else %}
               <input id="{{ formEntry.colName }}-input" value="{{ formEntry.value }}" class="mb-2"
                      type="text" list="{{ formEntry.colName}}-datalist"

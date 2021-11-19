@@ -27,7 +27,7 @@ def rowCellsToContractLocation(cells):
             pass
 
         return ContractLocation.ContractLocation(
-            laufNr        = int(laufNrStr),
+            lfn           = int(laufNrStr),
             projectId     = int(cells[0].replace("-", "") + laufNrStr),
             firma         = cells[2], 
             bereich       = cells[3], 
@@ -42,7 +42,7 @@ def rowCellsToContractLocation(cells):
             fax           = cells[12], 
             auftragsort   = cells[13], 
             auftragsdatum = cells[14], 
-            lfn           = int(cells[15])
+            date_parsed   = 0
         )
     except Exception as e:
         print(e)

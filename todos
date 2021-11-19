@@ -1,19 +1,19 @@
-- implement section to create documents
-    - section to create table
-    - section freetext top
-    - section freetext bottom
 - implement document generation (docx) in backend based on section to create documents
-
-
 - allow changing path when query succeeded
 - implement search again and safe path in javascript
 - implement path check and indicator in js for submitting new path
-
 - implement extended validation form main data entry form
 - convert dotx documents and add them to directory
-
-- implement database consitency check
-- implement carddav (contacts) integration
-- implement calendar integreation
-
 - disable chaning of entry if date failed to parse
+- implement abort before starting new modifying query (e.g. for samba listing)
+
+
+Maybe:
+
+    - implement database consitency check
+    - implement carddav (contacts) integration
+    - implement calendar integreation
+    - implement section to create documents
+        + section to create table
+        + section freetext top
+        + section freetext bottom

@@ -1,3 +1,5 @@
+- fix database scheme and add multi date support
+- implement frontend for docx templating
 - implement document generation (docx) in backend based on section to create documents
 - allow changing path when query succeeded
 - implement search again and safe path in javascript
@@ -6,7 +8,9 @@
 - convert dotx documents and add them to directory
 - disable chaning of entry if date failed to parse
 - implement abort before starting new modifying query (e.g. for samba listing)
+- add listener to date change for modal title change
 
+- implement samba parser to 
 
 Maybe:
 
@@ -17,3 +21,4 @@ Maybe:
         + section to create table
         + section freetext top
         + section freetext bottom
+    - create template documents on samba instead of download

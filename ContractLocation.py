@@ -4,7 +4,7 @@ base   = declarative_base()
 
 class ContractLocation(base):
     __tablename__ = "contract_locations"
-    laufNr        = Column(Integer)
+    lfn           = Column(Integer)
     projectId     = Column(Integer, primary_key=True)
     firma         = Column(String)
     bereich       = Column(String)
@@ -19,7 +19,7 @@ class ContractLocation(base):
     fax           = Column(String)
     auftragsort   = Column(String)
     auftragsdatum = Column(String)
-    lfn           = Column(Integer)
+    date_parsed   = Column(Integer)
 
 def getBase():
     return base

@@ -115,18 +115,28 @@ def smbFileList():
 
     files = None
     dbPathEmpty = False
+
     # check if path is known #
     pp = db.session.query(ProjectPath).filter(ProjectPath.projectId == projectId).first()
+    print(pp, projectId)
     if pp:
+        print("Found cached path {}".format(pp.sambaPath))
         dbPathEmpty = not bool(pp.sambaPath)
-        # delete db entry if fail #
-        if not files:
-            db.session.delete(pp)
-            db.session.commit()
+        if pp.sambaPath:
+            files = samba.find(pp.sambaPath, None, 0, app, [], 
+                                    startInProjectDir=True, isFqPath=True)
+             # delete db entry if fail #
+            if not files:
+                pp.sambaPath == ""
+                db.session.merge(pp)
+                db.session.commit()
 
     # search for project if fail #
     cl = db.session.query(ContractLocation).filter(
                     ContractLocation.projectId == projectId).first()
+    if not cl:
+        return ("No project for this ID", 404)
+
     smbPath, projectDir, year = samba.buildPath(cl, app)
 
     # generate path keywords to speed up search #
@@ -152,6 +162,7 @@ def smbFileList():
         # record project dir #
         trueProjectDir = os.path.dirname(files[0])
         db.session.merge(ProjectPath(projectId=projectId, sambaPath=trueProjectDir))
+        print("Recorded {} for {}".format(trueProjectDir, projectId))
         db.session.commit()
 
         # generate response
@@ -412,7 +423,7 @@ class AssotiatedFile(db.Model):
 
 class ContractLocation(db.Model):
     __tablename__ = "contract_locations"
-    laufNr        = Column(Integer)
+    lfn           = Column(Integer)
     projectId     = Column(Integer, primary_key=True)
     firma         = Column(String)
     bereich       = Column(String)
@@ -427,7 +438,7 @@ class ContractLocation(db.Model):
     fax           = Column(String)
     auftragsort   = Column(String)
     auftragsdatum = Column(String)
-    lfn           = Column(Integer)
+    date_parsed   = Column(Integer)
 
     def toDict(self):
         tmpDict = dict(self.__dict__)

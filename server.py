@@ -40,9 +40,8 @@ def getDbSchema():
 
 @app.route('/submit-project-path', methods=['POST', 'DELETE'])
 def submitProjectPath():
-    print(flask.request.form)
     if flask.request.method == "POST":
-        path = flask.request.form.path
+        path = flask.request.json.path
         projectId = flask.request.form.projectId
         if path.startswith("T:"):
             replace  = "\\\\{}\\{}".format(app.config["SMB_SERVER"], app.config["SMB_SHARE"])
@@ -56,7 +55,7 @@ def submitProjectPath():
                 db.session.commit()
                 return ("", 200)
     elif flask.request.method == "DELETE":
-        projectId = flask.request.form.projectId
+        projectId = flask.request.json.get("projectId")
         pp = db.session.query(ProjectPath).filter(ProjectPath.projectId == projectId).first()
         if pp:
             db.session.delete(pp)

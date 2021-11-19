@@ -1,3 +1,5 @@
+JSON_HEADERS = { "Content-Type": "application/json" }
+
 function submitForm(){
 
     /* check input fields */
@@ -31,8 +33,13 @@ function submitForm(){
 }
 
 function submitProjectPath(){
-    formData = new FormData(document.getElementById("form-submit-project-path")); 
-    fetch("/submit-project-path", { body: formData, method: "POST" }).then( r => {
+    projectId = document.getElementById("projectId").value
+    path = document.getElementById("path-input").value
+    data = { projectId : projectId, path : path }
+    fetch("/submit-project-path", { method: "POST", 
+                                    mode: 'no-cors',
+                                    headers : JSON_HEADERS,
+                                    body: JSON.stringify(data) }).then( r => {
         if(r.status == 200){
             reloadFileList()
         }else{
@@ -42,8 +49,12 @@ function submitProjectPath(){
 }
 
 function deleteProjectPath(){
-    formData = new FormData(document.getElementById("form-delete-project-path")); 
-    fetch("/submit-project-path", { body: formData, method: "DELETE" }).then( r => {
+    projectId = document.getElementById("projectId-input").value
+    fetch("/submit-project-path", {  method : 'DELETE', 
+                                     mode: 'no-cors',
+                                     headers : JSON_HEADERS,
+                                     body: JSON.stringify({ projectId : projectId }) 
+    }).then( r => {
         if(r.status == 200){
             reloadFileList()
         }else{
@@ -241,6 +252,9 @@ function updateModalTitle(updateListener){
     if(updateListener){
         document.getElementById("projectId-input").removeEventListener('input', pIdInput)
         document.getElementById("projectId-input").addEventListener('input', pIdInput)
+
+        document.getElementById("auftragsdatum-input").removeEventListener('input', pIdInput)
+        document.getElementById("auftragsdatum-input").addEventListener('input', pIdInput)
     }
 
     titleContainer = document.getElementById("dataModalLabel")
@@ -248,6 +262,7 @@ function updateModalTitle(updateListener){
     part1 = pIdString.substring(0,4)
     part2 = pIdString.substring(4)
     titleContainer.innerHTML = "Vorschlag Projektname: P-" + part1 + "-" + part2
+
 }
 
 function documentCreation(){

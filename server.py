@@ -137,7 +137,15 @@ def smbFileList():
     if not cl:
         return ("No project for this ID", 404)
 
+    # generate path and pdir #
     smbPath, projectDir, year = samba.buildPath(cl, app)
+
+    # check in the static index for the pdir #
+    sppi = db.session.query(StaticProjectPathIndex).filter(
+                    StaticProjectPathIndex.dirname == projectDir).first()
+    if sppi:
+        print("Found entry in static index, trying: {}".format(sppi.fullpath))
+        files = samba.find(sppi.fullpath, None, 0, app, [], startInProjectDir=True, isFqPath=True)
 
     # generate path keywords to speed up search #
     prioKeywords = [cl.nachname, cl.firma, cl.auftragsort]
@@ -459,6 +467,11 @@ class ProjectPath(db.Model):
     __tablename__ = "sambaPaths"
     projectId     = Column(Integer, primary_key=True)
     sambaPath     = Column(String)
+
+class StaticProjectPathIndex(db.Model):
+    __tablename__ = "project_paths"
+    dirname       = Column(String, primary_key=True)
+    fullpath      = Column(String)
 
 class DataTable():
     

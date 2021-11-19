@@ -6,8 +6,7 @@
     </p>
 	<form id="form-delete-project-path" action="/submit-project-path" method="DELETE">
         <input style="display: none;" id="projectId" value="{{ projectId }}" type=text></input>
-		<button onclick="deleteProjectPath()" class="mt-1"
-                value="Nochmal suchen" type=submit></button>
+		<button onclick="deleteProjectPath()" class="mt-1" type=submit>Nochmal suchen</button>
 	</form>
     {% endif %}
     <p class="my-3">
@@ -21,8 +20,7 @@
 	<form id="form-submit-project-path">
 		<input id="path" class="w-100" type=text placeholder="Pfad"></input>
         <input style="display: none;" id="projectId" value="{{ projectId }}" type=text></input>
-        <button onclick="submitProjectPath()" class="mt-3" 
-                value="Neuen Pfad Speichern" type=submit></button>
+        <button onclick="submitProjectPath()" class="mt-3" type=submit>Neuen Pfad Speichern</button>
 	</form>
 
 </div>

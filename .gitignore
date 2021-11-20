@@ -1,4 +1,5 @@
 *.sqlite
+*.json
 *.swo
 *.bak
 *.swp

@@ -7,10 +7,27 @@
 <body>
   {% include 'navbar.html' %}
   <div class="container">
-    {% for template in dtList %}
-    <a href="/new-document?projectId={{ projectId }}&template={{ template.fullpath }}"
-       class="m-3" style="background: lightgreen; color: black;">{{ template.name }}</a>
-
+    {% for key in templatesDict.keys() %}
+    <div class="template-card m-3 card" style="width: 18rem;">
+        <div class="card-body">
+          <h5 class="card-title">{{ key }}</h5>
+          <h6 class="card-subtitle mb-2 text-muted"></h6>
+          <hr class="my-4">
+          <p class="card-text">{{ templatesDict[key]["description"] }}</p>
+          <button class="card-link"
+                  onclick="saveDocumentTemplate('{{ projectId }}', '{{ key }}', false)">
+            Download
+          </button>
+          {% if projectPathAvailiable %}
+          <button class="card-link"
+                  onclick="saveDocumentTemplate('{{ projectId }}, '{{ key }}', true)">
+            In Projektordner Speichern
+          </button>
+          {% endif %}
+          <h6 id="save-document-error-field-{{ key }}"
+                  class="card-subtitle mt-3" style="color: red;"></h6>
+        </div>
+    </div>
     {% endfor %}
   </div>
 </body>

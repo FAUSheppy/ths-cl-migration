@@ -275,4 +275,28 @@ function pIdInput(){
     updateModalTitle(false)
 }
 
+function saveDocumentTemplate(projectId, templateKey, samba){
+    url = "/new-document?projectId=" + projectId + "&template=" + templateKey
+
+    field = document.getElementById("save-document-error-field-" + templateKey)
+    if(samba){
+        url += "&saveToSamba=" + "True"
+        fetch(url).then( r => {
+            if(r.status == 200){
+                field.style.color = "lightgreen"
+                field.innerHTML   = "Erfolgreich gespeichert"
+            }else{
+                r.text().then( s => {
+                    field.innerHTML = s
+                })
+            }
+        })
+    }else{
+        field.style.color = "lightgreen"
+        field.innerHTML   = "Ok!"
+        window.location = url
+    }
+
+}
+
 $('#tableMain').on('click', 'tbody td', modalSpawn)

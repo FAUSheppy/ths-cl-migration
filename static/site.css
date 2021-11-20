@@ -3,3 +3,8 @@
     width: 100%;
     background-color: cyan;
 }
+
+.template-card{
+    display: block;
+    float: left;
+}

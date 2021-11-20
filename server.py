@@ -328,8 +328,12 @@ def curMaxSequenceNumber():
 
 @app.route("/new-document")
 def newDocumentFromTemplate():
+
     projectId = flask.request.args.get("projectId")
     template = flask.request.args.get("template")
+    documentTemplateDict = filesystem.getTemplates()
+    saveToSamba = bool(flask.request.args.get("saveToSamba"))
+
     if not projectId:
         return ("Missing projectId as URL-arg", 400)
 
@@ -339,18 +343,43 @@ def newDocumentFromTemplate():
         return ("Project not found", 404)
 
     if not template:
-        documentTemplateList = filesystem.getTemplates()
-        return flask.render_template("select_template.html", dtList=documentTemplateList,
-                                        projectId=projectId)
+
+        # check if a project path is availiable #
+        pp = db.session.query(ProjectPath).filter(ProjectPath.projectId == projectId)
+        projectPathAvailiable = False
+        if pp and app.config["SAMBA"]:
+            projectPathAvailiable = bool(pp.sambaPath)
+
+        return flask.render_template("select_template.html",
+                                        templatesDict=documentTemplateDict,
+                                        projectId=projectId,
+                                        projectPathAvailiable=projectPathAvailiable)
     else:
-        # TODO defenitly verify the path somehow
-        name = "{}_{}.docx".format(os.path.basename(template).replace(".docx",""), projectId)
-        instance = filesystem.getDocumentInstanceFromTemplate(template, projectId, entry.lfn)
-        response = flask.make_response(instance)
-        response.headers.set('Content-Type', MS_WORD_MIME)
-        response.headers.set('Content-Disposition', 'attachment', filename=name)
-        return response
-        
+        if not template in documentTemplateDict:
+            return ("Template not found", 404)
+        else:
+            path = os.path.join(app.config["DOC_TEMPLATE_PATH"], template)
+           
+            #  get instance of template #
+            instance = filesystem.getDocumentInstanceFromTemplate(path, projectId, entry.lfn)
+
+            if saveToSamba:
+                pp = db.session.query(ProjectPath).filter(ProjectPath.projectId == projectId)
+                if pp and pp.sambaPath:
+                    error = samba.carefullySaveFile(instance, pp.sambaPath)
+                    if error:
+                        return ("Fehler beim Speichern: {}".format(error), 510)
+                    else:
+                        return ("Abgespeichert in {}".format(path), 200)
+                    
+                else:
+                    return ("Fehler: Projekt nicht mehr mit einem Pfad assoziert", 404)
+            else:
+                response = flask.make_response(instance)
+                response.headers.set('Content-Type', MS_WORD_MIME)
+                response.headers.set('Content-Disposition', 'attachment', filename=template)
+                return response
+
 @app.route('/static/<path:path>')
 def send_js(path):
     response = flask.send_from_directory('static', path)
@@ -580,5 +609,7 @@ if __name__ == "__main__":
     app.config["SMB_USER"]   = args.smbuser
     app.config["SMB_PASS"]   = args.smbpass
     app.config["SMB_SHARE"]  = args.smbshare
+
+    app.config["DOC_TEMPLATE_PATH"] = "document-templates"
 
     app.run(host=args.interface, port=args.port)

@@ -1,7 +1,7 @@
 import os.path
 import subprocess
 import glob
-import docx
+import json
 import shutil
 
 class FileItem:
@@ -28,12 +28,13 @@ class DocumentTemplate:
         self.name = os.path.basename(fullpath)
 
 def getTemplates():
-    filenameList = glob.glob("./document-templates/*.docx")
-    templateList = []
-    for f in filenameList:
-        templateList.append(DocumentTemplate(f))
-    print(templateList)
-    return templateList
+    #filenameList = glob.glob("./document-templates/*.docx")
+    #templateList = []
+    #for f in filenameList:
+    #    templateList.append(DocumentTemplate(f))
+    #print(templateList)
+    with open("./document-templates/templates.json", "r") as f:
+        return json.loads(f.read())
 
 def getDocumentInstanceFromTemplate(path, projectId, lfn):
     # unzip docx

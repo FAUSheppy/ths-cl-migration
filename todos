@@ -7,6 +7,7 @@
 - disable chaning of entry if date failed to parse
 - implement abort before starting new modifying query (e.g. for samba listing)
 - add listener to date change for modal title change
+- implement connection to signal gateway
 
 - implement samba parser to 
 

@@ -33,3 +33,5 @@ MS_WORD_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.d
 
 DB_DATE_FORMAT = "%d.%m.%Y"
 HTML_DATE_FORMAT = "%Y-%m-%d"
+
+COLS_IGNORE_LIST = ["_sa_instance_state", "date_parsed"]

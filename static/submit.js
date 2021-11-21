@@ -238,6 +238,13 @@ function modalSpawn(){
                 })
             }
 
+            /* additional dates section */
+            fetch("/additional-dates?projectId=" + projectId).then( r => {
+                r.text().then( s => {
+                    document.getElementById("additional-dates-target").innerHTML = s
+                })
+            })
+
             /* open modal */
             $('#dataModal').modal("toggle")
        

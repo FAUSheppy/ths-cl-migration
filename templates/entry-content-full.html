@@ -3,7 +3,7 @@
       {% for formEntry in formEntries %}
 
           {% if label == "projectId" %}
-          <div style="display: none;" id="projectid-helper">23123</div>
+          <div style="display: none;" id="projectid-helper">{{ label }}</div>
           {% endif %}
 		  
           <div style="display: inline-block;" class="">
@@ -28,6 +28,8 @@
               {% endif %}
           </div>
       {% endfor %}
+      <div id="additional-dates-target">
+      </div>
   </form>
 </div>
 <hr>

@@ -35,8 +35,55 @@ app.config['SECRET_KEY'] = "secret"
 app.config['UPLOAD_FOLDER'] = "uploads/"
 db = SQLAlchemy(app)
 
-def getDbSchema():
-    return list(ContractLocation.__table__.columns.keys())
+def getDbSchema(filterCols=False):
+    cols = list(ContractLocation.__table__.columns.keys())
+    if filterCols:
+        return list(filter(lambda c: c not in COLS_IGNORE_LIST, cols))
+    else:
+        return cols
+
+@app.route('/additional-dates', methods=["GET", "POST", "DELETE"])
+def additionalDates():
+    projectId = flask.request.args.get("projectId")
+    additionalDatesObj = db.session.query(AdditionalDates).filter(
+                                    AdditionalDates.projectId == projectId).first()
+    if not projectId:
+        return ("Missing project id", 400)
+
+    if flask.request.method == "GET":
+        dates = []
+        if additionalDatesObj and additionalDatesObj.dates:
+            for d in additionalDatesObj.dates.split(","):
+                dates.append(datetime.datetime.strptime(
+                                d, DB_DATE_FORMAT).strftime(HTML_DATE_FORMAT))
+
+        return flask.render_template("additional-dates-section.html",
+                                            additionalDates=dates,
+                                            freeFields=range(len(dates), 10))
+    elif flask.request.method == "POST":
+        datesToSave = flask.request.json.get("dates")
+
+        # append if an entry already exits #
+        datesCurrent = ""
+        if additionalDatesObj:
+            datesCurrent = additionalDatesObj.dates
+
+        if datesToSave:
+            for d in datesToSave:
+                datesCurrent += "," + d
+            datesCurrent = datesCurrent.strip(",")
+            db.session.merge(AdditionalDates(projectId=projectId, dates=datesCurrent))
+            db.session.commit()
+        else:
+            return ("Not dates to save transmitted", 400)
+    elif flask.request.method == "DELETE":
+        if not additionalDatesObj:
+            return ("No additional dates for this id", 404)
+        else:
+            db.session.delete(additionalDatesObj)
+            db.session.commit()
+    else:
+        return ("Unsupported Method: {}".format(flask.request.method), 405)
 
 @app.route('/submit-project-path', methods=['POST', 'DELETE'])
 def submitProjectPath():
@@ -67,12 +114,13 @@ def submitProjectPath():
 @app.route('/entry-content', methods=['GET', 'POST'])
 def entryContentBig():
     projectId = flask.request.args.get("projectId")
-    colKeys = list(ContractLocation.__table__.columns.keys())
+    colKeys = getDbSchema(filterCols=True)
     
     # empty form if no project id #
     if not projectId:
         formEntries = formEntryArrayFromColNames(colKeys, None)
-        return flask.render_template("entry-content-full.html", formEntries=formEntries)
+        return flask.render_template("entry-content-full.html", formEntries=formEntries,
+                                        additionalDatesObj=[])
 
     # look for project id in db #
     cl = db.session.query(ContractLocation).filter(ContractLocation.projectId == projectId).first()
@@ -259,23 +307,57 @@ def upload_file():
 
 @app.route("/", methods=["GET", "POST", "DELETE", "PATCH"])
 def root():
-    header = getDbSchema()
+    header = getDbSchema(filterCols=True)
     if flask.request.method == "GET":
         return flask.render_template("index.html", headerCol=header, 
                                                     headerDisplayNames=HEADER_NAMES)
     elif flask.request.method == "POST":
+        
+        # prepare new/updated entry #
         cl = ContractLocation()
+
+        # handle standard fields #
         for col, name in zip(header, HEADER_NAMES):
+            print(col)
             value = flask.request.form[col]
+            print("ok")
+
+            # handle datatypes #
             if col in IS_INT_TYPE:
                 if value == "":
                     value = 0
                 else:
                     value = int(value)
+            elif col in IS_DATE_TYPE:
+                parsed = datetime.datetime.strptime(value, HTML_DATE_FORMAT)
+                value  = parsed.strftime(DB_DATE_FORMAT)
+                setattr(cl, "date_parsed", parsed.timestamp())
+
+            # set value in class #
             setattr(cl, col, value)
+
+        # handle additional dates-fields #
+        additionalDatesFields = ["additional-date-{}".format(x) for x in range(0, 9)]
+        newAdditionalDatesString = ""
+        for key in additionalDatesFields:
+            value = flask.request.form[key]
+            if value:
+                print(value)
+                value = datetime.datetime.strptime(value, HTML_DATE_FORMAT).strftime(DB_DATE_FORMAT)
+                newAdditionalDatesString += value + ","
+            print("ok additional", newAdditionalDatesString)
+
+        # merge additional dates into db #
+        newAdditionalDatesString = newAdditionalDatesString.strip(",")
+        ad = AdditionalDates(projectId=cl.projectId, dates=newAdditionalDatesString)
+        db.session.merge(ad)
+
+        # merge contract location main entry and commit #
         db.session.merge(cl)
         db.session.commit()
+        
         return ("", 204)
+
     elif flask.request.method == "DELETE":
         projectId = flask.request.form["id"]
 
@@ -457,6 +539,11 @@ class AssotiatedFile(db.Model):
     projectId     = Column(Integer)
     fileType      = Column(String)
 
+class AdditionalDates(db.Model):
+    __tablename__ = "additional_dates"
+    projectId     = Column(String, primary_key=True)
+    dates         = Column(String)
+
 class ContractLocation(db.Model):
     __tablename__ = "contract_locations"
     lfn           = Column(Integer)
@@ -478,7 +565,8 @@ class ContractLocation(db.Model):
 
     def toDict(self):
         tmpDict = dict(self.__dict__)
-        tmpDict.pop("_sa_instance_state")
+        for keysToIgnore in COLS_IGNORE_LIST:
+            tmpDict.pop(keysToIgnore)
         return tmpDict
 
     def getColByNumber(self, nr):
@@ -510,7 +598,7 @@ class DataTable():
         self.trueLength = -1
         self.searchValue = d["search[value]"]
         self.searchIsRegex = d["search[regex]"]
-        self.cols = cols
+        self.cols = getDbSchema(filterCols=True)
         self.orderByCol = int(d["order[0][column]"])
         self.orderDirection = d["order[0][dir]"]
 
@@ -588,6 +676,14 @@ class DataTable():
             results  = query.offset(self.start).limit(self.length).all()
             total    = query.count()
             filtered = total
+
+        # query additional dates #
+        for r in results:
+            additionalDatesObj = db.session.query(AdditionalDates).filter(
+                                    AdditionalDates.projectId == r.projectId).first()
+           
+            if additionalDatesObj and additionalDatesObj.dates:
+                r.auftragsdatum += ", " + additionalDatesObj.dates.replace(",", ", ")
 
 
         return self.__build(results, total, filtered)

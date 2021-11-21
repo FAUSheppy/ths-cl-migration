@@ -1,4 +1,3 @@
-- fix database scheme and add multi date support
 - allow changing path when query succeeded
 - implement search again and safe path in javascript
 - implement path check and indicator in js for submitting new path

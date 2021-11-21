@@ -4,12 +4,9 @@
 - implement path check and indicator in js for submitting new path
 - implement extended validation form main data entry form
 - convert dotx documents and add them to directory
-- disable chaning of entry if date failed to parse
 - implement abort before starting new modifying query (e.g. for samba listing)
 - add listener to date change for modal title change
 - implement connection to signal gateway
-
-- implement samba parser to 
 
 Maybe:
 

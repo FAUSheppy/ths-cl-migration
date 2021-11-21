@@ -337,7 +337,7 @@ def root():
             setattr(cl, col, value)
 
         # handle additional dates-fields #
-        additionalDatesFields = ["additional-date-{}".format(x) for x in range(0, 9)]
+        additionalDatesFields = ["additional-date-{}".format(x) for x in range(0, 10)]
         newAdditionalDatesString = ""
         for key in additionalDatesFields:
             value = flask.request.form[key]

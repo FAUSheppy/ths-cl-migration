@@ -9,9 +9,37 @@ Now this approach has various drawbacks, including:
 - it's hard to maintain
 - it does not support advanced queries
 
-# Nginx Configuration
+# Gateway Configuration
+If you want to use the notification gateway, you can use the [signal-gateway](https://github.com/FAUSheppy/signal-http-gateway) behind nginx (for authentification).
 
-# config explanation
+    server {
+        listen 443 ssl;
+        server_name _;
+    
+        location / {
+            auth_basic "Signal Gateway Auth";
+            auth_basic_user_file "/path/to/auth/file";
+            proxy_pass http://localhost:PORT;
+        }
+    
+    }
+
+# Configuration
+
+| Key       | Description |
+| --------- | ----------- |
+| UPLOAD_FOLDER | Directory for uploads |
+| SECRET_KEY | Secret key for WTF-forms |
+| SQLALCHEMY_DATABASE_URI | Database to use |
+| SMB_SERVER | Local Network Samba Server (optional) |
+| SMB_USER | Samba User (required if samba server is defined)| 
+| SMB_PASS | Samba Password (required if samba server is defined)| 
+| SMB_SHARE | Samba Share (required if samba server is defined) |
+| DOC_TEMPLATE_PATH | Path where docx-document templates are stored |
+| NOTIFICATION_URL | Gateway url to query |
+| NOTIFICATION_USERS | List of users to send messages to (if gateway supports it) |
+| NOTIFICATION_AUTH_USER | Gateway authentification user |
+| NOTIFICATION_AUTH_PASS | Gateway authentification password |
 
 ---
 

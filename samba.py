@@ -22,8 +22,12 @@ def buildPath(cl, app):
         year = 2000 + int(nrStr[-7:-5])
         print("Failed to parse date correctly, assuming {} form projectId".format(year))
         if year < 2008:
-            year = int(cl.auftragsdatum.split(".")[-1])
-            print("Too early, trying to strip from maleformed date anyway, got {}".format(year))
+            try:
+                year = int(cl.auftragsdatum.split(".")[-1])
+                print("Too early, trying to strip from maleformed date anyway, got {}".format(year))
+            except ValueError as e:
+                print("Unparsable, cannot determine path: {}".format(e))
+                return ("", "", "")
 
     path = base + "\Jahr " + str(year) 
     pathWithName = path + "\\" + cl.nachname.strip() 

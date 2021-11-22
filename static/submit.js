@@ -1,4 +1,4 @@
-JSON_HEADERS = { "Content-Type": "application/json" }
+JSON_HEADERS = { "Content-Type": "application/json" , "Accept" : "application/json" }
 
 function submitForm(){
 
@@ -36,8 +36,10 @@ function submitProjectPath(){
     projectId = document.getElementById("projectId").value
     path = document.getElementById("path-input").value
     data = { projectId : projectId, path : path }
-    fetch("/submit-project-path", { method: "POST", 
-                                    mode: 'no-cors',
+    console.log("Submitting Project Path", data)
+    fetch(window.location.origin + "/submit-project-path", { method: "POST", 
+                                    mode: 'cors',
+                                    credentials: 'same-origin',
                                     headers : JSON_HEADERS,
                                     body: JSON.stringify(data) }).then( r => {
         if(r.status == 200){
@@ -49,6 +51,7 @@ function submitProjectPath(){
 }
 
 function deleteProjectPath(){
+    console.log("Deleting Project Path")
     projectId = document.getElementById("projectId-input").value
     fetch("/submit-project-path", {  method : 'DELETE', 
                                      mode: 'no-cors',

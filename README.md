@@ -9,6 +9,10 @@ Now this approach has various drawbacks, including:
 - it's hard to maintain
 - it does not support advanced queries
 
+# Nginx Configuration
+
+# config explanation
+
 ---
 
 This project aims to create a pipeline to migrate away from this obsolete technology, and use a real database and easy to use web-interface.

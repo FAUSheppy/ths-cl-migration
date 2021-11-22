@@ -65,7 +65,6 @@ function deleteProjectPath(){
 
 function deleteEntry(){
     projectId = document.getElementById("projectId-input").value
-    console.log(projectId)
     xhr = new XMLHttpRequest();
     xhr.open("DELETE", "/");
     xhr.onload = formSubmitFinished

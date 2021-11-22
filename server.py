@@ -97,7 +97,6 @@ def submitProjectPath():
     if flask.request.method == "POST":
         path = flask.request.json["path"].strip()
         projectId = flask.request.json["projectId"]
-        print("jesus fuck")
 
         # allow copied in paths #
         if path.startswith("T:"):
@@ -111,18 +110,14 @@ def submitProjectPath():
             files = samba.find(path, None, 0, app, [], startInProjectDir=True, isFqPath=True)
         except ValueError as e:
             response = flask.Response("Bad path: {}".format(e), 404, mimetype='application/json')
-            response.headers.add('Access-Control-Allow-Headers', '*')
             return response
         if not files:
-            response = flask.Response("Path does not exist".format(e), 404, 
-                                        mimetype='application/json')
-            response.headers.add('Access-Control-Allow-Headers', '*')
+            response = flask.Response("Path does not exist", 404)
             return response
         else:
             db.session.merge(ProjectPath(projectId=projectId, sambaPath=path))
             db.session.commit()
             response = flask.Response("", 204)
-            response.headers.add('Access-Control-Allow-Headers', '*')
             return response
 
     elif flask.request.method == "DELETE":
@@ -132,14 +127,11 @@ def submitProjectPath():
             db.session.delete(pp)
             db.session.commit()
             response = flask.Response("", 204)
-            response.headers.add('Access-Control-Allow-Headers', '*')
             return response
         else:
             response = flask.Response("No samba path in DB for this project-id", 404)
-            response.headers.add('Access-Control-Allow-Headers', '*')
             return response
     else:
-        print("wtf")
         return ("WHY THE FUCK IS THIS A GET REQUEST", 418)
 
 @app.route('/entry-content', methods=['GET', 'POST'])
@@ -338,8 +330,12 @@ def upload_file():
 def root():
     header = getDbSchema(filterCols=True)
     if flask.request.method == "GET":
-        return flask.render_template("index.html", headerCol=header, 
+        render = flask.render_template("index.html", headerCol=header, 
                                                     headerDisplayNames=HEADER_NAMES)
+        response = flask.Response(render, 200)
+        response.headers.add('Access-Control-Allow-Headers', '*')
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return response
     elif flask.request.method == "POST":
         
         # prepare new/updated entry #

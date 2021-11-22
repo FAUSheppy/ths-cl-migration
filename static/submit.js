@@ -42,10 +42,15 @@ function submitProjectPath(){
                                     credentials: 'same-origin',
                                     headers : JSON_HEADERS,
                                     body: JSON.stringify(data) }).then( r => {
-        if(r.status == 200){
+        if(r.status == 200 || r.status == 204){
             reloadFileList()
         }else{
-            console.log("Cannot set path") //TODO error message from response set to html
+            r.text().then( s => {
+                msg = "Cannot set path: " + s
+                console.log(msg)
+                errorContainer = document.getElementById("error-info")
+                errorContainer.innerHTML = msg
+            })
         }
     })
 }
@@ -54,14 +59,20 @@ function deleteProjectPath(){
     console.log("Deleting Project Path")
     projectId = document.getElementById("projectId-input").value
     fetch("/submit-project-path", {  method : 'DELETE', 
-                                     mode: 'no-cors',
+                                     mode: 'cors',
+                                     credentials: 'same-origin',
                                      headers : JSON_HEADERS,
                                      body: JSON.stringify({ projectId : projectId }) 
     }).then( r => {
-        if(r.status == 200){
+        if(r.status == 200 || r.status == 204){
             reloadFileList()
         }else{
-            console.log("Cannot delete path") //TODO error message from response set to html
+            r.text().then( s => {
+                msg = "Cannot delete path: " + s
+                console.log(msg)
+                errorContainer = document.getElementById("error-info")
+                errorContainer.innerHTML = msg
+            })
         }
     })
 }

@@ -29,8 +29,8 @@ import filesystem
 import filedetection
 
 app = flask.Flask("THS-ContractLocations", static_folder=None)
+app.config.from_object("config")
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.sqlite'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = "secret"
 app.config['UPLOAD_FOLDER'] = "uploads/"
 db = SQLAlchemy(app)
@@ -347,6 +347,12 @@ def root():
                 newAdditionalDatesString += value + ","
             print("ok additional", newAdditionalDatesString)
 
+        # remember old value for notification #
+        oldCl = db.session.query(ContractLocation).filter(
+                        ContractLocation.projectId == cl.projectId).first()
+        oldAd = db.session.query(AdditionalDates).filter(
+                        AdditionalDates.projectId == cl.projectId).first()
+
         # merge additional dates into db #
         newAdditionalDatesString = newAdditionalDatesString.strip(",")
         ad = AdditionalDates(projectId=cl.projectId, dates=newAdditionalDatesString)
@@ -355,6 +361,16 @@ def root():
         # merge contract location main entry and commit #
         db.session.merge(cl)
         db.session.commit()
+
+        # get all data from db and send notification #
+        if app.config["SEND_NOTIFICATION"]:
+            newCl = db.session.query(ContractLocation).filter(
+                                ContractLocation.projectId == cl.projectId).first()
+            newAd = db.session.query(AdditionalDates).filter(
+                                AdditionalDates.projectId == cl.projectId).first()
+            
+            content = notifcation.makeRepresentation(oldCl, oldAd, newCl, newAd)
+            notification.sendSignal(content)
         
         return ("", 204)
 

@@ -10,6 +10,7 @@ import werkzeug.utils
 import datetime
 import samba
 import mimetypes
+import psycopg2
 
 from sqlalchemy import Column, Integer, String, Boolean, or_, and_
 from sqlalchemy.orm import sessionmaker
@@ -33,7 +34,7 @@ from flask_cors import CORS
 app = flask.Flask("THS-ContractLocations", static_folder=None)
 CORS(app)
 app.config.from_object("config")
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.sqlite'
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.sqlite'
 app.config['SECRET_KEY'] = "secret"
 app.config['UPLOAD_FOLDER'] = "uploads/"
 db = SQLAlchemy(app)
@@ -520,52 +521,13 @@ def init():
     
     app.config["DB"] = db
     db.create_all()
-
-    TRIGGER_FOR_SEARCHABLE_STRING_1 = '''
-        CREATE TRIGGER IF NOT EXISTS populate_searchable_insert
-            AFTER INSERT ON contract_locations
-        BEGIN
-            INSERT INTO searchHelper VALUES (
-                NEW.projectId, ( 
-                                    COALESCE(NEW.firma,'')
-                                 || COALESCE(NEW.projectId,'')
-                                 || COALESCE(NEW.bereich,'')
-                                 || COALESCE(NEW.vorname,'')
-                                 || COALESCE(NEW.nachname,'')
-                                 || COALESCE(NEW.adresse_FA,'')
-                                 || COALESCE(NEW.PLZ_FA,'')
-                                 || COALESCE(NEW.ort_FA,'')
-                                 || COALESCE(NEW.tel_1,'')
-                                 || COALESCE(NEW.mobil,'')
-                                 || COALESCE(NEW.fax,'')
-                                 || COALESCE(NEW.auftragsort,'')
-                                 || COALESCE(NEW.auftragsdatum,'')
-                              )
-            );
-        END;'''
-
-    TRIGGER_FOR_SEARCHABLE_STRING_2 = '''
-        CREATE TRIGGER IF NOT EXISTS populate_searchable_update
-            AFTER UPDATE ON contract_locations
-        BEGIN
-            UPDATE searchHelper
-                SET fullString = (
-                                    COALESCE(NEW.firma,'')
-                                 || COALESCE(NEW.projectId,'')
-                                 || COALESCE(NEW.bereich,'')
-                                 || COALESCE(NEW.vorname,'')
-                                 || COALESCE(NEW.nachname,'')
-                                 || COALESCE(NEW.adresse_FA,'')
-                                 || COALESCE(NEW.PLZ_FA,'')
-                                 || COALESCE(NEW.ort_FA,'')
-                                 || COALESCE(NEW.tel_1,'')
-                                 || COALESCE(NEW.mobil,'')
-                                 || COALESCE(NEW.fax,'')
-                                 || COALESCE(NEW.auftragsort,'')
-                                 || COALESCE(NEW.auftragsdatum,'')
-                                )
-                WHERE projectId = NEW.projectId;
-        END;'''
+   
+    if "sqlite" in app.config["SQLALCHEMY_DATABASE_URI"]:
+        from sqlitetrigger import TRIGGER_FOR_SEARCHABLE_STRING_1, TRIGGER_FOR_SEARCHABLE_STRING_2
+    elif "postgresql" in app.config["SQLALCHEMY_DATABASE_URI"]:
+        from psqltrigger import TRIGGER_FOR_SEARCHABLE_STRING_1, TRIGGER_FOR_SEARCHABLE_STRING_2
+    else:
+        raise ValueError("No supported database string (sqlite or postgresql")
 
     db.session.commit()
     db.session.execute(TRIGGER_FOR_SEARCHABLE_STRING_1)

@@ -3,8 +3,6 @@
 - implement path check and indicator in js for submitting new path
 - implement extended validation form main data entry form
 - convert dotx documents and add them to directory
-- implement abort before starting new modifying query (e.g. for samba listing)
-- add listener to date change for modal title change
 - implement client side database connection in docx documents correctly
 
 Maybe:

@@ -27,6 +27,7 @@ from formentry import FormEntry, formEntryArrayFromColNames
 
 import filesystem
 import filedetection
+import notifications
 
 app = flask.Flask("THS-ContractLocations", static_folder=None)
 app.config.from_object("config")
@@ -47,8 +48,11 @@ def additionalDates():
     projectId = flask.request.args.get("projectId")
     additionalDatesObj = db.session.query(AdditionalDates).filter(
                                     AdditionalDates.projectId == projectId).first()
+
+    # empty if no project id #
     if not projectId:
-        return ("Missing project id", 400)
+        return flask.render_template("additional-dates-section.html",
+                                            additionalDates=[], freeFields=range(0, 10))
 
     if flask.request.method == "GET":
         dates = []
@@ -165,7 +169,6 @@ def smbFileList():
 
     # check if path is known #
     pp = db.session.query(ProjectPath).filter(ProjectPath.projectId == projectId).first()
-    print(pp, projectId)
     if pp:
         print("Found cached path {}".format(pp.sambaPath))
         dbPathEmpty = not bool(pp.sambaPath)
@@ -286,7 +289,6 @@ def upload_file():
         else:
             fileEntry = db.session.query(AssotiatedFile).filter(
                             AssotiatedFile.fullpath == fullpath).first()
-            print(fileEntry)
             if fileEntry:
                 relativePathInUploadDir = fileEntry.fullpath.replace(app.config["UPLOAD_FOLDER"], "")
                 return flask.send_from_directory(app.config["UPLOAD_FOLDER"], relativePathInUploadDir)
@@ -318,9 +320,7 @@ def root():
 
         # handle standard fields #
         for col, name in zip(header, HEADER_NAMES):
-            print(col)
             value = flask.request.form[col]
-            print("ok")
 
             # handle datatypes #
             if col in IS_INT_TYPE:
@@ -342,16 +342,17 @@ def root():
         for key in additionalDatesFields:
             value = flask.request.form[key]
             if value:
-                print(value)
                 value = datetime.datetime.strptime(value, HTML_DATE_FORMAT).strftime(DB_DATE_FORMAT)
                 newAdditionalDatesString += value + ","
-            print("ok additional", newAdditionalDatesString)
 
         # remember old value for notification #
         oldCl = db.session.query(ContractLocation).filter(
                         ContractLocation.projectId == cl.projectId).first()
         oldAd = db.session.query(AdditionalDates).filter(
                         AdditionalDates.projectId == cl.projectId).first()
+
+        # detach records #
+        db.session.expunge_all()
 
         # merge additional dates into db #
         newAdditionalDatesString = newAdditionalDatesString.strip(",")
@@ -369,8 +370,8 @@ def root():
             newAd = db.session.query(AdditionalDates).filter(
                                 AdditionalDates.projectId == cl.projectId).first()
             
-            content = notifcation.makeRepresentation(oldCl, oldAd, newCl, newAd)
-            notification.sendSignal(content)
+            content = notifications.makeRepresentation(oldCl, oldAd, newCl, newAd)
+            notifications.sendSignal(content, app)
         
         return ("", 204)
 
@@ -420,7 +421,7 @@ def curMaxSequenceNumber():
     today = datetime.datetime.today()
     yearId = today.year *   10000
     monthId = today.month   * 1000000
-    projectId = year + monthId + maxNr
+    projectId = yearId + monthId + maxNr
     return flask.Response(json.dumps({ "max" : maxNr,  "projectId" : projectId }), 
                             200, mimetype='application/json')
 

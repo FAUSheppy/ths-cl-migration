@@ -176,10 +176,12 @@ function modalSpawn(){
     row = -1
     clickedCol = -1
     entryUrl = "/entry-content"
+    projectId = ""
     if(typeof this.parentNode != 'undefined'){
         row = this.parentNode.rowIndex - 1
         clickedCol = this.cellIndex
-        entryUrl += "?projectId=" + dt.row(row).data()[1]
+        projectId = dt.row(row).data()[1]
+        entryUrl += "?projectId=" + projectId
     }
     
     /* fetch modal-content from server */
@@ -227,11 +229,9 @@ function modalSpawn(){
                         /* set placeholders and values */
                         projectIdInput.placeholder = projectIdNew
                         lfnInput.placeholder = lfnNew
-                        laufNr.placeholder = lfnNew
 
                         projectIdInput.value = projectIdNew
                         lfnInput.value = lfnNew
-                        laufNr.value = lfnNew
 
                         updateModalTitle(true)
                     })

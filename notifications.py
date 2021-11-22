@@ -1,5 +1,5 @@
 import requests
-import Constants
+from constants import *
 from requests.auth import HTTPBasicAuth
 
 def makeRepresentation(oldCl, oldAd, cl, ad):
@@ -10,19 +10,24 @@ def makeRepresentation(oldCl, oldAd, cl, ad):
     if not oldCl:
         startString = "Neuer Eintrag: {}\n".format(cl.projectId)
     else:
-        startString = "Änderung von Eintrag: {}".format(oldCl.projectId)
+        startString = "Änderung von Eintrag: {}\n".format(oldCl.projectId)
 
     for key in cl.toDict():
+        
+        # new entry #
+        new = getattr(cl, key)
         if not oldCl:
-            contentString += "{}: {}\n".format(COLS_TO_DISPLAY_NAME[key], cl[key])
-        elif: cl[key] != oldCl[key]:
-            contentString += "{}: {} -> {}\n".format(COLS_TO_DISPLAY_NAME[key], oldCl[key], cl[key])
-        else:
+            contentString += "{}: {}\n".format(key, new)
             continue
 
+        # changing old entry #
+        old = getattr(oldCl, key)
+        if new != old:
+            contentString += "{}: {} -> {}\n".format(COLS_TO_DISPLAY_NAME[key], old, new)
+            continue
     
     if not oldAd and ad.dates:
-        contentString
+        contentString += "\n" + ad.dates
 
     return startString +  contentString
 
@@ -32,7 +37,8 @@ def sendSignal(content, app):
     users    = app.config["NOTIFICATION_USERS"]
     jsonDict = { "message" : content, "users" : users }
 
-    auth = HTTPBasicAuth(app.config["NOTIFCATION_AUTH_USER"],
-                            app.config["NOTIFICATION_AUTH_PASSWORD"]))
+    print(content)
 
-    requests.get(url, json=jsonDict, auth=auth)
+    auth = HTTPBasicAuth(app.config["NOTIFICATION_AUTH_USER"], app.config["NOTIFICATION_AUTH_PASS"])
+
+    requests.post(url, json=jsonDict, auth=auth)

@@ -5,7 +5,6 @@
 - convert dotx documents and add them to directory
 - implement abort before starting new modifying query (e.g. for samba listing)
 - add listener to date change for modal title change
-- implement connection to signal gateway
 - implement client side database connection in docx documents correctly
 
 Maybe:

@@ -1,6 +1,4 @@
 - convert dotx documents and add them to directory
-- implement client side database connection in docx documents correctly
-- fix triggers not writing to db currently
 
 Maybe:
 

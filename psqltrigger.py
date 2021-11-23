@@ -59,7 +59,7 @@ TRIGGER_FOR_SEARCHABLE_STRING_2 = '''
     END;
     $$;
     CREATE TRIGGER populate_searchable_update_trigger
-        AFTER INSERT ON contract_locations
+        AFTER UPDATE ON contract_locations
         FOR EACH STATEMENT
         EXECUTE PROCEDURE populate_searchable_update();
     '''

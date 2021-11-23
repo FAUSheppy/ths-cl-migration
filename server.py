@@ -541,6 +541,9 @@ def init():
     else:
         raise ValueError("No supported database string (sqlite or postgresql")
 
+    # must commit tables before adding triggers #
+    db.session.commit()
+
     db.session.execute(TRIGGER_FOR_SEARCHABLE_STRING_1)
     db.session.execute(TRIGGER_FOR_SEARCHABLE_STRING_2)
     db.session.commit()

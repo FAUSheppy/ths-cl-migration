@@ -36,7 +36,7 @@ def getTemplates():
     with open("./document-templates/templates.json", "r") as f:
         return json.loads(f.read())
 
-def getDocumentInstanceFromTemplate(path, projectId, lfn):
+def getDocumentInstanceFromTemplate(path, projectId, lfn, app):
     # unzip docx
     #raise NotImplementedError("This probs not safe yet")
 
@@ -52,9 +52,18 @@ def getDocumentInstanceFromTemplate(path, projectId, lfn):
     # unpack docx-d is outdir and -o is overwrite
     os.system("unzip -o {} -d {}".format(fullTempPath, tmpDir))
 
-    # edit xml
-    os.system('''sed -i 's/val="55"/val="{}"/' {}'''.format(
-                    lfn, os.path.join(tmpDir, "word/settings.xml")))
+    # edit xml (lfn + query) #
+    xmlPath = os.path.join(tmpDir, "word/settings.xml")
+    os.system('''sed -i 's/val="55"/val="{}"/' {}'''.format(0, xmlPath))
+
+    oldQueryString = "SELECT * FROM &quot;contract_locations&quot;"
+    newQueryString = "SELECT * FROM &quot;contract_locations&quot WHERE projectId == {};"
+    newQueryStringFormated = newQueryString.format(projectId)
+
+    sedReplaceQuery = '''sed -i 's/val="{}"/val="{}"/' {}'''
+    sedReplaceQueryFormated.format(oldQueryString, newQueryStringFormated, xmlPath)
+
+    os.system(sedReplaceQueryFormated)
 
     # remove old file
     print(fullTempPath)

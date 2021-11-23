@@ -489,7 +489,7 @@ def newDocumentFromTemplate():
             path = os.path.join(app.config["DOC_TEMPLATE_PATH"], template)
            
             #  get instance of template #
-            instance = filesystem.getDocumentInstanceFromTemplate(path, projectId, entry.lfn)
+            instance = filesystem.getDocumentInstanceFromTemplate(path, projectId, entry.lfn, app)
 
             if saveToSamba:
                 pp = db.session.query(ProjectPath).filter(ProjectPath.projectId == projectId)

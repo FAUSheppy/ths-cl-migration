@@ -260,7 +260,12 @@ def smbFileList():
 
 @app.route('/files', methods=['GET', 'POST', 'DELETE'])
 def upload_file():
-    projectId = int(flask.request.args.get("projectId"))
+
+    projectId = flask.request.args.get("projectId")
+    if not projectId:
+        return ("", 204)
+    projectId = int(projectId)
+
     if flask.request.method == 'POST':
         if 'file' not in flask.request.files:
             flash('No file part')

@@ -491,26 +491,27 @@ def newDocumentFromTemplate():
         if not template in documentTemplateDict:
             return ("Template not found", 404)
         else:
+            retFname = "P-" + str(projectId) + "-" + template
             path = os.path.join(app.config["DOC_TEMPLATE_PATH"], template)
            
             #  get instance of template #
             instance = filesystem.getDocumentInstanceFromTemplate(path, projectId, entry.lfn, app)
 
             if saveToSamba:
-                pp = db.session.query(ProjectPath).filter(ProjectPath.projectid == projectId)
+                pp = db.session.query(ProjectPath).filter(
+                                        ProjectPath.projectid == projectId).first()
                 if pp and pp.sambapath:
-                    error = samba.carefullySaveFile(instance, pp.sambapath)
+                    spath, error = samba.carefullySaveFile(instance, pp.sambapath + "/" + retFname)
                     if error:
                         return ("Fehler beim Speichern: {}".format(error), 510)
                     else:
-                        return ("Abgespeichert in {}".format(path), 200)
+                        return ("Abgespeichert in {}".format(spath), 200)
                     
                 else:
                     return ("Fehler: Projekt nicht mehr mit einem Pfad assoziert", 404)
             else:
                 response = flask.make_response(instance)
                 response.headers.set('Content-Type', MS_WORD_MIME)
-                retFname = "P-" + str(projectId) + "-" + template
                 response.headers.set('Content-Disposition', 'attachment', filename=retFname)
                 return response
 

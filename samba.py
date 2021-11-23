@@ -128,11 +128,11 @@ def getFile(fqSambaPath):
 
 def carefullySaveFile(content, path):
     try:
-        stat.S_ISDIR(smbclient.lstat(base).st_mode)
-        return '''Eine Datei oder ein Ordner mit diesem Name existiert bereits.<br>
+        stat.S_ISDIR(smbclient.lstat(path).st_mode)
+        return (None, '''Eine Datei oder ein Ordner mit diesem Name existiert bereits.<br>
                 Es wurden keine Änderungen vorgenommen.<br>
-                Pfad: {}'''.format(path)
+                Pfad: {}'''.format(path))
     except:
         with smbclient.open_file(path, "wb") as fd:
-            fd.write()
-        return None
+            fd.write(content)
+        return (path, None)

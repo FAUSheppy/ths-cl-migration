@@ -303,9 +303,12 @@ function saveDocumentTemplate(projectId, templateKey, samba){
         url += "&saveToSamba=" + "True"
         fetch(url).then( r => {
             if(r.status == 200){
-                field.style.color = "lightgreen"
-                field.innerHTML   = "Erfolgreich gespeichert"
+                field.style.color = "darkgreen"
+                r.text().then( s => {
+                    field.innerHTML = s
+                })
             }else{
+                field.style.color = "red"
                 r.text().then( s => {
                     field.innerHTML = s
                 })

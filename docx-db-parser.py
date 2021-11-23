@@ -51,13 +51,16 @@ def rowCellsToContractLocation(cells):
     raise AssertionError("WTF")
 
 def parseTable(table):
-    for row in table.rows:
+    cells = table._cells
+    for rowIndex in range(len(cells)//table._column_count):
 
         # skip header row #
-        if row.cells[0].text == HEADER_CELL_ZERO:
+        rowStartCell = rowIndex*table._column_count
+        allCellsInLine = cells[rowStartCell:rowStartCell + table._column_count]
+        if cells[rowStartCell].text == HEADER_CELL_ZERO:
             continue
 
-        cl = rowCellsToContractLocation(row.cells)
+        cl = rowCellsToContractLocation(allCellsInLine)
         if not cl:
             continue
 

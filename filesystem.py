@@ -43,13 +43,12 @@ def getDocumentInstanceFromTemplate(path, projectId, lfn, app):
     projectId = str(int(projectId))
 
     tmpDir = "tmp-{}".format(projectId)
+
     # remove old working dir #
     os.system("rm -rf {}".format(tmpDir))
-    
-    try:
-        os.mkdir(tmpDir)
-    except FileExistsError:
-        pass
+
+    # recreate dir
+    os.mkdir(tmpDir)
 
     fullTempPath = os.path.join(tmpDir, os.path.basename(path))
     shutil.copy2(path, fullTempPath)

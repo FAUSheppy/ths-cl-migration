@@ -686,6 +686,9 @@ class DataTable():
             if self.orderByCol:
                 query  = query.order_by(self.orderAscDbClass(
                                             list(ContractLocation.__table__.c)[self.orderByCol]))
+            else:
+                query  = query.order_by(sqlalchemy.desc(ContractLocation.lfn))
+
             results  = query.offset(self.start).limit(self.length).all()
             total    = query.count()
             filtered = total

@@ -3,6 +3,7 @@ import subprocess
 import glob
 import json
 import shutil
+import werkzeug
 
 class FileItem:
 
@@ -37,10 +38,14 @@ def getTemplates():
         return json.loads(f.read())
 
 def getDocumentInstanceFromTemplate(path, projectId, lfn, app):
-    # unzip docx
-    #raise NotImplementedError("This probs not safe yet")
+
+    # just be save here #
+    projectId = str(int(projectId))
 
     tmpDir = "tmp-{}".format(projectId)
+    # remove old working dir #
+    os.system("rm -rf {}".format(tmpDir))
+    
     try:
         os.mkdir(tmpDir)
     except FileExistsError:
@@ -56,17 +61,16 @@ def getDocumentInstanceFromTemplate(path, projectId, lfn, app):
     xmlPath = os.path.join(tmpDir, "word/settings.xml")
     os.system('''sed -i 's/val="55"/val="{}"/' {}'''.format(0, xmlPath))
 
-    oldQueryString = "SELECT * FROM &quot;contract_locations&quot;"
-    newQueryString = "SELECT * FROM &quot;contract_locations&quot WHERE projectId == {};"
+    oldQueryString = "SELECT \* FROM &quot;contract_locations&quot;"
+    newQueryString = "SELECT \* FROM \&quot;contract_locations\&quot; WHERE projectid = {}"
     newQueryStringFormated = newQueryString.format(projectId)
 
     sedReplaceQuery = '''sed -i 's/val="{}"/val="{}"/' {}'''
-    sedReplaceQueryFormated.format(oldQueryString, newQueryStringFormated, xmlPath)
+    sedReplaceQueryFmt = sedReplaceQuery.format(oldQueryString, newQueryStringFormated, xmlPath)
+    print(sedReplaceQueryFmt)
+    os.system(sedReplaceQueryFmt)
 
-    os.system(sedReplaceQueryFormated)
-
-    # remove old file
-    print(fullTempPath)
+    # remove old result file
     os.remove(fullTempPath)
 
     # repack into new docx
@@ -77,8 +81,5 @@ def getDocumentInstanceFromTemplate(path, projectId, lfn, app):
     content = None
     with open(fullTempPath, "rb") as f:
         content = f.read()
-
-    # remove new file
-    # os.remove(fullTempPath)
 
     return content

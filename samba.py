@@ -14,7 +14,7 @@ def _buildSmbPath(path, app):
 def buildPath(cl, app):
 
     base = "THS_Proj"
-    nrStr = str(cl.projectId)
+    nrStr = str(cl.projectid)
     
     try:
         year = datetime.datetime.strptime(cl.auftragsdatum, DB_DATE_FORMAT).year

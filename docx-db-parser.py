@@ -28,15 +28,15 @@ def rowCellsToContractLocation(cells):
 
         return ContractLocation.ContractLocation(
             lfn           = int(laufNrStr),
-            projectId     = int(cells[0].replace("-", "") + laufNrStr),
+            projectid     = int(cells[0].replace("-", "") + laufNrStr),
             firma         = cells[2], 
             bereich       = cells[3], 
             geschlecht    = cells[4], 
             vorname       = cells[5], 
             nachname      = cells[6], 
-            adresse_FA    = cells[7], 
-            PLZ_FA        = plzNr,
-            ort_FA        = cells[9], 
+            adresse_fa    = cells[7], 
+            plz_fa        = plzNr,
+            ort_fa        = cells[9], 
             tel_1         = cells[10],
             mobil         = cells[11], 
             fax           = cells[12], 
@@ -62,6 +62,7 @@ def parseTable(table):
             continue
 
         session = sm()
+        print(cl.projectid)
         session.merge(cl)
         session.commit()
 

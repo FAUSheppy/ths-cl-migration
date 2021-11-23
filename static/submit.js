@@ -3,7 +3,7 @@ JSON_HEADERS = { "Content-Type": "application/json" , "Accept" : "application/js
 function submitForm(){
 
     /* check input fields */
-    pIdField = document.getElementById("projectId-input")
+    pIdField = document.getElementById("projectid-input")
 
     pIdField.style.borderColor = "gray"
 
@@ -57,7 +57,7 @@ function submitProjectPath(){
 
 function deleteProjectPath(){
     console.log("Deleting Project Path")
-    projectId = document.getElementById("projectId-input").value
+    projectId = document.getElementById("projectid-input").value
     fetch("/submit-project-path", {  method : 'DELETE', 
                                      mode: 'cors',
                                      credentials: 'same-origin',
@@ -78,7 +78,7 @@ function deleteProjectPath(){
 }
 
 function deleteEntry(){
-    projectId = document.getElementById("projectId-input").value
+    projectId = document.getElementById("projectid-input").value
     xhr = new XMLHttpRequest();
     xhr.open("DELETE", "/");
     xhr.onload = formSubmitFinished
@@ -102,7 +102,7 @@ function reloadFileList(){
     console.log("reloading file list")
     fileListContainer = document.getElementById("filelist-target")
     fileListContainerSamba = document.getElementById("smb-filelist-target")
-    projectId = document.getElementById("projectId-input").value
+    projectId = document.getElementById("projectid-input").value
     fetch("/file-list?projectId=" + projectId).then( r => {
         r.text().then( content => {
             fileListContainer.innerHTML = content
@@ -113,7 +113,7 @@ function reloadFileList(){
     fetch("/smb-file-list?projectId=" + projectId).then( r => {
         r.text().then( content => {
             /* make sure modal/id hasn't changed in the meantime */
-            if(projectId == document.getElementById("projectId-input").value){
+            if(projectId == document.getElementById("projectid-input").value){
                 fileListContainerSamba.innerHTML = content
             }
         })
@@ -138,7 +138,7 @@ function dropHandler(ev) {
         file =  ev.dataTransfer.files[i]
         formData = new FormData()
         formData.append('file', file)
-        projectId = document.getElementById("projectId-input").value
+        projectId = document.getElementById("projectid-input").value
         if(!projectId){
             alert("Projekt ID muss gesetzt sein!")
             return;
@@ -231,7 +231,7 @@ function modalSpawn(){
 
                 /* sugest a projectId & lfn */
                 lfnInput = document.getElementById("lfn-input")
-                projectIdInput = document.getElementById("projectId-input")
+                projectIdInput = document.getElementById("projectid-input")
                 laufNr = document.getElementById("laufNr-input")
                 fetch("/id-suggestions").then( r => {
                     r.json().then( json => {
@@ -270,15 +270,15 @@ function modalSpawn(){
 function updateModalTitle(updateListener){
 
     if(updateListener){
-        document.getElementById("projectId-input").removeEventListener('input', pIdInput)
-        document.getElementById("projectId-input").addEventListener('input', pIdInput)
+        document.getElementById("projectid-input").removeEventListener('input', pIdInput)
+        document.getElementById("projectid-input").addEventListener('input', pIdInput)
 
         document.getElementById("auftragsdatum-input").removeEventListener('input', pIdInput)
         document.getElementById("auftragsdatum-input").addEventListener('input', pIdInput)
     }
 
     titleContainer = document.getElementById("dataModalLabel")
-    pIdString = "" + document.getElementById("projectId-input").value
+    pIdString = "" + document.getElementById("projectid-input").value
     part1 = pIdString.substring(0,4)
     part2 = pIdString.substring(4)
     titleContainer.innerHTML = "Vorschlag Projektname: P-" + part1 + "-" + part2
@@ -286,7 +286,7 @@ function updateModalTitle(updateListener){
 }
 
 function documentCreation(){
-    projectId = document.getElementById("projectId-input").value
+    projectId = document.getElementById("projectid-input").value
     url = "/new-document?projectId=" + projectId
     window.open(url, '_blank').focus();
 }

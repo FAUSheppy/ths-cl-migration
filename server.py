@@ -50,7 +50,7 @@ def getDbSchema(filterCols=False):
 def additionalDates():
     projectId = flask.request.args.get("projectId")
     additionalDatesObj = db.session.query(AdditionalDates).filter(
-                                    AdditionalDates.projectId == projectId).first()
+                                    AdditionalDates.projectid == projectId).first()
 
     # empty if no project id #
     if not projectId:
@@ -81,7 +81,7 @@ def additionalDates():
                 datesCurrent += "," + datetime.datetime.strptime(
                                         d, HTML_DATE_FORMAT).strftime(DB_DATE_FORMAT)
             datesCurrent = datesCurrent.strip(",")
-            db.session.merge(AdditionalDates(projectId=projectId, dates=datesCurrent))
+            db.session.merge(AdditionalDates(projectid=projectId, dates=datesCurrent))
             db.session.commit()
         else:
             return ("Not dates to save transmitted", 400)
@@ -117,14 +117,14 @@ def submitProjectPath():
             response = flask.Response("Path does not exist", 404)
             return response
         else:
-            db.session.merge(ProjectPath(projectId=projectId, sambaPath=path))
+            db.session.merge(ProjectPath(projectId=projectId, sambapath=path))
             db.session.commit()
             response = flask.Response("", 204)
             return response
 
     elif flask.request.method == "DELETE":
         projectId = int(flask.request.json["projectId"])
-        pp = db.session.query(ProjectPath).filter(ProjectPath.projectId == projectId).first()
+        pp = db.session.query(ProjectPath).filter(ProjectPath.projectid == projectId).first()
         if pp:
             db.session.delete(pp)
             db.session.commit()
@@ -149,7 +149,7 @@ def entryContentBig():
     projectId = int(projectId)
 
     # look for project id in db #
-    cl = db.session.query(ContractLocation).filter(ContractLocation.projectId == projectId).first()
+    cl = db.session.query(ContractLocation).filter(ContractLocation.projectid == projectId).first()
     if not cl:
         return ("No such project", 404)
     else:
@@ -169,7 +169,7 @@ def fileList():
     if not projectId:
         return ("", 200)
     projectId = int(projectId)
-    files = db.session.query(AssotiatedFile).filter(AssotiatedFile.projectId == projectId).all()
+    files = db.session.query(AssotiatedFile).filter(AssotiatedFile.projectid == projectId).all()
     fileListItems = filesystem.itemsArrayFromDbEntries(files)
     if fileListItems:
         return flask.render_template("file-list.html", fileListItems=fileListItems)
@@ -192,22 +192,22 @@ def smbFileList():
     dbPathEmpty = False
 
     # check if path is known #
-    pp = db.session.query(ProjectPath).filter(ProjectPath.projectId == projectId).first()
+    pp = db.session.query(ProjectPath).filter(ProjectPath.projectid == projectId).first()
     if pp:
-        print("Found cached path {}".format(pp.sambaPath))
-        dbPathEmpty = not bool(pp.sambaPath)
-        if pp.sambaPath:
-            files = samba.find(pp.sambaPath, None, 0, app, [], 
+        print("Found cached path {}".format(pp.sambapath))
+        dbPathEmpty = not bool(pp.sambapath)
+        if pp.sambapath:
+            files = samba.find(pp.sambapath, None, 0, app, [], 
                                     startInProjectDir=True, isFqPath=True)
              # delete db entry if fail #
             if not files:
-                pp.sambaPath == ""
+                pp.sambapath == ""
                 db.session.merge(pp)
                 db.session.commit()
 
     # search for project if fail #
     cl = db.session.query(ContractLocation).filter(
-                    ContractLocation.projectId == projectId).first()
+                    ContractLocation.projectid == projectId).first()
     if not cl:
         return ("No project for this ID", 404)
 
@@ -233,7 +233,7 @@ def smbFileList():
         files = samba.find(smbPath, projectDir, year, app, prioKeywords)
 
     if not files:
-        db.session.merge(ProjectPath(projectId=projectId, sambaPath=""))
+        db.session.merge(ProjectPath(projectid=projectId, sambapath=""))
         db.session.commit()
         return flask.render_template("samba-file-not-found.html", projectDir=projectDir,
                                         searchPath=smbPath, keywords=prioKeywords,
@@ -243,7 +243,7 @@ def smbFileList():
 
         # record project dir #
         trueProjectDir = os.path.dirname(files[0])
-        db.session.merge(ProjectPath(projectId=projectId, sambaPath=trueProjectDir))
+        db.session.merge(ProjectPath(projectid=projectId, sambapath=trueProjectDir))
         print("Recorded {} for {}".format(trueProjectDir, projectId))
         db.session.commit()
 
@@ -375,16 +375,16 @@ def root():
 
         # remember old value for notification #
         oldCl = db.session.query(ContractLocation).filter(
-                        ContractLocation.projectId == cl.projectId).first()
+                        ContractLocation.projectid == cl.projectid).first()
         oldAd = db.session.query(AdditionalDates).filter(
-                        AdditionalDates.projectId == cl.projectId).first()
+                        AdditionalDates.projectid == cl.projectid).first()
 
         # detach records #
         db.session.expunge_all()
 
         # merge additional dates into db #
         newAdditionalDatesString = newAdditionalDatesString.strip(",")
-        ad = AdditionalDates(projectId=cl.projectId, dates=newAdditionalDatesString)
+        ad = AdditionalDates(projectid=cl.projectid, dates=newAdditionalDatesString)
         db.session.merge(ad)
 
         # merge contract location main entry and commit #
@@ -394,9 +394,9 @@ def root():
         # get all data from db and send notification #
         if app.config["SEND_NOTIFICATION"]:
             newCl = db.session.query(ContractLocation).filter(
-                                ContractLocation.projectId == cl.projectId).first()
+                                ContractLocation.projectid == cl.projectid).first()
             newAd = db.session.query(AdditionalDates).filter(
-                                AdditionalDates.projectId == cl.projectId).first()
+                                AdditionalDates.projectid == cl.projectid).first()
             
             content = notifications.makeRepresentation(oldCl, oldAd, newCl, newAd)
             notifications.sendSignal(content, app)
@@ -408,19 +408,19 @@ def root():
 
         # delete the contract location entry #
         cl = db.session.query(ContractLocation).filter(
-                        ContractLocation.projectId == projectId).first()
+                        ContractLocation.projectid == projectId).first()
         if not cl:
             return ("No such project", 404)
         else:
             db.session.delete(cl)
         
         # delete the search helper #
-        sh = db.session.query(SearchHelper).filter(SearchHelper.projectId == projectId).first()
+        sh = db.session.query(SearchHelper).filter(SearchHelper.projectid == projectId).first()
         if sh:
             db.session.delete(sh)
 
         # delete the path if exits #
-        pp = db.session.query(ProjectPath).filter(ProjectPath.projectId == projectId).first()
+        pp = db.session.query(ProjectPath).filter(ProjectPath.projectid == projectId).first()
         if pp:
             db.session.delete(pp)
 
@@ -466,17 +466,17 @@ def newDocumentFromTemplate():
     projectId = int(projectId)
 
     entry = db.session.query(ContractLocation).filter(
-                    ContractLocation.projectId == projectId).first()
+                    ContractLocation.projectid == projectId).first()
     if not entry:
         return ("Project not found", 404)
 
     if not template:
 
         # check if a project path is availiable #
-        pp = db.session.query(ProjectPath).filter(ProjectPath.projectId == projectId)
+        pp = db.session.query(ProjectPath).filter(ProjectPath.projectid == projectId).first()
         projectPathAvailiable = False
         if pp and app.config["SAMBA"]:
-            projectPathAvailiable = bool(pp.sambaPath)
+            projectPathAvailiable = bool(pp.sambapath)
 
         return flask.render_template("select_template.html",
                                         templatesDict=documentTemplateDict,
@@ -492,9 +492,9 @@ def newDocumentFromTemplate():
             instance = filesystem.getDocumentInstanceFromTemplate(path, projectId, entry.lfn, app)
 
             if saveToSamba:
-                pp = db.session.query(ProjectPath).filter(ProjectPath.projectId == projectId)
-                if pp and pp.sambaPath:
-                    error = samba.carefullySaveFile(instance, pp.sambaPath)
+                pp = db.session.query(ProjectPath).filter(ProjectPath.projectid == projectId)
+                if pp and pp.sambapath:
+                    error = samba.carefullySaveFile(instance, pp.sambapath)
                     if error:
                         return ("Fehler beim Speichern: {}".format(error), 510)
                     else:
@@ -505,7 +505,8 @@ def newDocumentFromTemplate():
             else:
                 response = flask.make_response(instance)
                 response.headers.set('Content-Type', MS_WORD_MIME)
-                response.headers.set('Content-Disposition', 'attachment', filename=template)
+                retFname = "P-" + str(projectId) + "-" + template
+                response.headers.set('Content-Disposition', 'attachment', filename=retFname)
                 return response
 
 @app.route('/static/<path:path>')
@@ -543,26 +544,26 @@ class AssotiatedFile(db.Model):
     __tablename__ = "files"
     fullpath      = Column(String, primary_key=True)
     sha512        = Column(String)
-    projectId     = Column(Integer)
+    projectid     = Column(Integer)
     fileType      = Column(String)
 
 class AdditionalDates(db.Model):
     __tablename__ = "additional_dates"
-    projectId     = Column(Integer, primary_key=True)
+    projectid     = Column(Integer, primary_key=True)
     dates         = Column(String)
 
 class ContractLocation(db.Model):
     __tablename__ = "contract_locations"
     lfn           = Column(Integer)
-    projectId     = Column(Integer, primary_key=True)
+    projectid     = Column(Integer, primary_key=True)
     firma         = Column(String)
     bereich       = Column(String)
     geschlecht    = Column(String)
     vorname       = Column(String)
     nachname      = Column(String)
-    adresse_FA    = Column(String)
-    PLZ_FA        = Column(Integer)
-    ort_FA        = Column(String)
+    adresse_fa    = Column(String)
+    plz_fa        = Column(Integer)
+    ort_fa        = Column(String)
     tel_1         = Column(String)
     mobil         = Column(String)
     fax           = Column(String)
@@ -583,13 +584,13 @@ class ContractLocation(db.Model):
 
 class SearchHelper(db.Model):
     __tablename__ = "search_helper"
-    projectId     = Column(Integer, primary_key=True)
+    projectid     = Column(Integer, primary_key=True)
     fullString    = Column(String)
 
 class ProjectPath(db.Model):
     __tablename__ = "samba_paths"
-    projectId     = Column(Integer, primary_key=True)
-    sambaPath     = Column(String)
+    projectid     = Column(Integer, primary_key=True)
+    sambapath     = Column(String)
 
 class StaticProjectPathIndex(db.Model):
     __tablename__ = "project_paths"
@@ -649,7 +650,7 @@ class DataTable():
         if self.searchValue:
 
             # base query
-            query         = db.session.query(SearchHelper.projectId)
+            query         = db.session.query(SearchHelper.projectid)
             total         = query.count()
 
             # search string (search for all substrings individually #
@@ -669,7 +670,7 @@ class DataTable():
             for pIdTup in projectIdList:
                 pId = pIdTup[0]
                 singleResult = db.session.query(ContractLocation).filter(
-                                    ContractLocation.projectId == int(pId)).first()
+                                    ContractLocation.projectid == int(pId)).first()
                 if singleResult:
                     results.append(singleResult)
                 results = sorted(results, key=lambda cl: cl.getColByNumber(self.orderByCol), 
@@ -687,7 +688,7 @@ class DataTable():
         # query additional dates #
         for r in results:
             additionalDatesObj = db.session.query(AdditionalDates).filter(
-                                    AdditionalDates.projectId == r.projectId).first()
+                                    AdditionalDates.projectid == r.projectid).first()
            
             if additionalDatesObj and additionalDatesObj.dates:
                 r.auftragsdatum += ", " + additionalDatesObj.dates.replace(",", ", ")

@@ -49,14 +49,14 @@ def getDbSchema(filterCols=False):
 @app.route('/additional-dates', methods=["GET", "POST", "DELETE"])
 def additionalDates():
     projectId = flask.request.args.get("projectId")
-    additionalDatesObj = db.session.query(AdditionalDates).filter(
-                                    AdditionalDates.projectid == projectId).first()
 
     # empty if no project id #
     if not projectId:
         return flask.render_template("additional-dates-section.html",
                                             additionalDates=[], freeFields=range(0, 10))
     projectId = int(projectId)
+    additionalDatesObj = db.session.query(AdditionalDates).filter(
+                                    AdditionalDates.projectid == projectId).first()
 
     if flask.request.method == "GET":
         dates = []

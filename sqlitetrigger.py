@@ -2,7 +2,7 @@ TRIGGER_FOR_SEARCHABLE_STRING_1 = '''
     CREATE TRIGGER IF NOT EXISTS populate_searchable_insert
         AFTER INSERT ON contract_locations
     BEGIN
-        INSERT INTO searchHelper VALUES (
+        INSERT INTO search_helper VALUES (
             NEW.projectId, ( 
                                 COALESCE(NEW.firma,'')
                              || COALESCE(NEW.projectId,'')
@@ -25,7 +25,7 @@ TRIGGER_FOR_SEARCHABLE_STRING_2 = '''
     CREATE TRIGGER IF NOT EXISTS populate_searchable_update
         AFTER UPDATE ON contract_locations
     BEGIN
-        UPDATE searchHelper
+        UPDATE search_helper
             SET fullString = (
                                 COALESCE(NEW.firma,'')
                              || COALESCE(NEW.projectId,'')

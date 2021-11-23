@@ -582,12 +582,12 @@ class ContractLocation(db.Model):
         return value
 
 class SearchHelper(db.Model):
-    __tablename__ = "searchHelper"
+    __tablename__ = "search_helper"
     projectId     = Column(Integer, primary_key=True)
     fullString    = Column(String)
 
 class ProjectPath(db.Model):
-    __tablename__ = "sambaPaths"
+    __tablename__ = "samba_paths"
     projectId     = Column(Integer, primary_key=True)
     sambaPath     = Column(String)
 

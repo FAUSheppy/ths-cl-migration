@@ -114,7 +114,9 @@ def find(path, projectDir, year, app, prioKeywords, startInProjectDir=False, isF
 
 def initClient(server, user, password, app):
     app.config["SMB_SESSION"] = smbclient.register_session(server, username=user, password=password)
-    print(app.config["SMB_SESSION"])
+
+def deleteClient(app):
+    app.config["SMB_SESSION"] = smbclient.delete_session(app.config["SMB_SERVER"])
 
 def filesToFileItems(files):
     fileItems = []

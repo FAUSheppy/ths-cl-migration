@@ -262,11 +262,11 @@ def smbFileList():
 def upload_file():
 
     projectId = flask.request.args.get("projectId")
-    if not projectId:
-        return ("", 204)
-    projectId = int(projectId)
 
     if flask.request.method == 'POST':
+        if not projectId:
+            return ("Cannot post without projectId", 204)
+        projectId = int(projectId)
         if 'file' not in flask.request.files:
             flash('No file part')
             return redirect(flask.request.url)
@@ -294,7 +294,7 @@ def upload_file():
 
             # record file in database #
             db.session.merge(AssotiatedFile(fullpath=fullpath, sha512=0, 
-                                projectId=projectIdSafe, fileType=fileType))
+                                projectid=projectId, filetype=fileType))
             db.session.commit()
             return ("", 204)
         else:
@@ -520,17 +520,30 @@ def send_js(path):
     response = flask.send_from_directory('static', path)
     #response.headers['Cache-Control'] = "max-age=2592000"
     return response
+    
+ENDPOINTS = ["newDocumentFromTemplate", "smbFileList", "submitProjectPath", "upload_file"]
+@app.before_request
+def beforeRequest():
+    if flask.request.endpoint in ENDPOINTS:
+        samba.deleteClient(app)
+        try:
+            samba.initClient(app.config["SMB_SERVER"], app.config["SMB_USER"],
+                                app.config["SMB_PASS"], app)
+            app.config["SAMBA"] = True
+            print("Session Connected")
+        except AttributeError as e:
+            print("Cannot init samba client: {}".format(e))
+            app.config["SAMBA"] = False
+
+@app.after_request
+def afterRequest(response):
+    if flask.request.endpoint in ENDPOINTS:
+        samba.deleteClient(app)
+        print("Session Disconnected")
+    return response
 
 @app.before_first_request
 def init():
-    try:
-        samba.initClient(app.config["SMB_SERVER"], app.config["SMB_USER"],
-                            app.config["SMB_PASS"], app)
-        app.config["SAMBA"] = True
-    except AttributeError as e:
-        print("Cannot init samba client: {}".format(e))
-        app.config["SAMBA"] = False
-    
     app.config["DB"] = db
     db.create_all()
    

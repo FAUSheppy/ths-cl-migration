@@ -47,6 +47,20 @@ If you want to use the notification gateway, you can use the [signal-gateway](ht
 - install psql-odbc driver (32/64bit both)
 - use OBDC-Administration app to add both drivers and the server connection
 
+# Document Templates Config
+Server will read a json file called *templates.json* in the configured templates directory which must have the following structure:
+
+    {
+        "template_name.docx" : {
+                "description" : "Long description",
+        }
+        "template_name_2.docx" : {
+                "description" : "Long description_2",
+        }
+
+        ...
+    }
+
 ---
 
 This project aims to create a pipeline to migrate away from this obsolete technology, and use a real database and easy to use web-interface.

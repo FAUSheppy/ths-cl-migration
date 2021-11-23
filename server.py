@@ -540,9 +540,9 @@ def init():
     else:
         raise ValueError("No supported database string (sqlite or postgresql")
 
-    db.session.commit()
     db.session.execute(TRIGGER_FOR_SEARCHABLE_STRING_1)
     db.session.execute(TRIGGER_FOR_SEARCHABLE_STRING_2)
+    db.session.commit()
     print("Init Done")
 
 class AssotiatedFile(db.Model):
@@ -590,7 +590,7 @@ class ContractLocation(db.Model):
 class SearchHelper(db.Model):
     __tablename__ = "search_helper"
     projectid     = Column(Integer, primary_key=True)
-    fullString    = Column(String)
+    fullstring    = Column(String)
 
 class ProjectPath(db.Model):
     __tablename__ = "samba_paths"
@@ -662,7 +662,7 @@ class DataTable():
             filterQuery = query
             for substr in self.searchValue.split(" "):
                 searchSubstr = "%{}%".format(substr.strip())
-                filterQuery  = filterQuery.filter(SearchHelper.fullString.like(searchSubstr))
+                filterQuery  = filterQuery.filter(SearchHelper.fullstring.like(searchSubstr))
 
             projectIdList = filterQuery.all()
             filtered      = filterQuery.count()

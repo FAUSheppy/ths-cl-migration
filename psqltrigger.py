@@ -6,15 +6,15 @@ TRIGGER_FOR_SEARCHABLE_STRING_1 = '''
     AS $$
     BEGIN
         INSERT INTO "search_helper" VALUES (
-            NEW.projectId, ( 
+            NEW.projectid, ( 
                                 COALESCE(NEW.firma,'')
-                             || COALESCE(NEW.projectId,'')
+                             || COALESCE(NEW.projectid::text,'')
                              || COALESCE(NEW.bereich,'')
                              || COALESCE(NEW.vorname,'')
                              || COALESCE(NEW.nachname,'')
-                             || COALESCE(NEW.adresse_FA,'')
-                             || COALESCE(NEW.PLZ_FA,'')
-                             || COALESCE(NEW.ort_FA,'')
+                             || COALESCE(NEW.adresse_fa,'')
+                             || COALESCE(NEW.plz_fa::text,'')
+                             || COALESCE(NEW.ort_fa,'')
                              || COALESCE(NEW.tel_1,'')
                              || COALESCE(NEW.mobil,'')
                              || COALESCE(NEW.fax,'')
@@ -27,7 +27,7 @@ TRIGGER_FOR_SEARCHABLE_STRING_1 = '''
     $$;
     CREATE TRIGGER populate_searchable_insert_trigger
         AFTER INSERT ON contract_locations
-        FOR EACH STATEMENT
+        FOR EACH ROW
         EXECUTE PROCEDURE populate_searchable_insert();
 '''
 
@@ -39,27 +39,27 @@ TRIGGER_FOR_SEARCHABLE_STRING_2 = '''
     AS $$
     BEGIN
         UPDATE "search_helper"
-            SET fullString = (
+            SET fullstring = (
                                 COALESCE(NEW.firma,'')
-                             || COALESCE(NEW.projectId,'')
+                             || COALESCE(NEW.projectid::text,'')
                              || COALESCE(NEW.bereich,'')
                              || COALESCE(NEW.vorname,'')
                              || COALESCE(NEW.nachname,'')
-                             || COALESCE(NEW.adresse_FA,'')
-                             || COALESCE(NEW.PLZ_FA,'')
-                             || COALESCE(NEW.ort_FA,'')
+                             || COALESCE(NEW.adresse_fa,'')
+                             || COALESCE(NEW.plz_fa::text,'')
+                             || COALESCE(NEW.ort_fa,'')
                              || COALESCE(NEW.tel_1,'')
                              || COALESCE(NEW.mobil,'')
                              || COALESCE(NEW.fax,'')
                              || COALESCE(NEW.auftragsort,'')
                              || COALESCE(NEW.auftragsdatum,'')
                             )
-            WHERE projectId = NEW.projectId;
+            WHERE projectid = NEW.projectid;
             RETURN NEW;
     END;
     $$;
     CREATE TRIGGER populate_searchable_update_trigger
         AFTER UPDATE ON contract_locations
-        FOR EACH STATEMENT
+        FOR EACH ROW
         EXECUTE PROCEDURE populate_searchable_update();
     '''

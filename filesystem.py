@@ -56,9 +56,12 @@ def getDocumentInstanceFromTemplate(path, projectId, lfn, app):
     # unpack docx-d is outdir and -o is overwrite
     os.system("unzip -o {} -d {}".format(fullTempPath, tmpDir))
 
-    # edit xml (lfn + query) #
+    # edit xml (add active record + query) #
     xmlPath = os.path.join(tmpDir, "word/settings.xml")
-    os.system('''sed -i 's/val="55"/val="{}"/' {}'''.format(0, xmlPath))
+    
+    addition = '''<w:mailMerge><w:viewMergedData\/><w:activeRecord w:val="1"\/>'''
+    activeRecordSet = '''sed -i 's/<w:mailMerge>/{}/' {}'''.format(addition, xmlPath)
+    os.system(activeRecordSet)
 
     oldQueryString = "SELECT \* FROM &quot;contract_locations&quot;"
     newQueryString = "SELECT \* FROM \&quot;contract_locations\&quot; WHERE projectid = {}"

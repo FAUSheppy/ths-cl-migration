@@ -8,9 +8,9 @@ def makeRepresentation(oldCl, oldAd, cl, ad):
     contentString = ""
 
     if not oldCl:
-        startString = "Neuer Eintrag: {}\n".format(cl.projectId)
+        startString = "Neuer Eintrag: {}\n".format(cl.projectid)
     else:
-        startString = "Änderung von Eintrag: {}\n".format(oldCl.projectId)
+        startString = "Änderung von Eintrag: {}\n".format(oldCl.projectid)
 
     for key in cl.toDict():
         

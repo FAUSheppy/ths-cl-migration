@@ -42,6 +42,11 @@ If you want to use the notification gateway, you can use the [signal-gateway](ht
 | NOTIFICATION_AUTH_USER | Gateway authentification user |
 | NOTIFICATION_AUTH_PASS | Gateway authentification password |
 
+# Windows
+
+- install psql-odbc driver (32/64bit both)
+- use OBDC-Administration app to add both drivers and the server connection
+
 ---
 
 This project aims to create a pipeline to migrate away from this obsolete technology, and use a real database and easy to use web-interface.

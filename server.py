@@ -56,6 +56,7 @@ def additionalDates():
     if not projectId:
         return flask.render_template("additional-dates-section.html",
                                             additionalDates=[], freeFields=range(0, 10))
+    projectId = int(projectId)
 
     if flask.request.method == "GET":
         dates = []
@@ -97,7 +98,7 @@ def additionalDates():
 def submitProjectPath():
     if flask.request.method == "POST":
         path = flask.request.json["path"].strip()
-        projectId = flask.request.json["projectId"]
+        projectId = int(flask.request.json["projectId"])
 
         # allow copied in paths #
         if path.startswith("T:"):
@@ -122,7 +123,7 @@ def submitProjectPath():
             return response
 
     elif flask.request.method == "DELETE":
-        projectId = flask.request.json.get("projectId")
+        projectId = int(flask.request.json["projectId"])
         pp = db.session.query(ProjectPath).filter(ProjectPath.projectId == projectId).first()
         if pp:
             db.session.delete(pp)
@@ -145,6 +146,7 @@ def entryContentBig():
         formEntries = formEntryArrayFromColNames(colKeys, None)
         return flask.render_template("entry-content-full.html", formEntries=formEntries,
                                         additionalDatesObj=[])
+    projectId = int(projectId)
 
     # look for project id in db #
     cl = db.session.query(ContractLocation).filter(ContractLocation.projectId == projectId).first()
@@ -166,6 +168,7 @@ def fileList():
     projectId = flask.request.args.get("projectId")
     if not projectId:
         return ("", 200)
+    projectId = int(projectId)
     files = db.session.query(AssotiatedFile).filter(AssotiatedFile.projectId == projectId).all()
     fileListItems = filesystem.itemsArrayFromDbEntries(files)
     if fileListItems:
@@ -183,6 +186,7 @@ def smbFileList():
     projectId = flask.request.args.get("projectId")
     if not projectId:
         return ("", 200)
+    projectId = int(projectId)
 
     files = None
     dbPathEmpty = False
@@ -256,7 +260,7 @@ def smbFileList():
 
 @app.route('/files', methods=['GET', 'POST', 'DELETE'])
 def upload_file():
-    projectId = flask.request.args.get("projectId")
+    projectId = int(flask.request.args.get("projectId"))
     if flask.request.method == 'POST':
         if 'file' not in flask.request.files:
             flash('No file part')
@@ -269,7 +273,7 @@ def upload_file():
 
             # build filename/path #
             filename      = werkzeug.utils.secure_filename(uploadFile.filename)
-            projectIdSafe = werkzeug.utils.secure_filename(projectId)
+            projectIdSafe = werkzeug.utils.secure_filename(str(projectId))
             projectDir    = os.path.join(app.config["UPLOAD_FOLDER"], projectIdSafe)
             fullpath      = os.path.join(projectDir, filename)
             
@@ -400,7 +404,7 @@ def root():
         return ("", 204)
 
     elif flask.request.method == "DELETE":
-        projectId = flask.request.form["id"]
+        projectId = int(flask.request.form["id"])
 
         # delete the contract location entry #
         cl = db.session.query(ContractLocation).filter(
@@ -459,6 +463,7 @@ def newDocumentFromTemplate():
 
     if not projectId:
         return ("Missing projectId as URL-arg", 400)
+    projectId = int(projectId)
 
     entry = db.session.query(ContractLocation).filter(
                     ContractLocation.projectId == projectId).first()
@@ -543,7 +548,7 @@ class AssotiatedFile(db.Model):
 
 class AdditionalDates(db.Model):
     __tablename__ = "additional_dates"
-    projectId     = Column(String, primary_key=True)
+    projectId     = Column(Integer, primary_key=True)
     dates         = Column(String)
 
 class ContractLocation(db.Model):

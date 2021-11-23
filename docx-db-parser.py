@@ -12,8 +12,8 @@ import sqlalchemy
 import ContractLocation
 
 HEADER_CELL_ZERO = "Proj-Id"
-engine = sqlalchemy.create_engine('sqlite:///database.sqlite')
-sm = sessionmaker(bind=engine)
+sm = None
+engine = None
 
 def rowCellsToContractLocation(cells):
     cells = list([c.text.replace("-","") for c in cells])
@@ -68,8 +68,13 @@ def parseTable(table):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Parse a docx with a table database')
+    parser.add_argument('--db', default="sqlite:///database.sqlite",
+                                    help='DB String to feed to sqlalchemy create engine')
     parser.add_argument('FILE', nargs='+', help='The docx-file to parse')
     args = parser.parse_args()
+
+    engine = sqlalchemy.create_engine(args.db)
+    sm = sessionmaker(bind=engine)
 
     for f in args.FILE:
         document = docx.Document(f)

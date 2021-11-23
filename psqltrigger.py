@@ -1,10 +1,11 @@
 TRIGGER_FOR_SEARCHABLE_STRING_1 = '''
+    DROP TRIGGER IF EXISTS populate_searchable_insert_trigger on "contract_locations";
     CREATE OR REPLACE FUNCTION populate_searchable_insert()
         RETURNS TRIGGER
         LANGUAGE PLPGSQL
     AS $$
     BEGIN
-        INSERT INTO searchHelper VALUES (
+        INSERT INTO "searchHelper" VALUES (
             NEW.projectId, ( 
                                 COALESCE(NEW.firma,'')
                              || COALESCE(NEW.projectId,'')
@@ -31,12 +32,13 @@ TRIGGER_FOR_SEARCHABLE_STRING_1 = '''
 '''
 
 TRIGGER_FOR_SEARCHABLE_STRING_2 = '''
+    DROP TRIGGER IF EXISTS populate_searchable_update_trigger on "contract_locations";
     CREATE OR REPLACE FUNCTION populate_searchable_update()
         RETURNS TRIGGER
         LANGUAGE PLPGSQL
     AS $$
     BEGIN
-        UPDATE searchHelper
+        UPDATE "searchHelper"
             SET fullString = (
                                 COALESCE(NEW.firma,'')
                              || COALESCE(NEW.projectId,'')

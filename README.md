@@ -61,6 +61,16 @@ Server will read a json file called *templates.json* in the configured templates
         ...
     }
 
+# Database Setup
+If you are using sqlite you don't have to do anything. If you are using postgresql, create a user and database and change the variables in *config.py* accordingly.
+
+# Wishlist
+
+- implement database consitency check (sheppy)
+- implement carddav (contacts) integration (ths)
+- advanced options when creating documents (e.g. actual invoice options) (ths)
+- implement extended validation form main data entry form (sheppy)
+
 ---
 
 This project aims to create a pipeline to migrate away from this obsolete technology, and use a real database and easy to use web-interface.

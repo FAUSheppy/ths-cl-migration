@@ -6,4 +6,4 @@ SQLAlchemy>=1.4.23
 waitress>=1.4.4
 Werkzeug>=2.0.1
 WTForms>=3.0.0
-Ppsycopg2>=2.8.6
+psycopg2>=2.8.6

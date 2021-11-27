@@ -4,6 +4,7 @@ import glob
 import json
 import shutil
 import werkzeug
+import zipfile
 
 class FileItem:
 
@@ -45,7 +46,8 @@ def getDocumentInstanceFromTemplate(path, projectId, lfn, app):
     tmpDir = "tmp-{}".format(projectId)
 
     # remove old working dir #
-    os.system("rm -rf {}".format(tmpDir))
+    if os.path.isdir(tmpDir):
+        shutil.rmtree(tmpDir)
 
     # recreate dir
     os.mkdir(tmpDir)
@@ -54,30 +56,30 @@ def getDocumentInstanceFromTemplate(path, projectId, lfn, app):
     shutil.copy2(path, fullTempPath)
 
     # unpack docx-d is outdir and -o is overwrite
-    os.system("unzip -o {} -d {}".format(fullTempPath, tmpDir))
+    with zipfile.ZipFile(fullTempPath, 'r') as zf:
+        zf.extractall(tmpDir)
 
     # edit xml (add active record + query) #
     xmlPath = os.path.join(tmpDir, "word/settings.xml")
     
-    addition = '''<w:mailMerge><w:viewMergedData\/><w:activeRecord w:val="1"\/>'''
-    activeRecordSet = '''sed -i 's/<w:mailMerge>/{}/' {}'''.format(addition, xmlPath)
-    os.system(activeRecordSet)
+    fileContentTmp = None
+    with open(xmlPath, 'r') as f:
+        fileContentTmp = f.read()
 
-    oldQueryString = "SELECT \* FROM &quot;contract_locations&quot;"
-    newQueryString = "SELECT \* FROM \&quot;contract_locations\&quot; WHERE projectid = {}"
-    newQueryStringFormated = newQueryString.format(projectId)
+    fileContentTmp = fileContentTmp.replace('''<w:mailMerge>''',
+        '''<w:mailMerge><w:viewMergedData/><w:activeRecord w:val="1"/>''')
+    fileContentTmp = fileContentTmp.replace('''SELECT * FROM &quot;contract_locations&quot;''',
+        '''SELECT * FROM &quot;contract_locations&quot; WHERE projectid = {}'''.format(projectId))
 
-    sedReplaceQuery = '''sed -i 's/val="{}"/val="{}"/' {}'''
-    sedReplaceQueryFmt = sedReplaceQuery.format(oldQueryString, newQueryStringFormated, xmlPath)
-    print(sedReplaceQueryFmt)
-    os.system(sedReplaceQueryFmt)
+    with open(xmlPath, 'w') as f:
+        f.write(fileContentTmp)
 
     # remove old result file
     os.remove(fullTempPath)
 
     # repack into new docx
-    p = subprocess.Popen(["/usr/bin/zip", "-r", os.path.basename(fullTempPath), "."], cwd=tmpDir)
-    p.communicate()
+    shutil.make_archive("../" + fullTempPath, 'zip', root_dir=tmpDir, base_dir=".")
+    os.rename("../" + fullTempPath + ".zip", fullTempPath)
    
     # transform new file into bitstream
     content = None

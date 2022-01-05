@@ -74,10 +74,7 @@ def getDocumentInstanceFromTemplate(path, projectId, lfn, app):
         '''<w:mailMerge><w:viewMergedData/><w:activeRecord w:val="1"/>''')
     fileContentTmp = fileContentTmp.replace('''SELECT * FROM &quot;contract_locations&quot;''',
         '''SELECT * FROM &quot;contract_locations&quot; WHERE &quot;projectid&quot; = {}'''.format(projectId))
-    #fileContentTmp = fileContentTmp.replace("192.168.178.67", "localhost")
-    #fileContentTmp = fileContentTmp.replace('<w:dataSource r:id="rId2"/>', '')
-    #fileContentTmp = fileContentTmp.replace('<w:src r:id="rId3"/>', '<w:src r:id="rId2"/>')
-    #fileContentTmp = fileContentTmp.replace("</w:odso>", '<w:recipientData r:id="rId3"/></w:odso>')
+    fileContentTmp = fileContentTmp.replace("localhost", app.config["DB_SERVER])
     
     with open("debug_post.xml", "w") as f:
         f.write(fileContentTmp)

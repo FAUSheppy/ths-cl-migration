@@ -95,4 +95,6 @@ def getDocumentInstanceFromTemplate(path, projectId, lfn, app):
     with open(fullTempPath, "rb") as f:
         content = f.read()
 
+    shutil.rmtree(tmpDir)
+
     return content

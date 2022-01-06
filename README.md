@@ -64,6 +64,24 @@ Server will read a json file called *templates.json* in the configured templates
 # Database Setup
 If you are using sqlite you don't have to do anything. If you are using postgresql, create a user and database and change the variables in *config.py* accordingly.
 
+# Icinga Monitoring
+The project contains the script *external_monitoring.py*, this script can be use in conjuncting with the [Icinga Async Monitoring Project](https://github.com/FAUSheppy/icinga-webhook-gateway), refer to its README for more information.
+
+    Usage: external_monitoring.py [-h] [--url URL]
+                                  [--monitoring-server MONITORING_SERVER]
+                                  [--monitoring-token MONITORING_TOKEN]
+                                  [--service-name SERVICE_NAME]
+                                  [--project-id PROJECT_ID]
+    
+    optional arguments:
+      -h, --help            show this help message and exit
+      --url URL             Interface to target for check
+      --monitoring-server   Monitoring Server
+      --monitoring-token    Token for Monitoring Server
+      --service-name        Service Name to submit as
+      --project-id          A existing project-id to check
+
+
 # Wishlist
 
 - implement database consitency check (sheppy)

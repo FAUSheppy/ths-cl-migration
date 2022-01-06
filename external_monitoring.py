@@ -13,14 +13,15 @@ if __name__ == "__main__":
     parser.add_argument('--service-name', help='Service Name to submit as')
     
     parser.add_argument('--project-id', help='A existing project-id to check')
+    parser.add_argument('--timeout', type=int, default=5, help='Timeout for individual requests in seconds.')
 
     args = parser.parse_args()
 
-    main      = requests.get("{}/".format(args.url))
-    entry     = requests.get("{}/entry-content?projectId={}".format(args.url, args.project_id))
-    documents = requests.get("{}/new-document?projectId={}".format(args.url, args.project_id))
+    main      = requests.get("{}/".format(args.url), timeout=args.timeout)
+    entry     = requests.get("{}/entry-content?projectId={}".format(args.url, args.project_id), timeout=args.timeout)
+    documents = requests.get("{}/new-document?projectId={}".format(args.url, args.project_id), timeout=args.timeout)
     downloadFormat = "{}/new-document?projectId={}&template=BD_Leckortung.docx"
-    documentDownload = requests.head(downloadFormat.format(args.url, args.project_id))
+    documentDownload = requests.head(downloadFormat.format(args.url, args.project_id), timeout=args.timeout)
     
     error = ""
     try:

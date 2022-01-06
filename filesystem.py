@@ -30,7 +30,7 @@ class DocumentTemplate:
         self.name = os.path.basename(fullpath)
 
 def getTemplates():
-    with open("./document-templates/templates.json", "r") as f:
+    with open("./document-templates/templates.json", encoding="utf-8") as f:
         return json.loads(f.read())
 
 def getDocumentInstanceFromTemplate(path, projectId, lfn, app):

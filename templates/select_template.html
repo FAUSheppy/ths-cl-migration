@@ -6,9 +6,17 @@
 
 <body>
   {% include 'navbar.html' %}
-  <div class="container">
+  <div class="mx-lg-5">
+    <div class="w-100 my-5" style="min-height: 1px;">
+    <h4 class="float-left mr-5">{{ yearFilter }}</h4>
+    {% if yearFilter %}
+        <button onclick="window.location = window.location + '&nofilter=true'" class="btn-success float-left">Alle Vorlagen Anzeigen</button>
+    {% endif %}
+    </div>
+
+    <div class="row">
     {% for key in templatesDict.keys() %}
-    <div class="template-card m-3 card col" style="width: 18rem;">
+    <div class="template-card m-3 card col-3" style="width: 18rem;">
         <div class="card-body">
           <h5 class="card-title">{{ key }}</h5>
           <h6 class="card-subtitle mb-2 text-muted"></h6>
@@ -29,6 +37,7 @@
         </div>
     </div>
     {% endfor %}
+    </div>
   </div>
 </body>
 

@@ -476,8 +476,20 @@ def newDocumentFromTemplate():
 
     projectId = flask.request.args.get("projectId")
     template = flask.request.args.get("template")
+    noFilter = flask.request.args.get("nofilter") == "true"
     documentTemplateDict = filesystem.getTemplates()
     saveToSamba = bool(flask.request.args.get("saveToSamba"))
+
+    yearFilter = ""
+    if projectId.startswith("22") and not noFilter:
+        yearFilter = "Vorlagen für Jahr: 2022"
+        deleteList = []
+        for key, value in documentTemplateDict.items():
+            if value["year"] != 2022:
+                deleteList.append(key)
+
+        for el in deleteList:
+            documentTemplateDict.pop(el)
 
     if not projectId:
         return ("Missing projectId as URL-arg", 400)
@@ -499,7 +511,8 @@ def newDocumentFromTemplate():
         return flask.render_template("select_template.html",
                                         templatesDict=documentTemplateDict,
                                         projectId=projectId,
-                                        projectPathAvailiable=projectPathAvailiable)
+                                        projectPathAvailiable=projectPathAvailiable,
+                                        yearFilter=yearFilter)
     else:
         if not template in documentTemplateDict:
             return ("Template not found", 404)

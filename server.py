@@ -359,10 +359,13 @@ def root():
 
             # handle datatypes #
             if col in IS_INT_TYPE:
-                if value == "":
+                if value.strip() == "":
                     value = 0
                 else:
-                    value = int(value)
+                    try:
+                        value = int(value)
+                    except ValueError:
+                        return ("{} erwartet eine Zahl oder ein leeres Feld. [{}]".format(col, value), 400)
             elif col in IS_DATE_TYPE:
                 parsed = datetime.datetime.strptime(value, HTML_DATE_FORMAT)
                 value  = parsed.strftime(DB_DATE_FORMAT)

@@ -9,6 +9,7 @@ COLS_TO_DISPLAY_NAME = {    "projectId"  : "Project Id",
                             "geschlecht" : "Anrede",
                             "vorname"    : "Vorname",
                             "nachname"   : "Nachname",
+                            "plz_fau"    : "PLZ FA",
                             "adresse_FA" : "Adresse FA",
                             "ort_FA"     : "Ort FA",
                             "tel_1"      : "Festnetz",
@@ -20,7 +21,7 @@ COLS_TO_DISPLAY_NAME = {    "projectId"  : "Project Id",
                             "laufNr"     : "Lauf Nr."
                 }
 
-IS_INT_TYPE  = ["laufNr", "projectId", "PLZ_FA", "lfn"]
+IS_INT_TYPE  = ["laufNr", "projectId", "PLZ_FA", "lfn", "plz_fa"]
 IS_DATE_TYPE = ["auftragsdatum"]
 IS_TEL_TYPE  = ["tel_1"]
 

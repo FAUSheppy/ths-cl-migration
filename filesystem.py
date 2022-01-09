@@ -65,10 +65,11 @@ def getDocumentInstanceFromTemplate(path, projectId, lfn, app):
     with open("debug_pre.xml", "w") as f:
         f.write(fileContentTmp)
 
+    # TODO make this configurable
     fileContentTmp = fileContentTmp.replace('''<w:mailMerge>''',
         '''<w:mailMerge><w:viewMergedData/><w:activeRecord w:val="1"/>''')
-    fileContentTmp = fileContentTmp.replace('''SELECT * FROM &quot;contract_locations&quot;''',
-        '''SELECT * FROM &quot;contract_locations&quot; WHERE &quot;projectid&quot; = {}'''.format(projectId))
+    fileContentTmp = fileContentTmp.replace('''SELECT * FROM &quot;ths_word_helper&quot;''',
+        '''SELECT * FROM &quot;ths_word_helper&quot; WHERE &quot;projectid&quot; = {}'''.format(projectId))
     fileContentTmp = fileContentTmp.replace("localhost", app.config["DB_SERVER"])
     
     with open("debug_post.xml", "w") as f:

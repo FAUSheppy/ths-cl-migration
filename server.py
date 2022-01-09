@@ -11,6 +11,8 @@ import datetime
 import samba
 import mimetypes
 import psycopg2
+import traceback
+import sys
 
 from sqlalchemy import Column, Integer, String, Boolean, or_, and_
 from sqlalchemy.orm import sessionmaker
@@ -541,6 +543,15 @@ def afterRequest(response):
         samba.deleteClient(app)
         print("Session Disconnected")
     return response
+
+@app.errorhandler(Exception)
+def errorhandler(e):
+    with open("error.log", "a") as f:
+        f.write(datetime.datetime.now().isoformat())
+        f.write("\n")
+        f.write(traceback.format_exc())
+        f.write("\n====================================\n")
+    return ("Internal Server Error, see error.log in project directory.", 500)
 
 @app.before_first_request
 def init():

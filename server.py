@@ -357,6 +357,10 @@ def root():
         for col, name in zip(header, HEADER_NAMES):
             value = flask.request.form[col]
 
+            # allow human readable projectId as input
+            if col == "projectid":
+                value = value.replace("P", "").replace("-", "")
+
             # handle datatypes #
             if col in IS_INT_TYPE:
                 if value.strip() == "":
@@ -460,8 +464,12 @@ def curMaxSequenceNumber():
     yearId  = (today.year%100) * 1000000
     monthId = today.month * 10000
     projectId = yearId + monthId + maxNr
-    return flask.Response(json.dumps({ "max" : maxNr,  "projectId" : projectId }), 
-                            200, mimetype='application/json')
+
+    projectIdColoq = "P-{:02d}{:02d}-{:04d}".format(today.year % 100, today.month, maxNr)
+    return flask.Response(json.dumps({ "max" : maxNr, 
+                            "projectIdNumneric" : projectId,
+                            "projectIdColoq" : projectIdColoq }), 
+                                200, mimetype='application/json')
 
 @app.route("/new-document")
 def newDocumentFromTemplate():

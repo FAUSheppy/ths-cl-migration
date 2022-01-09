@@ -4,17 +4,34 @@ function submitForm(){
 
     /* check input fields */
     pIdField = document.getElementById("projectid-input")
+    lfnField = document.getElementById("lfn-input")
 
     pIdField.style.borderColor = "gray"
 
     invalidField = false
+    alertText = null
+
     if(pIdField.value == ""){
         pIdField.style.borderWidth = "2px"
         pIdField.style.borderColor = "red"
         invalidField = true
     }
 
+    pIdFieldLfn = parseInt(pIdField.value.substr(pIdField.value.length-4))
+    if( isNaN(pIdFieldLfn) || pIdFieldLfn < 0 ||
+            pIdFieldLfn != lfnField.value){
+
+        pIdField.style.borderWidth = "2px"
+        pIdField.style.borderColor = "red"
+        invalidField = true
+
+        alertText = "Projekt-ID ungültig - Format muss sein P-2201-0000 (Jahr, Monat, LFN als vierstellige Zahl), oder nur 22010000 (ohne Bindestriche und P). Die LFN muss mit der LFN im vorherigen Feld übereinstimmen."
+    }
+
     if(invalidField){
+        if(alertText != null){
+            alert(alertText)
+        }
         return
     }
 
@@ -236,7 +253,7 @@ function modalSpawn(){
                 fetch("/id-suggestions").then( r => {
                     r.json().then( json => {
                         lfnNew = json["max"]
-                        projectIdNew = json["projectId"]
+                        projectIdNew = json["projectIdColoq"]
                         console.log("LFN: " + lfnNew + " suggested PDI: " + projectIdNew)
 
                         /* set placeholders and values */
@@ -279,9 +296,21 @@ function updateModalTitle(updateListener){
 
     titleContainer = document.getElementById("dataModalLabel")
     pIdString = "" + document.getElementById("projectid-input").value
-    part1 = pIdString.substring(0,4)
-    part2 = pIdString.substring(4)
-    titleContainer.innerHTML = "Vorschlag Projektname: P-" + part1 + "-" + part2
+    
+    part1 = ""
+    part2 = ""
+    start = ""
+    
+    if(pIdString.indexOf("-") <= 0){
+        part1 = pIdString.substring(0,4)
+        part2 = "-" + pIdString.substring(4)
+    }else{
+        part1 = pIdString
+    }
+    if(pIdString.indexOf("P-") < 0){
+        start = "P-"
+    }
+    titleContainer.innerHTML = "Vorschlag Projektname: " + start + part1 + part2
 
 }
 

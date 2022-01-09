@@ -21,3 +21,4 @@ run.sh
 *_index
 config.py
 document-templates/
+error.log

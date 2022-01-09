@@ -457,8 +457,8 @@ def curMaxSequenceNumber():
         maxNr = 0
 
     today = datetime.datetime.today()
-    yearId = today.year *   10000
-    monthId = today.month   * 1000000
+    yearId  = (today.year%100) * 1000000
+    monthId = today.month * 10000
     projectId = yearId + monthId + maxNr
     return flask.Response(json.dumps({ "max" : maxNr,  "projectId" : projectId }), 
                             200, mimetype='application/json')

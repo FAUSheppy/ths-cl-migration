@@ -35,6 +35,7 @@ If you want to use the notification gateway, you can use the [signal-gateway](ht
 | SMB_USER | Samba User (required if samba server is defined)| 
 | SMB_PASS | Samba Password (required if samba server is defined)| 
 | SMB_SHARE | Samba Share (required if samba server is defined) |
+| SMB_DRIVE | Samba drive name if mounted on a windows system |
 | DOC_TEMPLATE_PATH | Path where docx-document templates are stored |
 | SEND_NOTIFICATION | Should a notification be send on change or new entry |
 | NOTIFICATION_URL | Gateway url to query |

@@ -65,6 +65,17 @@ Server will read a json file called *templates.json* in the configured templates
 # Database Setup
 If you are using sqlite you don't have to do anything. If you are using postgresql, create a user and database and change the variables in *config.py* accordingly.
 
+# Modify Fields for documents
+If you need to modify the input fields for your MS-Word document's mail-merge, you are best served using postgres and leveraging the amazing abilities of it's functionality by creating a special **VIEW**.
+For example if you want to split off the start of your *projectId*-field, you can create a view like this:
+
+    CREATE VIEW ths_word_helper AS
+        SELECT cl.*,
+                substring(cl.projectid::varchar(30) from 5 for 4) AS projectid_short
+        FROM contract_locations cl;
+
+... and then reference this view and it's newly create field "projectid_short" in your document.
+
 # Icinga Monitoring
 The project contains the script *external_monitoring.py*, this script can be use in conjuncting with the [Icinga Async Monitoring Project](https://github.com/FAUSheppy/icinga-webhook-gateway), refer to its README for more information.
 

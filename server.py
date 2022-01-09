@@ -515,10 +515,19 @@ def newDocumentFromTemplate():
                                         ProjectPath.projectid == projectId).first()
                 if pp and pp.sambapath:
                     spath, error = samba.carefullySaveFile(instance, pp.sambapath + "/" + retFname)
+
                     if error:
-                        return ("Fehler beim Speichern: {}".format(error), 510)
+                        spath = error
+
+                    if spath:
+                        # TODO fix this mess
+                        spath = spath.replace("\\\\" + app.config["SMB_SERVER"] + "\\" + app.config["SMB_SHARE"], app.config["SMB_DRIVE"])
+                        spath = spath.replace("/", "\\")
+
+                    if error:
+                        return ("Fehler beim Speichern: \n\n{}".format(spath), 510)
                     else:
-                        return ("Abgespeichert in {}".format(spath), 200)
+                        return ("Abgespeichert in:\n\n{}".format(spath), 200)
                     
                 else:
                     return ("Fehler: Projekt nicht mehr mit einem Pfad assoziert", 404)

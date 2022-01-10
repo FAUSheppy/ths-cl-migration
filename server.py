@@ -555,7 +555,11 @@ def send_js(path):
     response = flask.send_from_directory('static', path)
     #response.headers['Cache-Control'] = "max-age=2592000"
     return response
-    
+
+@app.route('/defaultFavicon.ico')
+def icon():
+    return flask.send_from_directory('static', 'defaultFavicon.ico')
+
 ENDPOINTS = ["newDocumentFromTemplate", "smbFileList", "submitProjectPath", "upload_file"]
 @app.before_request
 def beforeRequest():

@@ -3,6 +3,9 @@
 import argparse
 import docx
 
+import os
+import sys
+
 from sqlalchemy import Column, Integer, String, Boolean, or_, and_
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.exc import IntegrityError
@@ -69,18 +72,56 @@ def parseTable(table):
         session.merge(cl)
         session.commit()
 
+def dumpData(file):
+    session = sm()
+    allCl = session.query(ContractLocation.ContractLocation).all()
+    with open(file, "a") as f:
+        first = True;
+        for cl in allCl:
+            ad = session.query(ContractLocation.AdditionalDate).filter(ContractLocation.AdditionalDate.projectid == cl.projectid).first()
+            atttributes = [a for a in dir(cl) if not a.startswith('_') and not callable(getattr(cl, a)) and not a in ["registry", "metadata"]]
+
+            # create header on first run
+            if first:
+                f.write("$".join(atttributes + ["Weitere Auftragsdaten"]))
+                f.write("\n")
+                first = False
+
+            strings = [ getattr(cl, a) for a in atttributes ]
+            strings.append(ad)
+
+            line = "$".join([str(s) for s in strings])
+            f.write(line)
+            f.write("\n")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Parse a docx with a table database')
     parser.add_argument('--db', default="sqlite:///database.sqlite",
                                     help='DB String to feed to sqlalchemy create engine')
-    parser.add_argument('FILE', nargs='+', help='The docx-file to parse')
+    parser.add_argument('--dump-file', help='Dump to a file instead of reading in')
+    parser.add_argument('--files', required=False, nargs='+', help='The docx-file to parse')
     args = parser.parse_args()
 
     engine = sqlalchemy.create_engine(args.db)
     sm = sessionmaker(bind=engine)
 
-    for f in args.FILE:
+    if args.dump_file:
+        if os.path.exists(args.dump_file):
+            string = "Refusing to dump to existing file {}".format(args.dump_file)
+            print(string, file=sys.stderr)
+            sys.exit(1)
+        else:
+            dumpData(args.dump_file)
+            sys.exit(0)
+
+    if not args.files:
+        print("No files to read in.", file=sys.stderr)
+        sys.exit(1)
+
+    for f in args.files:
+        if args.dump_file:
+            print("ERROR: --dump-file was specified, refusing to edit database", file=sys.stderr)
+            sys.exit(1)
         document = docx.Document(f)
         ContractLocation.getBase().metadata.create_all(engine)
 

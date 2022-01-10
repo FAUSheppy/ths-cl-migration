@@ -21,5 +21,10 @@ class ContractLocation(base):
     auftragsdatum = Column(String)
     date_parsed   = Column(Integer)
 
+class AdditionalDate(base):
+    __tablename__ = "additional_dates"
+    projectid = Column(Integer, primary_key=True)
+    dates = Column(String)
+
 def getBase():
     return base

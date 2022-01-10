@@ -475,13 +475,17 @@ def curMaxSequenceNumber():
 def newDocumentFromTemplate():
 
     projectId = flask.request.args.get("projectId")
-    template = flask.request.args.get("template")
-    noFilter = flask.request.args.get("nofilter") == "true"
+    template  = flask.request.args.get("template")
+    noFilter  = flask.request.args.get("nofilter") == "true"
+    reports   = flask.request.args.get("reports")  == "true"
+    
     documentTemplateDict = filesystem.getTemplates()
     saveToSamba = bool(flask.request.args.get("saveToSamba"))
 
     yearFilter = ""
-    if projectId.startswith("22") and not noFilter:
+    if reports:
+        documentTemplateDict = filesystem.getTemplates("reports")
+    elif projectId.startswith("22") and not noFilter and not template:
         yearFilter = "Vorlagen für Jahr: 2022"
         deleteList = []
         for key, value in documentTemplateDict.items():
@@ -512,13 +516,21 @@ def newDocumentFromTemplate():
                                         templatesDict=documentTemplateDict,
                                         projectId=projectId,
                                         projectPathAvailiable=projectPathAvailiable,
-                                        yearFilter=yearFilter)
+                                        yearFilter=yearFilter,
+                                        reports=reports,
+                                        reportsJsBool=str(reports).lower())
     else:
         if not template in documentTemplateDict:
             return ("Template not found", 404)
         else:
+        
+            # handle reports subdir
+            reportsPath = ""
+            if reports:
+                reportsPath = "reports"
+
             retFname = "P-" + str(projectId) + "-" + template
-            path = os.path.join(app.config["DOC_TEMPLATE_PATH"], template)
+            path = os.path.join(app.config["DOC_TEMPLATE_PATH"], reportsPath, template)
            
             #  get instance of template #
             instance = filesystem.getDocumentInstanceFromTemplate(path, projectId, entry.lfn, app)
@@ -587,6 +599,7 @@ def errorhandler(e):
         f.write(datetime.datetime.now().isoformat())
         f.write("\n")
         f.write(traceback.format_exc())
+        print(traceback.format_exc())
         f.write("\n====================================\n")
     return ("Internal Server Error, see error.log in project directory.", 500)
 

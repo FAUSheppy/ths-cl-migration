@@ -327,8 +327,12 @@ function pIdInput(){
     updateModalTitle(false)
 }
 
-function saveDocumentTemplate(projectId, templateKey, samba){
+function saveDocumentTemplate(projectId, templateKey, samba, reports){
     url = "/new-document?projectId=" + projectId + "&template=" + templateKey
+    
+    if(reports){
+        url += "&reports=true"
+    }
 
     field = document.getElementById("save-document-error-field-" + templateKey)
     if(samba){

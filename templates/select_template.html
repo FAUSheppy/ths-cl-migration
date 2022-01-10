@@ -8,9 +8,16 @@
   {% include 'navbar.html' %}
   <div class="mx-lg-5">
     <div class="w-100 my-5" style="min-height: 1px;">
-    <h4 class="float-left mr-5">{{ yearFilter }}</h4>
     {% if yearFilter %}
-        <button onclick="window.location = window.location + '&nofilter=true'" class="btn-success float-left">Alle Vorlagen Anzeigen</button>
+        <h4 class="float-left mr-5">{{ yearFilter }}</h4>
+        <button onclick="window.location = window.location + '&nofilter=true'" class="btn-success float-left mr-3">Alle Vorlagen Anzeigen</button>
+    {% elif not yearFilter and not reports %}
+        <button onclick="window.location = window.location.toString().replace('&nofilter=true','')" class="btn-success float-left mr-3">Nur Vorlagen für Jahr des Projektes Anzeigen</button>
+    {% endif %}
+    {% if reports %}
+        <button onclick="window.location = window.location.toString().replace('&reports=true','')" class="btn-info float-left mr-3">Rechnungsvorlagen Anzeigen</button>
+    {% else %}
+        <button onclick="window.location = window.location + '&reports=true'" class="btn-info float-left">Berichtvorlagen Anzeigen</button>
     {% endif %}
     </div>
 
@@ -23,12 +30,12 @@
           <hr class="my-4">
           <p class="card-text">{{ templatesDict[key]["description"] }}</p>
           <button class="btn-info mb-2" style="width: 100%;"
-                  onclick="saveDocumentTemplate('{{ projectId }}', '{{ key }}', false)">
+                  onclick="saveDocumentTemplate('{{ projectId }}', '{{ key }}', false, {{ reportsJsBool }})">
             Download
           </button>
           {% if projectPathAvailiable %}
           <button class="btn-primary mb-2" style="width: 100%;"
-                  onclick="saveDocumentTemplate('{{ projectId }}', '{{ key }}', true)">
+                  onclick="saveDocumentTemplate('{{ projectId }}', '{{ key }}', true, {{ reportsJsBool }})">
             In Projektordner Speichern
           </button>
           {% endif %}

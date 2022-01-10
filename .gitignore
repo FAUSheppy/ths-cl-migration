@@ -22,3 +22,4 @@ run.sh
 config.py
 document-templates/
 error.log
+.backup_info

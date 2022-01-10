@@ -5,6 +5,7 @@ import docx
 
 import os
 import sys
+import datetime
 
 from sqlalchemy import Column, Integer, String, Boolean, or_, and_
 from sqlalchemy.orm import sessionmaker, declarative_base
@@ -106,12 +107,16 @@ if __name__ == "__main__":
     sm = sessionmaker(bind=engine)
 
     if args.dump_file:
-        if os.path.exists(args.dump_file):
-            string = "Refusing to dump to existing file {}".format(args.dump_file)
+        dtString = datetime.datetime.now().strftime("%y_%d_%m_%H_%M")
+        targetFile = args.dump_file + "_" + dtString + ".csv"
+        if os.path.exists(targetFile):
+            string = "Refusing to dump to existing file {}".format(targetFile)
             print(string, file=sys.stderr)
             sys.exit(1)
         else:
-            dumpData(args.dump_file)
+            dumpData(targetFile)
+            with open(".backup_info", "w") as f:
+                f.write(dtString)
             sys.exit(0)
 
     if not args.files:

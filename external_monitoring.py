@@ -15,6 +15,8 @@ if __name__ == "__main__":
     parser.add_argument('--project-id', help='A existing project-id to check')
     parser.add_argument('--timeout', type=int, default=5, help='Timeout for individual requests in seconds.')
 
+    parser.add_argument('--check-for-backup-file', help='Check for a backup confirmation file here.')
+
     args = parser.parse_args()
 
     main      = requests.get("{}/".format(args.url), timeout=args.timeout)
@@ -46,8 +48,22 @@ if __name__ == "__main__":
         documentDownload.raise_for_status()
     except requests.HTTPError as e:
         error += "Error: Document Download - {}\n".format(e.response.status_code)
-    
-    
+
+
+    if args.check_for_backup_file:
+        filename = args.check_for_backup_file
+        if not os.path.isfile(filename):
+            errro += "Missing Backup Info File {}".format(filename)
+        else:
+            with open(filename, "r") as f:
+                content = f.read()
+                try:
+                    lastBackup = datetime.datetime.strptime("%y_%m_%d_%H_%M")
+                    if datetime.datetime.now() - lastBackup > datetime.timedelta(days=2):
+                        error += "Local Backup found but was at {}".format(content)
+                except ValueError:
+                    error += "Local Backup info file has malformed content: {}".format(content)
+
     status = "UNKNOWN"
     if error:
         status = "CRITICAL"

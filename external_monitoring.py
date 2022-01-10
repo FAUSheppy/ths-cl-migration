@@ -15,7 +15,7 @@ if __name__ == "__main__":
     parser.add_argument('--service-name', help='Service Name to submit as')
     
     parser.add_argument('--project-id', help='A existing project-id to check')
-    parser.add_argument('--timeout', type=int, default=5, help='Timeout for individual requests in seconds.')
+    parser.add_argument('--timeout', type=int, default=10, help='Timeout for individual requests in seconds.')
 
     parser.add_argument('--check-for-backup-file', help='Check for a backup confirmation file here.')
 

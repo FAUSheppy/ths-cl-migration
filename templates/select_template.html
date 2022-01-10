@@ -6,7 +6,7 @@
 
 <body>
   {% include 'navbar.html' %}
-  <div class="mx-lg-5">
+  <div class="mx-lg-5" style="text-align: center;">
     <div class="w-100 my-5" style="min-height: 1px;">
     {% if yearFilter %}
         <h4 class="float-left mr-5">{{ yearFilter }}</h4>
@@ -20,6 +20,21 @@
         <button onclick="window.location = window.location + '&reports=true'" class="btn-info float-left">Berichtvorlagen Anzeigen</button>
     {% endif %}
     </div>
+    
+    {% if projectId == 0%}
+    <h5 style="border-style: solid; padding: 10px; border-color: red; max-width: 800px; margin: auto;">
+    Ein Dokument für Projekt-Id 0 wird erstellt. Dies ist eine spezielle Id mit Platzhaltern Informationen. Um das Dokument nachträglich mit einer Projekt-Id zu verknüpfen, folgen sie bitte
+    den im Bild aufgeführten Schritten!
+    <br>
+    <hr>
+    <button class="mx-auto btn btn-info center" data-toggle="collapse" data-target="#help" aria-expanded="false" aria-controls="help">Hier Klicken um das Hilfsbild anzuzeigen!</button>
+    </h5>
+    
+    <br>
+    
+    <img id="help" class="my-4 collapse" style="width: 60%; border-style: solid" src="/static/ms-word-pid-help.png"></img>
+    <hr>
+    {% endif %}
 
     <div class="row">
     {% for key in templatesDict.keys() %}

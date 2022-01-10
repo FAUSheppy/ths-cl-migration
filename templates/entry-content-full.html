@@ -11,7 +11,7 @@
               {% if not formEntry.options %}
               <input id="{{ formEntry.colName }}-input" value="{{ formEntry.value }}" class="mb-2"
                     type="{{ formEntry.typeAsText }}" name="{{ formEntry.colName }}"
-                    {% if formEntry.unsafeEntryInfo %}
+                    {% if formEntry.unsafeEntryInfo or (formEntry.colName == "projectid" and formEntry.value) %}
 					disabled
 					style="color: orange;"
 					{% endif %}

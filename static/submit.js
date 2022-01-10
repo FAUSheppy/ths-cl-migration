@@ -45,8 +45,11 @@ function submitForm(){
     xhr = new XMLHttpRequest();
     xhr.open("POST", "/"); 
     xhr.onload = formSubmitFinished
+    pIdFieldDisabledState = pIdField.disabled
+    pIdField.disabled = false;
     formData = new FormData(document.getElementById("data-form")); 
     xhr.send(formData);
+    pIdFieldDisabledState = pIdFieldDisabledState
 }
 
 function submitProjectPath(){

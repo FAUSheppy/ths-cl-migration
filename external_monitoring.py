@@ -2,6 +2,8 @@
 
 import argparse
 import requests
+import os
+import datetime
 
 if __name__ == "__main__":
 
@@ -58,7 +60,7 @@ if __name__ == "__main__":
             with open(filename, "r") as f:
                 content = f.read()
                 try:
-                    lastBackup = datetime.datetime.strptime("%y_%m_%d_%H_%M")
+                    lastBackup = datetime.datetime.strptime(content, "%y_%m_%d_%H_%M")
                     if datetime.datetime.now() - lastBackup > datetime.timedelta(days=2):
                         error += "Local Backup found but was at {}".format(content)
                 except ValueError:

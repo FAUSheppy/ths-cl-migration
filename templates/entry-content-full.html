@@ -6,15 +6,20 @@
           <div style="display: none;" id="projectid-helper">{{ label }}</div>
           {% endif %}
 		  
-          <div style="display: inline-block;" class="">
+          <div style="display: inline-block;
+                    {% if formEntry.colName == "auftragsort" %} min-width=350px; width: 60%; {% endif %}
+                    "
+            class="">
               <p style="margin-bottom: 0px;">{{ formEntry.displayName }}</p>
               {% if not formEntry.options %}
-              <input id="{{ formEntry.colName }}-input" value="{{ formEntry.value }}" class="mb-2"
+              <input id="{{ formEntry.colName }}-input" value="{{ formEntry.value }}" class="mb-2 w-100"
                     type="{{ formEntry.typeAsText }}" name="{{ formEntry.colName }}"
                     {% if formEntry.unsafeEntryInfo or (formEntry.colName == "projectid" and formEntry.value) %}
 					disabled
+                    {% endif %}
+                    {% if formEntry.unsafeEntryInfo %}
 					style="color: orange;"
-					{% endif %}
+                    {% endif %}
 					></input>
               {% else %}
               <input id="{{ formEntry.colName }}-input" value="{{ formEntry.value }}" class="mb-2"

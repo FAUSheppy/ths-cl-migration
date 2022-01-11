@@ -119,7 +119,7 @@ def submitProjectPath():
             response = flask.Response("Path does not exist", 404)
             return response
         else:
-            db.session.merge(ProjectPath(projectId=projectId, sambapath=path))
+            db.session.merge(ProjectPath(projectid=projectId, sambapath=path))
             db.session.commit()
             response = flask.Response("", 204)
             return response

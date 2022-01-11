@@ -444,7 +444,33 @@ def root():
         return ("", 204)
     else:
         return (405, "{} not allowed".format(flask.request.method))
+
+@app.route("/entry-suggestions", methods=["POST"])
+def entrySuggestionQuery():
+    query = db.session.query(ContractLocation.firma,
+                                ContractLocation.bereich,
+                                ContractLocation.geschlecht,
+                                ContractLocation.vorname,
+                                ContractLocation.nachname,
+                                ContractLocation.adresse_fa,
+                                ContractLocation.plz_fa,
+                                ContractLocation.ort_fa,
+                                ContractLocation.tel_1,
+                                ContractLocation.mobil,
+                                ContractLocation.fax)
+
+    # get distinct #
+    query = query.distinct()
+
+    # filter by existing values #
+    for key, value in flask.request.json.items():
+        query = query.filter(getattr(ContractLocation, key).like("%{}%".format(value)))
         
+    hit = query.first()
+    if hit:
+        return flask.Response(json.dumps(dict(hit._mapping)), 200, mimetype='application/json')
+    else:
+        return ("", 204)
 
 @app.route("/data-source", methods=["POST"])
 def dataSource():

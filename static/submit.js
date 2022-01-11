@@ -278,6 +278,9 @@ function modalSpawn(){
                 })
             })
 
+            /* set modal title */
+            document.getElementById("dataModalLabel").innerHTML = "Eintrag bearbeiten.."
+
             /* open modal */
             $('#dataModal').modal("toggle")
        

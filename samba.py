@@ -121,7 +121,17 @@ def deleteClient(app):
 def filesToFileItems(files):
     fileItems = []
     for f in files:
-        fileItems.append(filesystem.FileItem(f, "netzwerk", samba=True))
+        filetype = ""
+        if f.lower().endswith("docx"):
+            filetype = "Dokument"
+        elif f.lower().endswith("jpg"):
+            filetype = "Bild"
+        elif f.lower().endswith("pdf"):
+            filetype = "PDF"
+        else:
+            filetype = "unknown"
+
+        fileItems.append(filesystem.FileItem(f, filetype, samba=True))
     return fileItems
 
 def getFile(fqSambaPath):

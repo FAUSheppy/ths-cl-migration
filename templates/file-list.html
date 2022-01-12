@@ -16,17 +16,13 @@
     {% for fileListItem in fileListItems %}
     <tr>
         <td style="font-size: 20px">
-            {% if localfile %}
+            {% if localfile and fileListItem.fileType != "unknown" %}
             <a href="localfile://{{ fileListItem.localpath }}?{{ localfile }}">{{ fileListItem.name }}</a>
             {% else %}
             <a href="/files?fullpath={{ fileListItem.fullpath }}">{{ fileListItem.name }}</a>
             {% endif %}
         </td>
-        {% if localfile %}
-            <td style="font-size: 20px">Locally available</td>
-        {% else %}
-            <td style="font-size: 20px">{{ fileListItem.fileType }}</td>
-        {% endif %}
+        <td style="font-size: 20px">{{ fileListItem.fileType }}</td>
         {% if fileListItem.deletable %}
         <td><button onclick="deleteFile('{{ fileListItem.fullpath }}')">Delete</button></td>
         {% endif %}

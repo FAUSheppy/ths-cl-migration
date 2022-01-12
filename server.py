@@ -17,7 +17,7 @@ import sys
 from sqlalchemy import Column, Integer, String, Boolean, or_, and_
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.sql import func
+from sqlalchemy.sql import func, text
 import sqlalchemy
 from flask_sqlalchemy import SQLAlchemy
 
@@ -40,6 +40,12 @@ app.config.from_object("config")
 app.config['SECRET_KEY'] = "secret"
 app.config['UPLOAD_FOLDER'] = "uploads/"
 db = SQLAlchemy(app)
+
+
+# debug logging #
+# import logging
+# logging.basicConfig()
+# logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
 def getDbSchema(filterCols=False):
     cols = list(ContractLocation.__table__.columns.keys())
@@ -343,7 +349,8 @@ def root():
     header = getDbSchema(filterCols=True)
     if flask.request.method == "GET":
         render = flask.render_template("index.html", headerCol=header, 
-                                                    headerDisplayNames=HEADER_NAMES)
+                                        headerDisplayNames=HEADER_NAMES,
+                                        isTemplateIdent=str(IS_TEMPLATE_IDENT))
         response = flask.Response(render, 200)
         response.headers.add('Access-Control-Allow-Headers', '*')
         response.headers.add('Access-Control-Allow-Origin', '*')
@@ -447,28 +454,42 @@ def root():
 
 @app.route("/entry-suggestions", methods=["POST"])
 def entrySuggestionQuery():
-    query = db.session.query(ContractLocation.firma,
-                                ContractLocation.bereich,
-                                ContractLocation.geschlecht,
-                                ContractLocation.vorname,
-                                ContractLocation.nachname,
-                                ContractLocation.adresse_fa,
-                                ContractLocation.plz_fa,
-                                ContractLocation.ort_fa,
-                                ContractLocation.tel_1,
-                                ContractLocation.mobil,
-                                ContractLocation.fax)
+    
+    # CAREFULL HERE: DONT USE UNCHECKED SQL             #
+    # "key" is only safe to use if in IS_TEMPLATE_IDENT #
+    paramStringSafe = ""
+    data = dict()
+    for key, value in flask.request.form.items():
+        if key in IS_TEMPLATE_IDENT:
+            paramStringSafe += "{key} LIKE :{key} AND ".format(key=key)
+            data.update({key : "%{}%".format(value)})
 
-    # get distinct #
-    query = query.distinct()
+    # check if empty #
+    if len(data) == 0:
+        return ("", 204)
 
-    # filter by existing values #
-    for key, value in flask.request.json.items():
-        query = query.filter(getattr(ContractLocation, key).like("%{}%".format(value)))
-        
+    sqlRaw = '''
+        SELECT * FROM (
+            SELECT COUNT(*) AS dupcount, firma, bereich, geschlecht,
+                   vorname, nachname, adresse_fa, plz_fa, ort_fa, 
+                   tel_1, mobil, fax 
+            FROM contract_locations 
+            WHERE {}
+            GROUP BY firma, bereich, geschlecht, vorname, nachname,
+                     adresse_fa, plz_fa, ort_fa, tel_1, mobil, fax
+            ) AS sub
+        ORDER BY sub.dupcount DESC;
+    '''.format(paramStringSafe.rstrip("AND "))
+    
+    # execute #
+    query = db.session.execute(text(sqlRaw), data)
     hit = query.first()
+    
+    # handle restuls #
     if hit:
-        return flask.Response(json.dumps(dict(hit._mapping)), 200, mimetype='application/json')
+        mapping = dict(hit._mapping)
+        mapping.pop("dupcount")
+        return flask.Response(json.dumps(mapping), 200, mimetype='application/json')
     else:
         return ("", 204)
 

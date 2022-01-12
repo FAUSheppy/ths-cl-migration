@@ -9,16 +9,21 @@
 
 <!-- Modal -->
 <div class="modal fade" id="dataModal" tabindex="-1" role="dialog" aria-labelledby="dataModalLabel" aria-hidden="true">
-  <div class="modal-dialog" style="max-width: 90% !important;", role="document">
+  <div class="modal-dialog" style="max-width: 90% !important;" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="dataModalLabel">Neuer Eintrag</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
+            <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <div id="modal-body" class="modal-body">
-
+      <div id="modal-body-main" class="modal-body">
+        <div class="mx-2" style="width: 75%;" id="suggestions">
+        </div>
+        <button class="btn-sm btn-primary" style="max-width: 25%; display: none;" id="suggestions-btn" onclick="applySuggestion()">Apply</button>
+        <hr id="suggestions-hr" style="display: none;">
+        <div id="modal-body">
+        </div>
       </div>
       <div class="modal-footer">
         <button style="display: none; float: left;" 
@@ -36,3 +41,13 @@
     </div>
   </div>
 </div>
+
+<script>
+function suggestionListeners(){
+    console.log("Loading event listeners for suggestions...")
+    fields = {{ isTemplateIdent | safe }}
+    for(i = 0; i < fields.length; i++){
+        document.getElementById(fields[i] + "-input").addEventListener("input", getEntrySuggestions)
+    }
+}
+</script>

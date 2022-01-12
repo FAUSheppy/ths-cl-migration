@@ -13,3 +13,35 @@
     color: red;
     font-size: 24px;
 }
+
+/* for auto colors during suggestion */
+.color-0{
+    color: magenta;
+}
+.color-1{
+    color: red;
+}
+
+.color-2{
+    color: blue;
+}
+
+.color-3{
+    color: green;
+}
+
+.color-4{
+    color: brown;
+}
+
+.color-5{
+    color: darkcyan;
+}
+
+.color-6{
+    color: orange;
+}
+
+.color-7{
+    color: slateblue;
+}

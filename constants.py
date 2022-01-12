@@ -24,6 +24,8 @@ COLS_TO_DISPLAY_NAME = {    "projectId"  : "Project Id",
 IS_INT_TYPE  = ["laufNr", "projectId", "PLZ_FA", "lfn", "plz_fa"]
 IS_DATE_TYPE = ["auftragsdatum"]
 IS_TEL_TYPE  = ["tel_1"]
+IS_TEMPLATE_IDENT = [ "firma", "bereich", "geschlecht", "vorname", "nachname",
+                        "adresse_fa", "ort_fa", "tel_1", "mobil", "fax"]
 
 COL_NAMES_TO_OPTIONS = { "geschlecht" : ["Herr", "Frau", "z.H. Herr",
                                             "z.H. Frau", "Herr und Frau", "N/A"],

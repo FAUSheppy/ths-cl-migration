@@ -277,6 +277,9 @@ function modalSpawn(){
                     document.getElementById("additional-dates-target").innerHTML = s
                 })
             })
+            
+            /* apply listeners */
+            suggestionListeners()
 
             /* set modal title */
             document.getElementById("dataModalLabel").innerHTML = "Eintrag bearbeiten.."

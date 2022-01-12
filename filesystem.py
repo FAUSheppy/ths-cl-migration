@@ -14,6 +14,7 @@ class FileItem:
         self.name = os.path.basename(fullpath)
         self.fileType = fileType
         self.deletetable = not samba
+        self.localpath = ""
 
 def itemsArrayFromDbEntries(dbEntries):
     if not dbEntries:

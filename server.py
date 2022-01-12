@@ -257,12 +257,23 @@ def smbFileList():
 
         # generate response
         fileListItems = samba.filesToFileItems(files)
+
         if fileListItems:
             replace  = "\\\\{}\\{}".format(app.config["SMB_SERVER"], app.config["SMB_SHARE"])
             withThis = "T:"
             displayPath = trueProjectDir.replace("/", "\\").replace(replace, withThis)
+            
+            # build local file opening paths #
+            if app.config["LOCAL_FILE_ID"]:
+                for item in fileListItems:
+                    item.localpath = displayPath.replace("\\", "\\\\")
+                    item.localpath = item.localpath.replace("\\\\\\\\", "\\\\")
+                    item.localpath = item.localpath.replace("\\\\\\", "\\\\")
+                    item.localpath += "\\\\" + item.name
+            
             return flask.render_template("file-list.html", fileListItems=fileListItems,
-                                            basePath=displayPath)
+                                            basePath=displayPath,
+                                            localfile=app.config["LOCAL_FILE_ID"])
         else:
             return ("Keine weiteren Dateien im Netzwerk verfügbar", 200)
 

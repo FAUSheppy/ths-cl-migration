@@ -1,1 +1,1 @@
-C:\THS\ths-cl-migration\local_run.py %1
+C:\THS\ths-cl-migration\local_run.py %1 || pause

@@ -36,4 +36,4 @@ if __name__ == "__main__":
     cmd = [app, file]
     print(cmd)
     subprocess.Popen(cmd)
-    sys.exit(1)
+    sys.exit(0)

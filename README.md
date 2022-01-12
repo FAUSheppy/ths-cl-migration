@@ -78,6 +78,15 @@ For example if you want to split off the start of your *projectId*-field, you ca
 
 ... and then reference this view and it's newly create field "projectid_short" in your document.
 
+# Locally open Documents
+Assuming you are using a samba share accessible to your clients, you can register the *localfile://*-URL with *local\_run.bat* and set the ID-Parameter in *config.py*. To register a custom URL in the windows registry:
+
+- create key localfile in HKEY\_CLASSES\_ROOT
+- create the path shell\open\command
+- change the default value in the command dir (key) to the full path of *local\_run.bat*
+- change any paths for default applications in *local\_run.py* if nessesary
+
+
 # Icinga Monitoring
 The project contains the script *external_monitoring.py*, this script can be use in conjuncting with the [Icinga Async Monitoring Project](https://github.com/FAUSheppy/icinga-webhook-gateway), refer to its README for more information.
 

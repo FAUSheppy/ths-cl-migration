@@ -588,10 +588,13 @@ def newDocumentFromTemplate():
             if reports:
                 reportsPath = "reports"
 
+            pidPrettyString = str(projectId)
+            if len(pidPrettyString) == 8:
+                pidPrettyString = pidPrettyString[:4] + "-" +pidPrettyString[4:]
             if reports:
-                retFname = app.config["REPORTS_FILENAME_PREFIX"] + str(projectId) + "-" + template
+                retFname = app.config["REPORTS_FILENAME_PREFIX"] + pidPrettyString + "-" + template
             else:
-                retFname = app.config["INVOICE_FILENAME_PREFIX"] + str(projectId) + "-" + template
+                retFname = app.config["INVOICE_FILENAME_PREFIX"] + pidPrettyString + "-" + template
 
             path = os.path.join(app.config["DOC_TEMPLATE_PATH"], reportsPath, template)
            

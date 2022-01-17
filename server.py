@@ -659,7 +659,11 @@ def errorhandler(e):
         f.write(traceback.format_exc())
         print(traceback.format_exc())
         f.write("\n====================================\n")
-    return ("Internal Server Error, see error.log in project directory.", 500)
+
+    if isinstance(e, BrokenPipeError):
+        return ("Fehler, wahrscheinlich Samba-Ticket abgelaufen, versuchen sie es in 5-10s nochmal", 500)
+    else:
+        return ("Internal Server Error, see error.log in project directory.", 500)
 
 @app.before_first_request
 def init():

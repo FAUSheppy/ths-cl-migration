@@ -15,8 +15,8 @@ from sqlalchemy import Column, Integer, String, Boolean, or_, and_
 from sqlalchemy.orm import declarative_base
 
 base   = declarative_base()
-engine = sqlalchemy.create_engine('sqlite:///database.sqlite')
-sm = sessionmaker(bind=engine)
+engine = None
+sm =  None
 
 class ProjectPathsByDir(base):
     __tablename__ = "project_paths"
@@ -35,17 +35,23 @@ def sambaRecurse(dirPath):
     dirsToRecurse = []
 
     # check content #
-    print(dirPath)
+    #print(dirPath)
     for el in listing:
         cur = dirPath + "/" + el
         if isdir(cur):
-            print(cur)
+            #print(cur)
             if isProjectDir(el):
                 # pDirPathMap.update({ el  : cur })
                 session = sm()
-                session.merge(ProjectPathsByDir(dirname=el, fullpath=cur))
-                session.commit()
-                print(el, cur)
+
+                existsQuery = session.query(ProjectPathsByDir)
+                result = existsQuery.filter(ProjectPathsByDir.dirname == el).first()
+
+                if not result:
+                    session.merge(ProjectPathsByDir(dirname=el, fullpath=cur))
+                    session.commit()
+                    print(el, cur)
+
             else:
                 dirsToRecurse.append(cur)
         else:
@@ -59,15 +65,19 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Start THS-Contract Locations')
 
+    parser.add_argument('ENGINE',
+        help="Engine connection string, e.g. postgresql+psycopg2://user:pass@localhost/ths")
     parser.add_argument('--smbserver', required=True, help='SMB Server Target')
     parser.add_argument('--smbuser',   required=True, help='SMB User')
     parser.add_argument('--smbpass',   required=True, help='SMB Password')
     parser.add_argument('--smbshare',  required=True, default="THS", help='SMB Password')
 
     parser.add_argument('--start', type=int, default=2008, help='Year to start in')
-    parser.add_argument('--end',   type=int, default=2021, help='Year to end in')
+    parser.add_argument('--end',   type=int, default=2022, help='Year to end in')
 
     args = parser.parse_args()
+    engine = sqlalchemy.create_engine(args.ENGINE)
+    sm = sessionmaker(bind=engine)
     
     base.metadata.create_all(engine)
     

@@ -20,3 +20,6 @@ NOTIFICATION_AUTH_PASS = ""
 # local file id to authenticate with localfile:// runner #
 # if this ID is set localfile-URLs will be generated #
 LOCAL_FILE_ID = "NUMERIC_ID"
+
+REPORTS_FILENAME_PREFIX = "Report-"
+INVOICE_FILENAME_PREFIX = "Invoice-"

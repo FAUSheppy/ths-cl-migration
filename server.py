@@ -588,7 +588,11 @@ def newDocumentFromTemplate():
             if reports:
                 reportsPath = "reports"
 
-            retFname = "P-" + str(projectId) + "-" + template
+            if reports:
+                retFname = app.config["REPORTS_FILENAME_PREFIX"] + str(projectId) + "-" + template
+            else:
+                retFname = app.config["INVOICE_FILENAME_PREFIX"] + str(projectId) + "-" + template
+
             path = os.path.join(app.config["DOC_TEMPLATE_PATH"], reportsPath, template)
            
             #  get instance of template #

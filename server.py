@@ -197,12 +197,12 @@ def smbFileList():
     projectId = int(projectId)
 
     files = None
-    dbPathEmpty = False
+    dbPathEmpty = True
 
     # check if path is known #
     pp = db.session.query(ProjectPath).filter(ProjectPath.projectid == projectId).first()
-    if pp:
-        print("Found cached path {}".format(pp.sambapath))
+    if pp and not pp == "":
+        print("Found cached path '{}'".format(pp.sambapath))
         dbPathEmpty = not bool(pp.sambapath)
         if pp.sambapath:
             files = samba.find(pp.sambapath, None, 0, app, [], 
@@ -230,14 +230,15 @@ def smbFileList():
         files = samba.find(sppi.fullpath, None, 0, app, [], startInProjectDir=True, isFqPath=True)
 
     # generate path keywords to speed up search #
-    prioKeywords = [cl.nachname, cl.firma, cl.auftragsort]
+    prioKeywords = [cl.nachname, cl.firma, cl.auftragsort, cl.bereich]
     prioKeywords += list(filter(lambda x: len(x)>=3, cl.firma.split(" ")))
+    prioKeywords += list(filter(lambda x: len(x)>=3, cl.bereich.split(" ")))
     prioKeywords = list(map(lambda s: s.strip().lower(), prioKeywords))
 
     # filter out keywords that are too common #
-    prioKeywords = list(filter(lambda x: not x.lower() in ["gmbh"], prioKeywords))
+    prioKeywords = list(filter(lambda x: not x in BLACK_LIST_KEYWORDS, prioKeywords))
 
-    if not files and not dbPathEmpty:
+    if not files and dbPathEmpty:
         files = samba.find(smbPath, projectDir, year, app, prioKeywords)
 
     if not files:

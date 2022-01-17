@@ -59,9 +59,6 @@ def buildPath(cl, app):
             dt = "0" + dt
         projectDir  = "P-{}-{}".format(dt, lfn)
 
-
-    
-    print(pathToReturn, projectDir, year, cl.nachname)
     return (pathToReturn, projectDir, year)
 
 def _recursiveFind(base, projectDirToLookFor, inProjectDir, prioKeywords, isHighPrioPath):

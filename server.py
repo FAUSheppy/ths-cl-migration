@@ -639,7 +639,6 @@ def beforeRequest():
             samba.initClient(app.config["SMB_SERVER"], app.config["SMB_USER"],
                                 app.config["SMB_PASS"], app)
             app.config["SAMBA"] = True
-            print("Session Connected")
         except AttributeError as e:
             print("Cannot init samba client: {}".format(e))
             app.config["SAMBA"] = False
@@ -648,7 +647,6 @@ def beforeRequest():
 def afterRequest(response):
     if flask.request.endpoint in ENDPOINTS:
         samba.deleteClient(app)
-        print("Session Disconnected")
     return response
 
 @app.errorhandler(Exception)

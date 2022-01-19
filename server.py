@@ -32,6 +32,7 @@ import filesystem
 import filedetection
 import notifications
 from flask_cors import CORS
+import smbprotocol.exceptions
 
 app = flask.Flask("THS-ContractLocations", static_folder=None)
 CORS(app)
@@ -666,7 +667,9 @@ def errorhandler(e):
         print(traceback.format_exc())
         f.write("\n====================================\n")
 
-    if isinstance(e, BrokenPipeError):
+    if isinstance(e, BrokenPipeError) 
+            or isinstance(e, smbprotocol.exceptions.LogonFailure)
+            or isinstance(e, smbprotocol.exceptions.SMBException):
         return ("Fehler, wahrscheinlich Samba-Ticket abgelaufen, versuchen sie es in 5-10s nochmal", 500)
     else:
         return ("Internal Server Error, see error.log in project directory.", 500)

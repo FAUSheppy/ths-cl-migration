@@ -776,8 +776,11 @@ class DataTable():
         # oder variable for use with sqlalchemy
         if self.orderAsc:
             self.orderAscDbClass = sqlalchemy.asc
+            self.orderAscDbClassReverse = sqlalchemy.desc
         else:
             self.orderAscDbClass = sqlalchemy.desc
+            self.orderAscDbClassReverse = sqlalchemy.asc
+
 
     def __build(self, results, total, filtered):
 
@@ -842,7 +845,7 @@ class DataTable():
                 query  = query.order_by(self.orderAscDbClass(
                                             list(ContractLocation.__table__.c)[self.orderByCol]))
             else:
-                query  = query.order_by(self.orderAscDbClass(ContractLocation.lfn))
+                query  = query.order_by(self.orderAscDbClassReverse(ContractLocation.lfn))
 
             results  = query.offset(self.start).limit(self.length).all()
             total    = query.count()

@@ -15,7 +15,7 @@ SEND_NOTIFICATION   = False
 NOTIFICATION_URL    = "URL"
 NOTIFICATION_USERS  = ["USER_1", "USER_2"]
 NOTIFICATION_AUTH_USER = "AUTH_USER"
-NOTIFICATION_AUTH_PASS = ""
+NOTIFICATION_AUTH_PASS = "PASSWORD"
 
 # local file id to authenticate with localfile:// runner #
 # if this ID is set localfile-URLs will be generated #
@@ -23,3 +23,10 @@ LOCAL_FILE_ID = "NUMERIC_ID"
 
 REPORTS_FILENAME_PREFIX = "Report-"
 INVOICE_FILENAME_PREFIX = "Invoice-"
+
+LOG_SERVER = "URL"
+LOG_AUTH_USER = "AUTH_USER"
+LOG_AUTH_PASS = "PASSWORD"
+
+LOG_SERVICE = "service_name"
+LOG_HOST = "hostname"

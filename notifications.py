@@ -42,3 +42,16 @@ def sendSignal(content, app):
     auth = HTTPBasicAuth(app.config["NOTIFICATION_AUTH_USER"], app.config["NOTIFICATION_AUTH_PASS"])
 
     requests.post(url, json=jsonDict, auth=auth)
+
+def sendError(e, errorLines, app):
+
+    url      = app.config["LOG_SERVER"]
+    jsonDict = { "service" : app.config["LOG_SERVICE"],
+                 "host"    : app.config["LOG_HOST"],
+                 "contentType" : "MULTILINE",
+                 "severity"    : 1,
+                 "content"     : errorLines }
+
+    auth = HTTPBasicAuth(app.config["LOG_AUTH_USER"], app.config["LOG_AUTH_PASS"])
+    r = requests.put(url, json=jsonDict, auth=auth)
+    # print(r.text)

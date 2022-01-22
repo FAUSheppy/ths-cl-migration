@@ -104,6 +104,8 @@ The project contains the script *external_monitoring.py*, this script can be use
       --service-name        Service Name to submit as
       --project-id          A existing project-id to check
 
+# SLS Support
+This project supports [SLS](https://github.com/FAUSheppy/simple-log-server) as a log server. See `LOG_*`variables in example config.
 
 # Wishlist
 

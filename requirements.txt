@@ -9,3 +9,5 @@ WTForms>=3.0.0
 psycopg2>=2.8.6
 flask-cors>=1.0.0
 python-docx>=0.8.11
+pandas>=1.1.5
+xlrd>=2.0.1

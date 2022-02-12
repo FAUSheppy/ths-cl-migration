@@ -364,4 +364,26 @@ function saveDocumentTemplate(projectId, templateKey, samba, reports){
 
 }
 
+var check = null;
+
+function startEditQuery() {
+    if (check == null) {
+        var pid = 0; // TODO
+        check = setInterval(function () {
+            fetch("/modifying?pid=" + pid).then(r => {
+                r.text().then( text => {
+                    if(text != ""){
+                        console.log("Already open by another PC")
+                    }
+                })
+            })
+        }, 3000);
+    }
+}
+
+function stopEditQuery() {
+    clearInterval(check);
+    check = null;
+}
+
 $('#tableMain').on('click', 'tbody td', modalSpawn)

@@ -356,6 +356,38 @@ def upload_file():
             return ("No such file: {}".format(fullpath), 404)
     else:
         return ("{} not implemented".format(flask.request.method), 405)
+        
+@app.route("/modifying")
+def isBeingModifyed():
+    
+    pid = flask.request.args.get("pid")
+    lockRequester = flask.request.args.get("src")
+    
+    if not pid:
+        return ("Missing PID Parameter", 406)
+    elif not lockRequester:
+        return ("Missing SRC Parameter", 406)
+        
+    filterQuery = db.session.query(ModStatus).filter(ModStatus.projectid == int(pid))
+    orderQuery  = filter.order_by(sqlalchemy.desc(ModStatus.lastRenew))
+    
+    for modstatus in orderQuery.all():
+        parsed = datetime.datetime.fromtimestamp(modstatus.lastRenew)
+        if datetime.datetime.now() - parsed > datetime.timedelta(seconds=10):
+            db.session.delete(modstatus)
+            db.session.commit()
+            continue
+        elif modstatus.lockHolder == src:
+            break;
+        else:
+            return (modstatus.lockHolder, 200) # inform client he is not lockholder
+            
+    db.session.merge(ModStatus(pid, datetime.datetime.now().timestamp(), src))
+    db.session.commit()
+    
+    return ("",  204) # all ok, no or only outdated entries
+            
+    
 
 @app.route("/", methods=["GET", "POST", "DELETE", "PATCH"])
 def root():
@@ -700,6 +732,12 @@ def init():
     db.session.commit()
     print("Init Done")
 
+class ModStatus(db.Model):
+    __tablename__ = "modification_status"
+    projectid     = Column(Integer, primary_key=True)
+    lastRenew     = Column(Integer)
+    lockHolder    = Column(String)
+    
 class AssotiatedFile(db.Model):
     __tablename__ = "files"
     fullpath      = Column(String, primary_key=True)

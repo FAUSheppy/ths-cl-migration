@@ -138,7 +138,7 @@ function reloadFileList(){
             }
         })
     })
-    
+    // TODO reload bwa info here 
 }
 
 function dropHandler(ev) {

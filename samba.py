@@ -145,3 +145,15 @@ def carefullySaveFile(content, path):
         with smbclient.open_file(path, "wb") as fd:
             fd.write(content)
         return (path, None)
+
+def filesystemInfo(dirPath):
+    listing = smbclient.listdir(base)
+    for name in listing:
+        if name.startswith("R-") and name.endswith(".docx"):
+            # TODO find netoo
+            # TODO find brutto
+            # TODO find last print
+            pass
+        return (datetime.datetime.now(), 300.2, 120.20) #TODO
+
+    return (None, None, None)

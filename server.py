@@ -31,6 +31,7 @@ from formentry import FormEntry, formEntryArrayFromColNames
 import filesystem
 import filedetection
 import notifications
+import bwa
 from flask_cors import CORS
 import smbprotocol.exceptions
 
@@ -562,6 +563,48 @@ def curMaxSequenceNumber():
                             "projectIdNumneric" : projectId,
                             "projectIdColoq" : projectIdColoq }), 
                                 200, mimetype='application/json')
+
+@app.route("/bwa")
+def bwa():
+
+    projectId = flask.request.args.get("projectId")
+    container = bool(flask.request.args.get("container"))
+
+    lfn = int(projectId[4:])
+
+    if not projectId.startswith("22") or lfn < 977:
+        return ("BWA Entries before P-2201-0977 are not supported", 401)
+
+    if bwa.checkFileLocked(app.config["BWA_FILE"]):
+        return ("BWA File locked, refusing modification, close the file on all computers", 500)
+
+    bwaEntry = bwa.getBwaEntryForLfn(app.config["BWA_FILE"], app, lfn)
+    dbEntry  = db.session.query(ContractLocation).filter(
+                    ContractLocation.projectid == projectId).first()
+
+    # check if a project path is availiable #
+    pp = db.session.query(ProjectPath).filter(ProjectPath.projectid == projectId).first()
+    projectPathAvailiable = False
+    if pp and app.config["SAMBA"]:
+        projectPathAvailiable = bool(pp.sambapath)
+
+    filesystemInfo = None
+    if projectPathAvailiable:
+        filesystemInfo = samba.filesystemInfo(pp.sambapath)
+
+    diff = bwaEntry.equalsDbEntry(dbEntry)
+
+    if container:
+        return flask.render_template("bwa_container_info.html", bwaEntry=bwaEntry,
+                                        dbEntry=dbEntry, filesystemInfo=filesystemInfo)
+
+    if not bwaEntry:
+        return flask.render_template("bwa_empty.html", dbEntry=dbEntry)
+    elif diff:
+        return flask.render_template("bwa_identical.html", dbEntry=dbEntry, bwaEntry=bwaEntry)
+    else:
+        return flask.render_template("bwa_conflict.html", dbEntry, bwaEntry=bwaEntry, diff=diff)
+    
 
 @app.route("/new-document")
 def newDocumentFromTemplate():

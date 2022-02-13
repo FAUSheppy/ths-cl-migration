@@ -6,6 +6,8 @@
 *.docx
 *.sqlite-journal
 *.dotx
+*.xls
+*.xlsx
 
 __pycache__/
 static/

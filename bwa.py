@@ -63,7 +63,7 @@ class BWAEntry:
         return "{pid} by {source} of type {tt} on {date}".format(
                         pid=self.pid, source=self.auftraggeber, tt=self.typeRaw, date=self.date)
 
-def getBwaEntryForLfn(filename, app, getRowByLfn):
+def getBwaEntryForLfn(filename, getRowByLfn):
     wb = xlrd.open_workbook(filename, formatting_info=True)
     firstSheet = wb.sheets()[0]
     
@@ -76,9 +76,15 @@ def getBwaEntryForLfn(filename, app, getRowByLfn):
     # check & fallback
     while (targetRow > 0 and
             targetRow < firstSheet.nrows):
-            
+    
+        print("Target Row:", targetRow)
+
         row = firstSheet.row(targetRow)
-        foundLfn = int(row[BWA_COL_LFN].value)
+        foundLfn = None
+        try:
+            foundLfn = int(row[BWA_COL_LFN].value)
+        except ValueError:
+            return None
         if foundLfn == getRowByLfn:
             color = getColorOfRow(firstSheet, wb, targetRow)
             return BWAEntry(row, color)
@@ -99,3 +105,10 @@ def getColorOfRow(sheet, wb, row):
     
 def checkFileLocked(filename):
     return False # TODO
+
+def getPaidStateForFile(smbfile, app):
+    tmp = smbfile.split(".docx")[0].split("-")
+    lfn = int(tmp[-1])
+    pidShort = tmp[-2]
+    entry = getBwaEntryForLfn(app.config["BWA_FILE"], lfn)
+    return entry and entry.state == 10

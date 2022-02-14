@@ -7,9 +7,10 @@
         {{ basePath }}
     </p>
     {% endif %}
-    <table class="w-50">
+    <table class="w-100">
     <tr>
         <th style="font-size: 20px !important;">Dateinamen</th>
+        <th style="font-size: 20px !important;">Info</th>
         <th style="font-size: 20px !important;">Typ</th>
         <th style="font-size: 20px !important;"></th>
     </tr>
@@ -22,15 +23,25 @@
             <a href="/files?fullpath={{ fileListItem.fullpath }}">{{ fileListItem.name }}</a>
             {% endif %}
         </td>
-        <td style="font-size: 20px">{{ fileListItem.fileType }}</td>
+        <td>
+           {% if fileListItem.extraInfo %}
+              {% if fileListItem.extraInfo.alreadyPaid %}
+                 <p style="color: darkgreen;">Rechnung Bezahlt (BWA)</p>
+              {% elif fileListItem.extraInfo.lastPrinted %}
+                 <p style="color: orange;">
+                 Rechnung gedruckt am {{ fileListItem.extraInfo.lastPrinted.strftime("%d.%m.%y") }}
+                 </p>
+              {% else %}
+                 <p style="color: red;">Rechnung offen ({{ fileListItem.extraInfo.netto }} €)</p>
+              {% endif %}
+           {% endif %}
+        </td>
+        <td class="float-left" style="font-size: 20px">{{ fileListItem.fileType }}</td>
         {% if fileListItem.deletable %}
         <td><button onclick="deleteFile('{{ fileListItem.fullpath }}')">Delete</button></td>
         {% endif %}
     </tr>
     {% endfor %}
     </table>
-    <div class="w-50" id="bwa-info-target">
-        <!-- TODO load bwa info into here -->
-    </div>
 </div>
 {% endif %}

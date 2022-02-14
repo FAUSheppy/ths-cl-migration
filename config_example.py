@@ -1,6 +1,9 @@
 UPLOAD_FOLDER = "uploads/"
 SECRET_KEY    = "SECRET"
 
+TMP_DIR = "tmp-files/"
+BWA_FILE = "BWA 2022.xls"
+
 SQLALCHEMY_DATABASE_URI = "sqlite:///database.sqlite"
 SMB_SERVER = "IP"
 SMB_USER   = "user"

@@ -7,6 +7,16 @@ import shutil
 import werkzeug
 import zipfile
 
+class ExtraInfo:
+
+    def __init__(self, lastPrinted, brutto, vat, netto, alreadyPaid=False):
+
+        self.lastPrinted = lastPrinted
+        self.brutto = brutto
+        self.vat = vat
+        self.netto = netto
+        self.alreadyPaid = alreadyPaid
+
 class FileItem:
 
     def __init__(self, fullpath, fileType, samba=False):
@@ -15,6 +25,7 @@ class FileItem:
         self.fileType = fileType
         self.deletetable = not samba
         self.localpath = ""
+        self.extraInfo = None
 
 def itemsArrayFromDbEntries(dbEntries):
     if not dbEntries:

@@ -259,7 +259,7 @@ def smbFileList():
         db.session.commit()
 
         # generate response
-        fileListItems = samba.filesToFileItems(files)
+        fileListItems = samba.filesToFileItems(files, app)
 
         if fileListItems:
             replace  = "\\\\{}\\{}".format(app.config["SMB_SERVER"], app.config["SMB_SHARE"])
@@ -590,7 +590,7 @@ def bwa():
 
     filesystemInfo = None
     if projectPathAvailiable:
-        filesystemInfo = samba.filesystemInfo(pp.sambapath)
+        filesystemInfo = samba.filesystemInfoDir(pp.sambapath, app)
 
     diff = bwaEntry.equalsDbEntry(dbEntry)
 

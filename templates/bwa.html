@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+	{% include 'head.html' %}
+</head>
+
+<body>
+  {% include 'navbar.html' %}
+
+  {% if not bwaEntry and dbEntry %}
+    <h4>
+        Die BWA Enthält diese Laufnummer noch nicht.
+    </h4>
+    <!-- TODO show bwa entry that would be created -->
+    <button class="btn btn-pimary" onclick="submitToBwa()">
+        Eintrag in BWA hinzufügen
+    </button>
+  {% elif bwaEntry and dbEntry and not diff %}
+    <h4>
+        Die BWA Enthält diese Laufnummer und die Daten sind identisch.
+    </h4>
+    <!-- TODO show bwa entry that exits -->
+  {% elif bwaEntry and diff and dbEntry  %}
+    <h4>
+        Die BWA enthält bereits einen Datensatz mit dieser Laufnummer 
+        und es besteht ein Konflikt zwischen den Daten.
+    </h4>
+    <button class="btn btn-pimary" onclick="submitToBwa()">
+        Eintrag in BWA Überschreiben
+    </button>
+    <!-- TODO show bwa and db entry entry that would be created -->
+  {% else %}
+    <h4>
+        Ein unbekannter Fehler ist aufgetreten. Möglicherweise ist die BWA nicht lesbar oder
+        der Datensatz/die Laufnummer ist nicht gültig.
+    </h4>
+  {% endif %}
+
+    
+</body>
+
+</html>

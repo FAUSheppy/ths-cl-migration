@@ -63,15 +63,16 @@ class BWAEntry:
         return "{pid} by {source} of type {tt} on {date}".format(
                         pid=self.pid, source=self.auftraggeber, tt=self.typeRaw, date=self.date)
 
-def getBwaEntryForLfn(filename, getRowByLfn):
-    wb = xlrd.open_workbook(filename, formatting_info=True)
-    firstSheet = wb.sheets()[0]
-    
-    getHeaderRow = firstSheet.row(0)
+def _getLineNrFromLfn(wbSheet, lfn, mustExist=True):
+
+    getHeaderRow = wbSheet.row(0)
     firstRowLfn = int(firstSheet.row(1)[BWA_COL_LFN].value)
 
     # naive assumption first
     targetRow = getRowByLfn - firstRowLfn + 1
+
+    if not mustExist:
+        return targetRow
         
     # check & fallback
     while (targetRow > 0 and
@@ -85,17 +86,51 @@ def getBwaEntryForLfn(filename, getRowByLfn):
             foundLfn = int(row[BWA_COL_LFN].value)
         except ValueError:
             return None
+
         if foundLfn == getRowByLfn:
-            color = getColorOfRow(firstSheet, wb, targetRow)
-            return BWAEntry(row, color)
+            return targetRow
         elif foundLfn > getRowByLfn:
             targetRow -= 1
         else:
             targetRow +=1
-        print("Warning unexpected LFN ({}) in row {}".format(
-                        foundLfn, targetRow))
-                        
+
+        print("Warning unexpected LFN ({}) in row {}".format(foundLfn, targetRow))
+
     return None
+
+
+def saveClToBwa(filename, cl, owerwrite=False):
+
+    wb = xlrd.open_workbook(filename, formatting_info=True)
+    firstSheet = wb.sheets()[0]
+    targetRow = _getLineNrFromLfn(getRowByLfn, mustExist=False) 
+    row = firstSheet.rows()[targetRow]
+
+    for i in range(1, 11):
+        if row[i].value == "":
+            row[i].value == cl.getBwaCol(i)
+
+    wb.save()
+    finally:
+        wb.close()
+
+
+
+def getBwaEntryForLfn(filename, getRowByLfn):
+
+    wb = xlrd.open_workbook(filename, formatting_info=True)
+    firstSheet = wb.sheets()[0]
+    targetRow = _getLineNrFromLfn(getRowByLfn, mustExist=True) 
+
+    if not targetRow:
+        return None
+    else:
+        color = getColorOfRow(firstSheet, wb, targetRow)
+        row = firstSheet.rows()[targetRow]
+        return BWAEntry(row, color)
+
+    finally:
+        wb.close()
 
 def getColorOfRow(sheet, wb, row):
     cellXfIndex = sheet.cell_xf_index(row, 0)

@@ -566,14 +566,14 @@ def curMaxSequenceNumber():
 
 
 @app.route("/bwa", methods=["GET", "POST"])
-def bwa():
+def bwaFunction():
 
     if flask.request.method == "POST":
         projectId = flask.request.json["projectid"]
         cl = db.session.query(ContractLocation).filter(
-                                ContractLocation.projectid = projectId).first()
+                                ContractLocation.projectid == projectId).first()
         bwa.saveClToBwa(app.config["BWA_FILE"], cl, overwrite=flask.request.json["overwrite"])
-        return (204, "")
+        return ("", 204)
     else:
         projectId = flask.request.args.get("projectid")
         container = bool(flask.request.args.get("container"))
@@ -586,7 +586,7 @@ def bwa():
         if bwa.checkFileLocked(app.config["BWA_FILE"]):
             return ("BWA File locked, refusing modification, close the file on all computers", 500)
 
-        bwaEntry = bwa.getBwaEntryForLfn(app.config["BWA_FILE"], app, lfn)
+        bwaEntry = bwa.getBwaEntryForLfn(app.config["BWA_FILE"], lfn)
         dbEntry  = db.session.query(ContractLocation).filter(
                         ContractLocation.projectid == projectId).first()
 
@@ -600,13 +600,16 @@ def bwa():
         if projectPathAvailiable:
             filesystemInfo = samba.filesystemInfoDir(pp.sambapath, app)
 
-        diff = bwaEntry.equalsDbEntry(dbEntry)
+        if bwaEntry:
+            diff = bwaEntry.equalsDbEntry(dbEntry)
+        else:
+            diff = None
 
         if container:
             return flask.render_template("bwa_container_info.html", bwaEntry=bwaEntry,
                                             dbEntry=dbEntry, filesystemInfo=filesystemInfo)
 
-        return flask.render_template("bwa.html", dbEntry, bwaEntry=bwaEntry, diff=diff)
+        return flask.render_template("bwa.html", dbEntry=dbEntry, bwaEntry=bwaEntry, diff=diff)
     
 
 @app.route("/new-document")
@@ -825,6 +828,31 @@ class ContractLocation(db.Model):
         nr = int(nr)
         value = getattr(self, getDbSchema()[nr])
         return value
+
+    def getBwaCol(self, col):
+        if col == 0:
+            return str(self.projectid)[:4]
+        elif col == 1:
+            return self.lfn
+        elif col == 2: # auftraggeber
+            if self.firma:
+                return self.firma
+            else:
+                return "{} {} {}".format(self.geschlecht, self.vorname, self.nachname)
+        elif col == 3: # type, TODO from filesystem
+            return "" 
+        elif col == 4:
+            return self.auftragsdatum
+        elif col == 5: # netto
+            return "" # TODO from filsystem
+        elif col == 6: # brutto
+            return "" # TODO from filsystem
+        elif col == 7:
+            return ""
+        elif col == 8:
+            return ""
+        else:
+            return ""
 
 class SearchHelper(db.Model):
     __tablename__ = "search_helper"

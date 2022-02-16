@@ -188,7 +188,9 @@ def _fsInfoFile(smbfile, app):
 
 def filesystemInfoDir(dirPath, app):
 
-    listing = smbclient.listdir(base)
+    dirPath = dirPath.replace("/","\\")
+    print(dirPath)
+    listing = smbclient.listdir(dirPath)
     for name in listing:
         ret = _fsInfoFile(name)
         if ret:

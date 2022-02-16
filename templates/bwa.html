@@ -5,6 +5,19 @@
 </head>
 
 <body>
+  <script>
+    function submitToBwa(){
+        fetch("/bwa", {
+                method : "POST",
+                body: JSON.stringify({ projectid : {{ dbEntry.projectid }}, overwrite : "False" }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+        }).then( r => {
+            console.log(r)
+        })
+    }
+  </script>
   {% include 'navbar.html' %}
 
   {% if not bwaEntry and dbEntry %}
@@ -12,6 +25,9 @@
         Die BWA Enthält diese Laufnummer noch nicht.
     </h4>
     <!-- TODO show bwa entry that would be created -->
+    {% for key, value in dbEntry.__dict__.items() %}
+        <p>{{ key }}:{{ value }}</p>
+    {% endfor %}
     <button class="btn btn-pimary" onclick="submitToBwa()">
         Eintrag in BWA hinzufügen
     </button>

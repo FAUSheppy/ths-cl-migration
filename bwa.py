@@ -1,4 +1,6 @@
 import xlrd
+import xlutils.copy
+import os
 
 BWA_COL_LFN = 1
 
@@ -56,8 +58,13 @@ class BWAEntry:
         return COLOR_ID_TO_COLOR_NAME[self.color]
 
     def equalsDbEntry(self, dbEntry):
-        
-        return None
+        diff = dict()
+        for col in range(0, 11):
+            dbValue = dbEntry.getBwaCol(col)
+            bwaValue = self.rawRow[col].value
+            if dbValue and dbValue != bwaValue:
+                diff.update( { col : (bwaValue, dbValue) } )
+        return diff
 
     def __repr__(self):
         return "{pid} by {source} of type {tt} on {date}".format(
@@ -66,30 +73,30 @@ class BWAEntry:
 def _getLineNrFromLfn(wbSheet, lfn, mustExist=True):
 
     getHeaderRow = wbSheet.row(0)
-    firstRowLfn = int(firstSheet.row(1)[BWA_COL_LFN].value)
+    firstRowLfn = int(wbSheet.row(1)[BWA_COL_LFN].value)
 
     # naive assumption first
-    targetRow = getRowByLfn - firstRowLfn + 1
+    targetRow = lfn - firstRowLfn + 1
 
     if not mustExist:
         return targetRow
         
     # check & fallback
     while (targetRow > 0 and
-            targetRow < firstSheet.nrows):
+            targetRow < wbSheet.nrows):
     
         print("Target Row:", targetRow)
 
-        row = firstSheet.row(targetRow)
+        row = wbSheet.row(targetRow)
         foundLfn = None
         try:
             foundLfn = int(row[BWA_COL_LFN].value)
         except ValueError:
             return None
 
-        if foundLfn == getRowByLfn:
+        if foundLfn == lfn:
             return targetRow
-        elif foundLfn > getRowByLfn:
+        elif foundLfn > lfn:
             targetRow -= 1
         else:
             targetRow +=1
@@ -99,38 +106,35 @@ def _getLineNrFromLfn(wbSheet, lfn, mustExist=True):
     return None
 
 
-def saveClToBwa(filename, cl, owerwrite=False):
+def saveClToBwa(filename, cl, overwrite=False):
 
-    wb = xlrd.open_workbook(filename, formatting_info=True)
-    firstSheet = wb.sheets()[0]
-    targetRow = _getLineNrFromLfn(getRowByLfn, mustExist=False) 
-    row = firstSheet.rows()[targetRow]
+    rb = xlrd.open_workbook(filename, formatting_info=True)
+    wb = xlutils.copy.copy(rb)
+    firstSheet = rb.sheets()[0]
+    targetRow = _getLineNrFromLfn(firstSheet, cl.lfn, mustExist=False)
+    row = firstSheet.row(targetRow)
 
-    for i in range(1, 11):
-        if row[i].value == "":
-            row[i].value == cl.getBwaCol(i)
+    for i in range(0, 11):
+        clValue = cl.getBwaCol(i)
+        if (row[i+1].value == "" or overwrite) and clValue:
+            print("Writing to {}-{}: {}".format(targetRow, i, clValue))
+            wb.get_sheet(0).write(targetRow, i, clValue)
 
-    wb.save()
-    finally:
-        wb.close()
-
+    wb.save(filename)
 
 
 def getBwaEntryForLfn(filename, getRowByLfn):
 
-    wb = xlrd.open_workbook(filename, formatting_info=True)
-    firstSheet = wb.sheets()[0]
-    targetRow = _getLineNrFromLfn(getRowByLfn, mustExist=True) 
+    with  xlrd.open_workbook(filename, formatting_info=True) as wb:
+        firstSheet = wb.sheets()[0]
+        targetRow = _getLineNrFromLfn(firstSheet, getRowByLfn, mustExist=True) 
 
-    if not targetRow:
-        return None
-    else:
-        color = getColorOfRow(firstSheet, wb, targetRow)
-        row = firstSheet.rows()[targetRow]
-        return BWAEntry(row, color)
-
-    finally:
-        wb.close()
+        if not targetRow:
+            return None
+        else:
+            color = getColorOfRow(firstSheet, wb, targetRow)
+            row = firstSheet.row(targetRow)
+            return BWAEntry(row, color)
 
 def getColorOfRow(sheet, wb, row):
     cellXfIndex = sheet.cell_xf_index(row, 0)
@@ -139,7 +143,11 @@ def getColorOfRow(sheet, wb, row):
     return bgc
     
 def checkFileLocked(filename):
-    return False # TODO
+    dirname = os.path.dirname(filename)
+    if dirname == "":
+        dirname = "."
+    return any([ "lock" in x for x in os.listdir(dirname)])
+
 
 def getPaidStateForFile(smbfile, app):
     tmp = smbfile.split(".docx")[0].split("-")

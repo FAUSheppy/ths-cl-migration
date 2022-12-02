@@ -17,21 +17,7 @@ def _buildSmbPath(path, app):
 def buildPath(cl, app):
 
     base = "THS_Proj"
-    nrStr = str(cl.projectid)
-    
-    try:
-        year = datetime.datetime.strptime(cl.auftragsdatum, DB_DATE_FORMAT).year
-    except ValueError:
-        year = 2000 + int(nrStr[-7:-5])
-        print("Failed to parse date correctly, assuming {} form projectId".format(year))
-        if year < 2008:
-            try:
-                year = int(cl.auftragsdatum.split(".")[-1])
-                print("Too early, trying to strip from maleformed date anyway, got {}".format(year))
-            except ValueError as e:
-                print("Unparsable, cannot determine path: {}".format(e))
-                return ("", "", "")
-
+    year = cl.getProjectYear()
     path = base + "\Jahr " + str(year) 
     pathWithName = path + "\\" + cl.nachname.strip() 
 
@@ -46,23 +32,8 @@ def buildPath(cl, app):
         pathToReturn = path
 
     # build p-dir based on format of the give year # 
-    if year < 2020:
-        endIdent = nrStr[-5:]
-        yearIdent = nrStr[-7:-5]
-        monthIdent = nrStr[:-7]
-        if len(monthIdent) == 1:
-            monthIdent = "0" + monthIdent
-        projectDir  = "P-{month}-{year}-{end}".format(month=monthIdent, year=yearIdent, 
-                                                            end=endIdent)
-    else:
-        lfn = nrStr[-4:]
-        dt  = nrStr[:-4]
-        assert len(dt) >= 3
-        if len(dt) == 3:
-            dt = "0" + dt
-        projectDir  = "P-{}-{}".format(dt, lfn)
 
-    return (pathToReturn, projectDir, year)
+    return (pathToReturn, cl.getProjectDir(), year)
 
 def _recursiveFind(base, projectDirToLookFor, inProjectDir, prioKeywords, isHighPrioPath):
 

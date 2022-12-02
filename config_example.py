@@ -33,3 +33,5 @@ LOG_AUTH_PASS = "PASSWORD"
 
 LOG_SERVICE = "service_name"
 LOG_HOST = "hostname"
+
+FILESYSTEM_PROJECTS_BASE_PATH = "/path/to/files/"

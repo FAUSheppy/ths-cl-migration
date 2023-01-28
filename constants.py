@@ -43,3 +43,6 @@ HTML_DATE_FORMAT = "%Y-%m-%d"
 COLS_IGNORE_LIST = ["_sa_instance_state", "date_parsed"]
 
 BLACK_LIST_KEYWORDS = ["gmbh", "hausverwaltung", "i.v."]
+WARNING_PATH_EXISTS_NO_CHANGE = '''Eine Datei oder ein Ordner mit diesem Name existiert bereits.<br>Es wurden keine Änderungen vorgenommen.<br>Pfad: {}'''
+WARNING_SAMBA_TICKET_EXPIRED = "Fehler, wahrscheinlich Samba-Ticket abgelaufen, versuchen sie es in 5-10s nochmal"
+WARNING_INTERNAL_SERVER_ERROR = "Interner Serverfehler"

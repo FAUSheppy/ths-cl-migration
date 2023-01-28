@@ -36,7 +36,8 @@ def save(projectId, fullpath, projectDir):
 
 def inotifyRun():
 
-    inotifyMask = (IN_MOVE | IN_CREATE | IN_DELETE | IN_ONLYDIR | IN_ISDIR)
+    inotifyMask = (IN_MOVE | IN_CREATE | IN_DELETE | IN_DELETE_SELF | IN_ONLYDIR | IN_ISDIR)
+    inotifyMask = IN_ALL_EVENTS
     i = inotify.adapters.InotifyTree(FILESYSTEM_PROJECTS_BASE_PATH, mask=inotifyMask)
 
     for event in i.event_gen(yield_nones=False):

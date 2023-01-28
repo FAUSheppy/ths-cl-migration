@@ -5,6 +5,7 @@ TMP_DIR = "tmp-files/"
 BWA_FILE = "BWA 2022.xls"
 
 SQLALCHEMY_DATABASE_URI = "sqlite:///database.sqlite"
+SAMBA = False # enable samba clients
 SMB_SERVER = "IP"
 SMB_USER   = "user"
 SMB_PASS   = "password"

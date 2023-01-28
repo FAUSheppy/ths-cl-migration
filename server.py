@@ -25,6 +25,7 @@ import flask_wtf as fwtf
 import wtforms as forms
 import wtforms.validators as validators
 
+import error
 from constants import *
 from formentry import FormEntry, formEntryArrayFromColNames
 
@@ -119,7 +120,7 @@ def submitProjectPath():
         # check the path #
         print("path:", path)
         try:
-            files = samba.find(path, None, 0, app, [], startInProjectDir=True, isFqPath=True)
+            files = fsbackend.find(path, None, 0, app, [], startInProjectDir=True, isFqPath=True)
         except ValueError as e:
             response = flask.Response("Bad path: {}".format(e), 404, mimetype='application/json')
             return response
@@ -127,7 +128,7 @@ def submitProjectPath():
             response = flask.Response("Path does not exist", 404)
             return response
         else:
-            db.session.merge(ProjectPath(projectid=projectId, sambapath=path))
+            db.session.merge(ProjectPath(projectid=projectId, projectpath=path))
             db.session.commit()
             response = flask.Response("", 204)
             return response
@@ -204,14 +205,14 @@ def smbFileList():
     # check if path is known #
     pp = db.session.query(ProjectPath).filter(ProjectPath.projectid == projectId).first()
     if pp and not pp == "":
-        print("Found cached path '{}'".format(pp.sambapath))
-        dbPathEmpty = not bool(pp.sambapath)
-        if pp.sambapath:
-            files = samba.find(pp.sambapath, None, 0, app, [], 
+        print("Found cached path '{}'".format(pp.projectpath))
+        dbPathEmpty = not bool(pp.projectpath)
+        if pp.projectpath:
+            files = fsbackend.find(pp.projectpath, None, 0, app, [], 
                                     startInProjectDir=True, isFqPath=True)
              # delete db entry if fail #
             if not files:
-                pp.sambapath == ""
+                pp.projectpath == ""
                 db.session.merge(pp)
                 db.session.commit()
 
@@ -222,14 +223,14 @@ def smbFileList():
         return ("No project for this ID", 404)
 
     # generate path and pdir #
-    smbPath, projectDir, year = samba.buildPath(cl, app)
+    smbPath, projectDir, year = fsbackend.buildPath(cl, app)
 
     # check in the static index for the pdir #
     sppi = db.session.query(StaticProjectPathIndex).filter(
                     StaticProjectPathIndex.dirname == projectDir).first()
     if sppi:
         print("Found entry in static index, trying: {}".format(sppi.fullpath))
-        files = samba.find(sppi.fullpath, None, 0, app, [], startInProjectDir=True, isFqPath=True)
+        files = fsbackend.find(sppi.fullpath, None, 0, app, [], startInProjectDir=True, isFqPath=True)
 
     # generate path keywords to speed up search #
     prioKeywords = [cl.nachname, cl.firma, cl.auftragsort, cl.bereich]
@@ -241,10 +242,10 @@ def smbFileList():
     prioKeywords = list(filter(lambda x: not x in BLACK_LIST_KEYWORDS, prioKeywords))
 
     if not files and dbPathEmpty:
-        files = samba.find(smbPath, projectDir, year, app, prioKeywords)
+        files = fsbackend.find(smbPath, projectDir, year, app, prioKeywords)
 
     if not files:
-        db.session.merge(ProjectPath(projectid=projectId, sambapath=""))
+        db.session.merge(ProjectPath(projectid=projectId, projectpath=""))
         db.session.commit()
         return flask.render_template("samba-file-not-found.html", projectDir=projectDir,
                                         searchPath=smbPath, keywords=prioKeywords,
@@ -254,12 +255,12 @@ def smbFileList():
 
         # record project dir #
         trueProjectDir = os.path.dirname(files[0])
-        db.session.merge(ProjectPath(projectid=projectId, sambapath=trueProjectDir))
+        db.session.merge(ProjectPath(projectid=projectId, projectpath=trueProjectDir))
         print("Recorded {} for {}".format(trueProjectDir, projectId))
         db.session.commit()
 
         # generate response
-        fileListItems = samba.filesToFileItems(files, app)
+        fileListItems = fsbackend.filesToFileItems(files, app)
 
         if fileListItems:
             replace  = "\\\\{}\\{}".format(app.config["SMB_SERVER"], app.config["SMB_SHARE"])
@@ -332,7 +333,7 @@ def upload_file():
         isSamba = fullpath.startswith("\\\\")
 
         if isSamba:
-            response = flask.make_response(samba.getFile(fullpath))
+            response = flask.make_response(fsbackend.getFile(fullpath))
             response.headers.set('Content-Type', mimetypes.guess_type(fullpath))
             name = os.path.basename(fullpath)
             response.headers.set('Content-Disposition', 'attachment', filename=name)
@@ -567,50 +568,7 @@ def curMaxSequenceNumber():
 
 @app.route("/bwa", methods=["GET", "POST"])
 def bwaFunction():
-
-    if flask.request.method == "POST":
-        projectId = flask.request.json["projectid"]
-        cl = db.session.query(ContractLocation).filter(
-                                ContractLocation.projectid == projectId).first()
-        bwa.saveClToBwa(app.config["BWA_FILE"], cl, overwrite=flask.request.json["overwrite"])
-        return ("", 204)
-    else:
-        projectId = flask.request.args.get("projectid")
-        container = bool(flask.request.args.get("container"))
-
-        lfn = int(projectId[4:])
-
-        if not projectId.startswith("22") or lfn < 977:
-            return ("BWA Entries before P-2201-0977 are not supported", 401)
-
-        if bwa.checkFileLocked(app.config["BWA_FILE"]):
-            return ("BWA File locked, refusing modification, close the file on all computers", 500)
-
-        bwaEntry = bwa.getBwaEntryForLfn(app.config["BWA_FILE"], lfn)
-        dbEntry  = db.session.query(ContractLocation).filter(
-                        ContractLocation.projectid == projectId).first()
-
-        # check if a project path is availiable #
-        pp = db.session.query(ProjectPath).filter(ProjectPath.projectid == projectId).first()
-        projectPathAvailiable = False
-        if pp and app.config["SAMBA"]:
-            projectPathAvailiable = bool(pp.sambapath)
-
-        filesystemInfo = None
-        if projectPathAvailiable:
-            filesystemInfo = samba.filesystemInfoDir(pp.sambapath, app)
-
-        if bwaEntry:
-            diff = bwaEntry.equalsDbEntry(dbEntry)
-        else:
-            diff = None
-
-        if container:
-            return flask.render_template("bwa_container_info.html", bwaEntry=bwaEntry,
-                                            dbEntry=dbEntry, filesystemInfo=filesystemInfo)
-
-        return flask.render_template("bwa.html", dbEntry=dbEntry, bwaEntry=bwaEntry, diff=diff)
-    
+    bwa.bwa()
 
 @app.route("/new-document")
 def newDocumentFromTemplate():
@@ -621,7 +579,7 @@ def newDocumentFromTemplate():
     reports   = flask.request.args.get("reports")  == "true"
     
     documentTemplateDict = filesystem.getTemplates()
-    saveToSamba = bool(flask.request.args.get("saveToSamba"))
+    directSave = bool(flask.request.args.get("directSave"))
 
     yearFilter = ""
     if reports:
@@ -651,7 +609,7 @@ def newDocumentFromTemplate():
         pp = db.session.query(ProjectPath).filter(ProjectPath.projectid == projectId).first()
         projectPathAvailiable = False
         if pp and app.config["SAMBA"]:
-            projectPathAvailiable = bool(pp.sambapath)
+            projectPathAvailiable = bool(pp.projectpath)
 
         return flask.render_template("select_template.html",
                                         templatesDict=documentTemplateDict,
@@ -664,7 +622,6 @@ def newDocumentFromTemplate():
         if not template in documentTemplateDict:
             return ("Template not found", 404)
         else:
-        
             # handle reports subdir
             reportsPath = ""
             if reports:
@@ -682,26 +639,11 @@ def newDocumentFromTemplate():
            
             #  get instance of template #
             instance = filesystem.getDocumentInstanceFromTemplate(path, projectId, entry.lfn, app)
-
-            if saveToSamba:
+            if directSave:
                 pp = db.session.query(ProjectPath).filter(
                                         ProjectPath.projectid == projectId).first()
-                if pp and pp.sambapath:
-                    spath, error = samba.carefullySaveFile(instance, pp.sambapath + "/" + retFname)
-
-                    if error:
-                        spath = error
-
-                    if spath:
-                        # TODO fix this mess
-                        spath = spath.replace("\\\\" + app.config["SMB_SERVER"] + "\\" + app.config["SMB_SHARE"], app.config["SMB_DRIVE"])
-                        spath = spath.replace("/", "\\")
-
-                    if error:
-                        return ("Fehler beim Speichern: \n\n{}".format(spath), 510)
-                    else:
-                        return ("Abgespeichert in:\n\n{}".format(spath), 200)
-                    
+                if pp and pp.projectpath:
+                    fsbackend.carefullySaveFile(instance, os.path.join(pp.projectpath, retFname))
                 else:
                     return ("Fehler: Projekt nicht mehr mit einem Pfad assoziert", 404)
             else:
@@ -723,10 +665,10 @@ def icon():
 ENDPOINTS = ["newDocumentFromTemplate", "smbFileList", "submitProjectPath", "upload_file"]
 @app.before_request
 def beforeRequest():
-    if flask.request.endpoint in ENDPOINTS:
-        samba.deleteClient(app)
+    if flask.request.endpoint in ENDPOINTS and app.config["SAMBA"]:
+        fsbackend.deleteClient(app)
         try:
-            samba.initClient(app.config["SMB_SERVER"], app.config["SMB_USER"],
+            fsbackend.initClient(app.config["SMB_SERVER"], app.config["SMB_USER"],
                                 app.config["SMB_PASS"], app)
             app.config["SAMBA"] = True
         except AttributeError as e:
@@ -735,31 +677,13 @@ def beforeRequest():
 
 @app.after_request
 def afterRequest(response):
-    if flask.request.endpoint in ENDPOINTS:
-        samba.deleteClient(app)
+    if flask.request.endpoint in ENDPOINTS and app.config["SAMBA"]:
+        fsbackend.deleteClient(app)
     return response
 
 @app.errorhandler(Exception)
 def errorhandler(e):
-    with open("error.log", "a") as f:
-
-        errorLines = traceback.format_exc()
-
-        f.write(datetime.datetime.now().isoformat())
-        f.write("\n")
-        f.write(errorLines)
-        print(errorLines)
-        f.write("\n====================================\n")
-
-        if app.config["LOG_SERVER"]:
-            notifications.sendError(e, errorLines, app)
-
-    if ( isinstance(e, BrokenPipeError)
-            or isinstance(e, smbprotocol.exceptions.LogonFailure)
-            or isinstance(e, smbprotocol.exceptions.SMBException) ):
-        return ("Fehler, wahrscheinlich Samba-Ticket abgelaufen, versuchen sie es in 5-10s nochmal", 500)
-    else:
-        return ("Internal Server Error, see error.log in project directory.", 500)
+    error.log(e)
 
 @app.before_first_request
 def init():
@@ -894,12 +818,12 @@ class SearchHelper(db.Model):
     fullstring    = Column(String)
 
 class ProjectPath(db.Model):
-    __tablename__ = "samba_paths"
+    __tablename__ = "project_paths"
     projectid     = Column(Integer, primary_key=True)
-    sambapath     = Column(String)
+    projectpath   = Column(String)
 
 class StaticProjectPathIndex(db.Model):
-    __tablename__ = "project_paths"
+    __tablename__ = "static_project_paths"
     dirname       = Column(String, primary_key=True)
     fullpath      = Column(String)
 

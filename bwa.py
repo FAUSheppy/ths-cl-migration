@@ -1,6 +1,7 @@
 import xlrd
 import xlutils.copy
 import os
+import flask
 
 BWA_COL_LFN = 1
 
@@ -155,3 +156,47 @@ def getPaidStateForFile(smbfile, app):
     pidShort = tmp[-2]
     entry = getBwaEntryForLfn(app.config["BWA_FILE"], lfn)
     return entry and entry.state == 10
+
+def bwa():
+    if flask.request.method == "POST": 
+        projectId = flask.request.json["projectid"] 
+        cl = db.session.query(ContractLocation).filter( 
+                                ContractLocation.projectid == projectId).first() 
+        bwa.saveClToBwa(app.config["BWA_FILE"], cl, overwrite=flask.request.json["overwrite"]) 
+        return ("", 204) 
+    else: 
+        projectId = flask.request.args.get("projectid") 
+        container = bool(flask.request.args.get("container")) 
+        
+        lfn = int(projectId[4:]) 
+        
+        if not projectId.startswith("22") or lfn < 977: 
+            return ("BWA Entries before P-2201-0977 are not supported", 401) 
+        
+        if checkFileLocked(app.config["BWA_FILE"]):
+            return ("BWA File locked, refusing modification, close the file on all computers", 500)
+
+        bwaEntry = getBwaEntryForLfn(app.config["BWA_FILE"], lfn)
+        dbEntry  = db.session.query(ContractLocation).filter(
+                        ContractLocation.projectid == projectId).first()
+
+        # check if a project path is availiable #
+        pp = db.session.query(ProjectPath).filter(ProjectPath.projectid == projectId).first()
+        projectPathAvailiable = False
+        if pp and app.config["SAMBA"]:
+            projectPathAvailiable = bool(pp.projectpath)
+
+        filesystemInfo = None
+        if projectPathAvailiable:
+            filesystemInfo = fsbackend.filesystemInfoDir(pp.projectpath, app)
+
+        if bwaEntry:
+            diff = bwaEntry.equalsDbEntry(dbEntry)
+        else:
+            diff = None
+
+        if container:
+            return flask.render_template("bwa_container_info.html", bwaEntry=bwaEntry,
+                                            dbEntry=dbEntry, filesystemInfo=filesystemInfo)
+
+        return flask.render_template("bwa.html", dbEntry=dbEntry, bwaEntry=bwaEntry, diff=diff)

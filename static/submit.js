@@ -342,7 +342,7 @@ function saveDocumentTemplate(projectId, templateKey, samba, reports){
 
     field = document.getElementById("save-document-error-field-" + templateKey)
     if(samba){
-        url += "&saveToSamba=" + "True"
+        url += "&directSave=" + "True"
         fetch(url).then( r => {
             if(r.status == 200){
                 field.style.color = "darkgreen"

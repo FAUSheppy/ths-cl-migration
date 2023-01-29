@@ -46,11 +46,16 @@ def getTemplates(path=""):
     if path:
         retDict = dict()
         basepath = os.path.join("./document-templates/", path)
+
+        if not os.path.isdir(basepath):
+            return dict()
+
         for fname in os.listdir(basepath):
             if fname.endswith(".docx"):
                 fullpath = os.path.join(basepath, fname)
                 retDict.update({ fname : { "description" : "", "year" : 0 }})
         return retDict
+
     with open("./document-templates/templates.json", encoding="utf-8") as f:
         return json.loads(f.read())
 

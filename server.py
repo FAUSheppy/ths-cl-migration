@@ -8,7 +8,9 @@ import datetime
 import os.path
 import werkzeug.utils
 import datetime
-import samba
+#import samba
+import samba_mounted_fs
+import samba_mounted_fs as fsbackend
 import mimetypes
 import psycopg2
 import traceback
@@ -190,10 +192,6 @@ def fileList():
 @app.route('/smb-file-list')
 def smbFileList():
 
-    # check samba enabled #
-    if not app.config["SAMBA"]:
-        return ("", 204)
-
     projectId = flask.request.args.get("projectId")
     if not projectId:
         return ("", 200)
@@ -263,9 +261,12 @@ def smbFileList():
         fileListItems = fsbackend.filesToFileItems(files, app)
 
         if fileListItems:
-            replace  = "\\\\{}\\{}".format(app.config["SMB_SERVER"], app.config["SMB_SHARE"])
-            withThis = "T:"
-            displayPath = trueProjectDir.replace("/", "\\").replace(replace, withThis)
+
+            displayPath = trueProjectDir
+            if app.config["SAMBA"]:
+                replace  = "\\\\{}\\{}".format(app.config["SMB_SERVER"], app.config["SMB_SHARE"])
+                withThis = "T:"
+                displayPath = trueProjectDir.replace("/", "\\").replace(replace, withThis)
             
             # build local file opening paths #
             if app.config["LOCAL_FILE_ID"]:
@@ -588,7 +589,7 @@ def newDocumentFromTemplate():
         yearFilter = "Vorlagen für Jahr: 2022"
         deleteList = []
         for key, value in documentTemplateDict.items():
-            if value["year"] != 2022:
+            if value.get("year") and value.get("year") != 2022:
                 deleteList.append(key)
 
         for el in deleteList:
@@ -684,6 +685,7 @@ def afterRequest(response):
 @app.errorhandler(Exception)
 def errorhandler(e):
     error.log(e)
+    return (504, str(e))
 
 @app.before_first_request
 def init():
@@ -779,8 +781,9 @@ class ContractLocation(db.Model):
             return ""
 
     def getProjectYear(self):
+        year = None
         try:
-            year = datetime.datetime.strptime(cl.auftragsdatum, DB_DATE_FORMAT).year
+            year = datetime.datetime.strptime(self.auftragsdatum, DB_DATE_FORMAT).year
         except ValueError:
             year = 2000 + int(str(self.projectid)[-7:-5])
             print("Failed to parse date correctly, assuming {} form projectId".format(year))
@@ -791,11 +794,14 @@ class ContractLocation(db.Model):
                 except ValueError as e:
                     print("Unparsable, cannot determine path: {}".format(e))
                     raise e
+        return year
 
     def getProjectDir(self):
         '''Find the expected project dir'''
+        
+        nrStr = str(self.projectid)
 
-        if year < 2020:
+        if self.getProjectYear() < 2020:
             endIdent = nrStr[-5:]
             yearIdent = nrStr[-7:-5]
             monthIdent = nrStr[:-7]

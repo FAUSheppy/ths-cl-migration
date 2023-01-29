@@ -1,5 +1,7 @@
 from constants import *
-import smbprotocol.execeptions
+import traceback
+import datetime
+#import smbprotocol.execeptions
 
 def log(e):
     with open("error.log", "a") as f:                                                              
@@ -12,12 +14,13 @@ def log(e):
         print(errorLines)
         f.write("\n====================================\n")
 
-        if app.config["LOG_SERVER"]:
-            notifications.sendError(e, errorLines, app)
+        #if app.config["LOG_SERVER"]:
+        #    notifications.sendError(e, errorLines, app)
 
-    if (isinstance(e, BrokenPipeError)
-            or isinstance(e, smbprotocol.exceptions.LogonFailure)
-            or isinstance(e, smbprotocol.exceptions.SMBException)):
+    if (isinstance(e, BrokenPipeError)):
+                # TODO fix this
+                #or isinstance(e, smbprotocol.exceptions.LogonFailure)
+                #or isinstance(e, smbprotocol.exceptions.SMBException)):
         return (WARNING_SAMBA_TICKET_EXPIRED, 500)
     else:
         return (WARNING_INTERNAL_SERVER_ERROR, 500)

@@ -20,23 +20,22 @@ sm =  None
 
 class ProjectDirectory(base):
 
-    __tablename__ = "project_paths"
+    __tablename__ = "project_paths_fs"
 
-    projectId     = Column(String, primary_key=True)
-    projectDir    = Column(String)
-    fullpath      = Column(String)
+    projectid     = Column(Integer, primary_key=True)
+    projectpath   = Column(String)
 
 def save(projectId, fullpath, projectDir):
 
-    projectDirectory = ProjectDirectory(dirname=projectDir, projectId=str(projectId),
-                                        fullpath=fullpath)
+    projectDirectory = ProjectDirectory(projectid=str(projectId),
+                                        projectpath=fullpath)
     session = sm()
     session.merge(projectDirectory)
     session.commit()
 
 def inotifyRun():
 
-    inotifyMask = (IN_MOVE | IN_CREATE | IN_DELETE | IN_DELETE_SELF | IN_ONLYDIR | IN_ISDIR)
+    inotifyMask = (IN_MOVE | IN_CREATE | IN_DELETE | IN_DELETE_SELF | IN_ONLYDIR )
     inotifyMask = IN_ALL_EVENTS
     i = inotify.adapters.InotifyTree(FILESYSTEM_PROJECTS_BASE_PATH, mask=inotifyMask)
 
@@ -44,6 +43,9 @@ def inotifyRun():
 
         # split event
         _, type_names, path, filename = event
+
+        if any([ s in [ "IN_CLOSE_NOWRITE", "IN_ACCESS", "IN_OPEN" ] for s in type_names]):
+            continue
 
         fullpath = os.path.join(path, filename)
         if not os.path.isdir(fullpath):

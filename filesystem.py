@@ -96,7 +96,7 @@ def getDocumentInstanceFromTemplate(path, projectId, lfn, app):
         '''<w:mailMerge><w:viewMergedData/><w:activeRecord w:val="1"/>''')
     fileContentTmp = fileContentTmp.replace('''SELECT * FROM &quot;ths_word_helper&quot;''',
         '''SELECT * FROM &quot;ths_word_helper&quot; WHERE &quot;projectid&quot; = {}'''.format(projectId))
-    fileContentTmp = fileContentTmp.replace("localhost", app.config["DB_SERVER"])
+    fileContentTmp = fileContentTmp.replace("localhost", app.config["DB_SERVER"]) #TODO dafug?
     
     with open("debug_post.xml", "w") as f:
         f.write(fileContentTmp)

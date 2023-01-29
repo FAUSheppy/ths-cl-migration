@@ -36,7 +36,12 @@
               {% endif %}
            {% endif %}
         </td>
-        <td class="float-left" style="font-size: 20px">{{ fileListItem.fileType }}</td>
+        <td style="max-width: 30%">
+           {% if fileListItem.fileType == "Bild" %}
+              <img src="/files?fullpath={{ fileListItem.fullpath }}"></img>
+           {% endif %}
+        </td>
+        <!--<td class="float-left" style="font-size: 20px">{{ fileListItem.fileType }}</td>-->
         {% if fileListItem.deletable %}
         <td><button onclick="deleteFile('{{ fileListItem.fullpath }}')">Delete</button></td>
         {% endif %}

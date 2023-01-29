@@ -342,9 +342,16 @@ def upload_file():
         else:
             fileEntry = db.session.query(AssotiatedFile).filter(
                             AssotiatedFile.fullpath == fullpath).first()
+            if not fileEntry:
+                dirname = os.path.dirname(fullpath).rstrip("/")
+                c = db.session.query(ProjectPath).filter(ProjectPath.projectpath==dirname).first()
+                if c:
+                    return flask.send_from_directory(dirname, os.path.basename(fullpath))
             if fileEntry:
-                relativePathInUploadDir = fileEntry.fullpath.replace(app.config["UPLOAD_FOLDER"], "")
-                return flask.send_from_directory(app.config["UPLOAD_FOLDER"], relativePathInUploadDir)
+                relativePathUploadDir = fileEntry.fullpath.replace(app.config["UPLOAD_FOLDER"], "")
+                return flask.send_from_directory(app.config["UPLOAD_FOLDER"], relativePathUploadDir)
+            else:
+                return ("Pfad nicht in Projektordner. Zugriff Verweigert", 400)
     elif flask.request.method == 'DELETE':
         fullpath = flask.request.args.get("fullpath")
         fileEntry = db.session.query(AssotiatedFile).filter(
@@ -682,10 +689,10 @@ def afterRequest(response):
         fsbackend.deleteClient(app)
     return response
 
-@app.errorhandler(Exception)
-def errorhandler(e):
-    error.log(e)
-    return (504, str(e))
+#@app.errorhandler(Exception)
+#def errorhandler(e):
+#    error.log(e)
+#    return (504, str(e))
 
 @app.before_first_request
 def init():

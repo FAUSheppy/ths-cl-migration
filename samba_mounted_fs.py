@@ -28,8 +28,9 @@ def carefullySaveFile(content, path):
     if os.path.exists(path):
         return (None, WARNING_PATH_EXISTS_NO_CHANGE.format(path))
     else:
-        with open(path, 'w') as f:
+        with open(path, 'wb') as f:
             f.write(content)
+        return (path, None)
 
 def getFile(path):
     with open(path) as f:

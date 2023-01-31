@@ -7,46 +7,52 @@
         {{ basePath }}
     </p>
     {% endif %}
-    <table class="w-100">
-    <tr>
-        <th style="font-size: 20px !important;">Dateinamen</th>
-        <th style="font-size: 20px !important;">Info</th>
-        <th style="font-size: 20px !important;">Typ</th>
-        <th style="font-size: 20px !important;"></th>
-    </tr>
-    {% for fileListItem in fileListItems %}
-    <tr>
-        <td style="font-size: 20px">
-            {% if localfile and fileListItem.fileType != "unknown" %}
-            <a href="localfile://{{ fileListItem.localpath }}?{{ localfile }}">{{ fileListItem.name }}</a>
-            {% else %}
-            <a href="/files?fullpath={{ fileListItem.fullpath }}">{{ fileListItem.name }}</a>
+    <div class="w-100">
+        <div class="row">
+            <div class="col-3" style="font-size: 20px !important;">Dateinamen</div>
+            <div class="col-3" style="font-size: 20px !important;">Info</div>
+            <div class="col-6" style="font-size: 20px !important;">Preview</div>
+            <!--<div class="col-4" style="font-size: 20px !important;"></th>-->
+        </div>
+        {% for fileListItem in fileListItems %}
+        <div class="row">
+            <div class="col-3" style="font-size: 20px">
+                {% if localfile and fileListItem.fileType != "unknown" %}
+                <a href="localfile://{{ fileListItem.localpath }}?{{ localfile }}">{{ fileListItem.name }}</a>
+                {% else %}
+                <a href="/files?fullpath={{ fileListItem.fullpath }}">{{ fileListItem.name }}</a>
+                {% endif %}
+            </div>
+            <div class="col-3">
+               {% if fileListItem.extraInfo %}
+                  {% if fileListItem.fileType in [ "Bild", "unknown", "" ] %}
+                  {% else %}
+                    {% if fileListItem.extraInfo.alreadyPaid %}
+                       <p style="color: darkgreen;">Rechnung Bezahlt (BWA)</p>
+                    {% elif fileListItem.extraInfo.lastPrinted %}
+                       <p style="color: orange;">
+                       Rechnung gedruckt am 
+                       {{ fileListItem.extraInfo.lastPrinted.strftime("%d.%m.%y") }}
+                       </p>
+                    {% else %}
+                       <p style="color: red;">Rechnung offen 
+                        ({{ fileListItem.extraInfo.netto }} €)
+                       </p>
+                    {% endif %}
+                  {% endif %}
+               {% endif %}
+            </div>
+            <div class="col-6" style="max-width: 30%">
+               {% if fileListItem.fileType == "Bild" %}
+                  <img style="width: 100%;" src="/files?fullpath={{ fileListItem.fullpath }}"></img>
+               {% endif %}
+            </div>
+            <!--<td class="float-left" style="font-size: 20px">{{ fileListItem.fileType }}</td>-->
+            {% if fileListItem.deletable %}
+            <div class="col-2"><button onclick="deleteFile('{{ fileListItem.fullpath }}')">Delete</button></div>
             {% endif %}
-        </td>
-        <td>
-           {% if fileListItem.extraInfo %}
-              {% if fileListItem.extraInfo.alreadyPaid %}
-                 <p style="color: darkgreen;">Rechnung Bezahlt (BWA)</p>
-              {% elif fileListItem.extraInfo.lastPrinted %}
-                 <p style="color: orange;">
-                 Rechnung gedruckt am {{ fileListItem.extraInfo.lastPrinted.strftime("%d.%m.%y") }}
-                 </p>
-              {% else %}
-                 <p style="color: red;">Rechnung offen ({{ fileListItem.extraInfo.netto }} €)</p>
-              {% endif %}
-           {% endif %}
-        </td>
-        <td style="max-width: 30%">
-           {% if fileListItem.fileType == "Bild" %}
-              <img src="/files?fullpath={{ fileListItem.fullpath }}"></img>
-           {% endif %}
-        </td>
-        <!--<td class="float-left" style="font-size: 20px">{{ fileListItem.fileType }}</td>-->
-        {% if fileListItem.deletable %}
-        <td><button onclick="deleteFile('{{ fileListItem.fullpath }}')">Delete</button></td>
-        {% endif %}
-    </tr>
-    {% endfor %}
-    </table>
+        </div>
+        {% endfor %}
+    </div>
 </div>
 {% endif %}

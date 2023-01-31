@@ -576,7 +576,7 @@ def curMaxSequenceNumber():
 
 @app.route("/bwa", methods=["GET", "POST"])
 def bwaFunction():
-    bwa.bwa()
+    return bwa.bwa()
 
 @app.route("/new-document")
 def newDocumentFromTemplate():
@@ -616,7 +616,7 @@ def newDocumentFromTemplate():
         # check if a project path is availiable #
         pp = db.session.query(ProjectPath).filter(ProjectPath.projectid == projectId).first()
         projectPathAvailiable = False
-        if pp and app.config["SAMBA"]:
+        if pp and (app.config["SAMBA"] or app.config["FILESYSTEM_PROJECTS_BASE_PATH"]):
             projectPathAvailiable = bool(pp.projectpath)
 
         return flask.render_template("select_template.html",
@@ -651,7 +651,11 @@ def newDocumentFromTemplate():
                 pp = db.session.query(ProjectPath).filter(
                                         ProjectPath.projectid == projectId).first()
                 if pp and pp.projectpath:
-                    fsbackend.carefullySaveFile(instance, os.path.join(pp.projectpath, retFname))
+                    path, error = fsbackend.carefullySaveFile(instance, 
+                                        os.path.join(pp.projectpath, retFname))
+                    if error:
+                        return ("Fehler, Datei existiert bereits.", 403)
+                    return ("OK: {}".format(path), 200)
                 else:
                     return ("Fehler: Projekt nicht mehr mit einem Pfad assoziert", 404)
             else:

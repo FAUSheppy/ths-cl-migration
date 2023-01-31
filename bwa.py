@@ -2,6 +2,7 @@ import xlrd
 import xlutils.copy
 import os
 import flask
+from server import ProjectPath, ContractLocation
 
 BWA_COL_LFN = 1
 
@@ -59,9 +60,13 @@ class BWAEntry:
         return COLOR_ID_TO_COLOR_NAME[self.color]
 
     def equalsDbEntry(self, dbEntry):
+
+        if not dbEntry:
+            return None
+
         diff = dict()
         for col in range(0, 11):
-            dbValue = dbEntry.getBwaCol(col)
+            dbValue = dbEntry.rawRow[col]
             bwaValue = self.rawRow[col].value
             if dbValue and dbValue != bwaValue:
                 diff.update( { col : (bwaValue, dbValue) } )
@@ -158,37 +163,40 @@ def getPaidStateForFile(smbfile, app):
     return entry and entry.state == 10
 
 def bwa():
+    db = flask.current_app.config["DB"]
     if flask.request.method == "POST": 
         projectId = flask.request.json["projectid"] 
         cl = db.session.query(ContractLocation).filter( 
                                 ContractLocation.projectid == projectId).first() 
-        bwa.saveClToBwa(app.config["BWA_FILE"], cl, overwrite=flask.request.json["overwrite"]) 
+        
+        if checkFileLocked(flask.current_app.config["BWA_FILE"]):
+            return ("BWA File locked, refusing modification, close the file on all computers", 423)
+
+        saveClToBwa(flask.current_app.config["BWA_FILE"], cl, 
+                        overwrite=flask.request.json["overwrite"]) 
         return ("", 204) 
     else: 
         projectId = flask.request.args.get("projectid") 
         container = bool(flask.request.args.get("container")) 
-        
+       
         lfn = int(projectId[4:]) 
         
         if not projectId.startswith("22") or lfn < 977: 
             return ("BWA Entries before P-2201-0977 are not supported", 401) 
-        
-        if checkFileLocked(app.config["BWA_FILE"]):
-            return ("BWA File locked, refusing modification, close the file on all computers", 500)
 
-        bwaEntry = getBwaEntryForLfn(app.config["BWA_FILE"], lfn)
+        bwaEntry = getBwaEntryForLfn(flask.current_app.config["BWA_FILE"], lfn)
         dbEntry  = db.session.query(ContractLocation).filter(
                         ContractLocation.projectid == projectId).first()
 
         # check if a project path is availiable #
         pp = db.session.query(ProjectPath).filter(ProjectPath.projectid == projectId).first()
         projectPathAvailiable = False
-        if pp and app.config["SAMBA"]:
+        if pp and flask.current_app.config["SAMBA"]:
             projectPathAvailiable = bool(pp.projectpath)
 
         filesystemInfo = None
         if projectPathAvailiable:
-            filesystemInfo = fsbackend.filesystemInfoDir(pp.projectpath, app)
+            filesystemInfo = fsbackend.filesystemInfoDir(pp.projectpath, flask.current_app)
 
         if bwaEntry:
             diff = bwaEntry.equalsDbEntry(dbEntry)

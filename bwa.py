@@ -83,7 +83,7 @@ def _getLineNrFromLfn(wbSheet, lfn, mustExist=True):
     firstRowLfn = int(wbSheet.row(2)[BWA_COL_LFN].value)
 
     # naive assumption first
-    targetRow = lfn - firstRowLfn + 1
+    targetRow = lfn - firstRowLfn + 2
 
     if not mustExist:
         return targetRow
@@ -161,7 +161,10 @@ def getPaidStateForFile(name):
     lfn = int(tmp[-1])
     pidShort = tmp[-2]
     entry = getBwaEntryForLfn(flask.current_app.config["BWA_FILE"], lfn)
-    return entry and entry.state == 10
+    print(lfn)
+    print(entry.rawRow)
+    print("paid date:", entry.paidDateRaw, entry.dueDateRaw, entry.state, entry.netto)
+    return entry and ( entry.state == 10 or len(entry.paidDateRaw) > 0 )
 
 def bwa():
     db = flask.current_app.config["DB"]

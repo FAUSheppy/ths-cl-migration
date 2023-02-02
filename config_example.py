@@ -36,3 +36,4 @@ LOG_SERVICE = "service_name"
 LOG_HOST = "hostname"
 
 FILESYSTEM_PROJECTS_BASE_PATH = "/home/sheppy/THS_Proj/"
+CLIENT_PATH_PREFIX = ""

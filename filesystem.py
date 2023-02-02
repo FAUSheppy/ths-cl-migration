@@ -6,26 +6,82 @@ import json
 import shutil
 import werkzeug
 import zipfile
+import flask
+import urllib.parse
+import analyser
 
-class ExtraInfo:
+def addBasePath(path):
+    serverPathPrefix = flask.current_app.config["FILESYSTEM_PROJECTS_BASE_PATH"]
+    if path.startswith(serverPathPrefix):
+        return path
+    else:
+        return os.path.join(serverPathPrefix, path.rstrip("/"))
 
-    def __init__(self, lastPrinted, brutto, vat, netto, alreadyPaid=False):
-
-        self.lastPrinted = lastPrinted
-        self.brutto = brutto
-        self.vat = vat
-        self.netto = netto
-        self.alreadyPaid = alreadyPaid
+def removeBasePath(path):
+    serverPathPrefix = flask.current_app.config["FILESYSTEM_PROJECTS_BASE_PATH"]
+    if path.startswith(serverPathPrefix):
+        return path[len(serverPathPrefix):]
+    else:
+        return path
 
 class FileItem:
 
-    def __init__(self, fullpath, fileType, samba=False):
+    def __init__(self, fullpath):
+
         self.fullpath = fullpath
+        self.serverRelativePath = removeBasePath(fullpath)
+        self.downloadUrl = urllib.parse.quote_plus(self.serverRelativePath)
         self.name = os.path.basename(fullpath)
-        self.fileType = fileType
-        self.deletetable = not samba
-        self.localpath = ""
-        self.extraInfo = None
+        self.fileType = self._getFileType()
+        self.deletetable = False
+        self.remoteAccessPath = self._getRemoteAccessPath()
+        self.extraInfo = self._getExtraInfo()
+
+    def __lt__(self, other):
+        
+        ORDERING = [ "Dokument (Rechnung)", "PDF (Rechnung)", "Dokument", "Bild", "unknown"]
+        valueSelf  = ORDERING.index(self.fileType)
+        valueOther = ORDERING.index(other.fileType)
+
+        if valueSelf == -1:
+            return True
+        if valueOther == -1:
+            return False
+        return valueSelf < valueOther
+
+    def _getRemoteAccessPath(self):
+        
+        clientPathPrefix = flask.current_app.config["CLIENT_PATH_PREFIX"]
+
+        path = clientPathPrefix + removeBasePath(self.fullpath)
+        windowsPath = path.replace("/", "\\")
+        return windowsPath
+
+    def _getFileType(self):
+
+        filetype = ""
+        fname = self.name.lower()
+        if fname.endswith("docx") or fname.endswith("doc"):
+            if "Rechnung" in self.name or "R-" in self.name:
+                filetype = "Dokument (Rechnung)"
+            else:
+                filetype = "Dokument"
+        elif fname.endswith("jpg"):
+            filetype = "Bild"
+        elif fname.endswith("png"):
+            filetype = "Bild"
+        elif fname.endswith("pdf"):
+            if "Rechnung" in self.name or "R-" in self.name:
+                filetype = "PDF (Rechnung)"
+            else:
+                filetype = "Dokument"
+        else:
+            filetype = "unknown"
+
+        return filetype
+
+    def _getExtraInfo(self):
+        return analyser.analyseDocument(self)
 
 def itemsArrayFromDbEntries(dbEntries):
     if not dbEntries:

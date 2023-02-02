@@ -122,7 +122,7 @@ def submitProjectPath():
         # check the path #
         print("path:", path)
         try:
-            files = fsbackend.find(path, None, 0, app, [], startInProjectDir=True, isFqPath=True)
+            files = fsbackend.listFiles(path)
         except ValueError as e:
             response = flask.Response("Bad path: {}".format(e), 404, mimetype='application/json')
             return response
@@ -175,20 +175,6 @@ def schema():
     header = getDbSchema()
     return flask.Response(json.dumps(header), 200, mimetype="application/json")
 
-
-@app.route('/file-list')
-def fileList():
-    projectId = flask.request.args.get("projectId")
-    if not projectId:
-        return ("", 200)
-    projectId = int(projectId)
-    files = db.session.query(AssotiatedFile).filter(AssotiatedFile.projectid == projectId).all()
-    fileListItems = filesystem.itemsArrayFromDbEntries(files)
-    if fileListItems:
-        return flask.render_template("file-list.html", fileListItems=fileListItems)
-    else:
-        return ("", 200)
-
 @app.route('/smb-file-list')
 def smbFileList():
 
@@ -202,15 +188,16 @@ def smbFileList():
 
     # check if path is known #
     pp = db.session.query(ProjectPath).filter(ProjectPath.projectid == projectId).first()
+    fullpath = None
     if pp and not pp == "":
         print("Found cached path '{}'".format(pp.projectpath))
         dbPathEmpty = not bool(pp.projectpath)
         if pp.projectpath:
-            files = fsbackend.find(pp.projectpath, None, 0, app, [], 
-                                    startInProjectDir=True, isFqPath=True)
-             # delete db entry if fail #
+            fullpath = filesystem.addBasePath(pp.projectpath)
+            files = fsbackend.listFiles(fullpath)
+            # delete db entry if fail #
             if not files:
-                pp.projectpath == ""
+                pp.projectpath = ""
                 db.session.merge(pp)
                 db.session.commit()
 
@@ -221,151 +208,65 @@ def smbFileList():
         return ("No project for this ID", 404)
 
     # generate path and pdir #
-    smbPath, projectDir, year = fsbackend.buildPath(cl, app)
+    searchPath, projectDir, year = fsbackend.buildPath(cl)
 
-    # check in the static index for the pdir #
-    sppi = db.session.query(StaticProjectPathIndex).filter(
-                    StaticProjectPathIndex.dirname == projectDir).first()
-    if sppi:
-        print("Found entry in static index, trying: {}".format(sppi.fullpath))
-        files = fsbackend.find(sppi.fullpath, None, 0, app, [], startInProjectDir=True, isFqPath=True)
+    trueProjectDir = None
+    if dbPathEmpty:
+        trueProjectDir = fsbackend.find(projectDir, year)
+    else:
+        trueProjectDir = fullpath
 
-    # generate path keywords to speed up search #
-    prioKeywords = [cl.nachname, cl.firma, cl.auftragsort, cl.bereich]
-    prioKeywords += list(filter(lambda x: len(x)>=3, cl.firma.split(" ")))
-    prioKeywords += list(filter(lambda x: len(x)>=3, cl.bereich.split(" ")))
-    prioKeywords = list(map(lambda s: s.strip().lower(), prioKeywords))
-
-    # filter out keywords that are too common #
-    prioKeywords = list(filter(lambda x: not x in BLACK_LIST_KEYWORDS, prioKeywords))
-
-    if not files and dbPathEmpty:
-        files = fsbackend.find(smbPath, projectDir, year, app, prioKeywords)
-
-    if not files:
+    if not trueProjectDir:
         db.session.merge(ProjectPath(projectid=projectId, projectpath=""))
         db.session.commit()
         return flask.render_template("samba-file-not-found.html", projectDir=projectDir,
-                                        searchPath=smbPath, keywords=prioKeywords,
+                                        searchPath=searchPath,
                                         projectId=projectId,
                                         showResetButton=dbPathEmpty)
     else:
-
-        # record project dir #
-        trueProjectDir = os.path.dirname(files[0])
-        db.session.merge(ProjectPath(projectid=projectId, projectpath=trueProjectDir))
-        print("Recorded {} for {}".format(trueProjectDir, projectId))
+        pathForDb = filesystem.removeBasePath(trueProjectDir)
+        db.session.merge(ProjectPath(projectid=projectId, projectpath=pathForDb))
         db.session.commit()
 
+        print("Recorded {} for {}".format(trueProjectDir, projectId))
+
         # generate response
-        fileListItems = fsbackend.filesToFileItems(files, app)
+        filesInProjectDir = fsbackend.listFiles(trueProjectDir)
+        if not filesInProjectDir:
+            return ("Keine Dateien vorhanden", 200)
 
-        if fileListItems:
+        fileListItems = sorted([ filesystem.FileItem(path) for path in filesInProjectDir ])
+        return flask.render_template("file-list.html", fileListItems=fileListItems,
+                                        basePath=trueProjectDir,
+                                        localfile=app.config["LOCAL_FILE_ID"])
 
-            displayPath = trueProjectDir
-            if app.config["SAMBA"]:
-                replace  = "\\\\{}\\{}".format(app.config["SMB_SERVER"], app.config["SMB_SHARE"])
-                withThis = "T:"
-                displayPath = trueProjectDir.replace("/", "\\").replace(replace, withThis)
-            
-            # build local file opening paths #
-            if app.config["LOCAL_FILE_ID"]:
-                for item in fileListItems:
-                    item.localpath = displayPath.replace("\\", "\\\\")
-                    item.localpath = item.localpath.replace("\\\\\\\\", "\\\\")
-                    item.localpath = item.localpath.replace("\\\\\\", "\\\\")
-                    item.localpath += "\\\\" + item.name
-            
-            return flask.render_template("file-list.html", fileListItems=fileListItems,
-                                            basePath=displayPath,
-                                            localfile=app.config["LOCAL_FILE_ID"])
-        else:
-            return ("Keine weiteren Dateien im Netzwerk verfügbar", 200)
-
-@app.route('/files', methods=['GET', 'POST', 'DELETE'])
-def upload_file():
+@app.route('/files', methods=['GET'])
+def files():
 
     projectId = flask.request.args.get("projectId")
+    fullpath = flask.request.args.get("fullpath")
+    if not fullpath:
+        return ("Missing fullpath arg in URL", 405)
+  
+    # determine path type #
+    isSamba = fullpath.startswith("\\\\")
 
-    if flask.request.method == 'POST':
-        if not projectId:
-            return ("Cannot post without projectId", 204)
-        projectId = int(projectId)
-        if 'file' not in flask.request.files:
-            flash('No file part')
-            return redirect(flask.request.url)
-        uploadFile = flask.request.files['file']
-        if uploadFile.filename == '':
-            flask.flash('No selected file')
-            return flask.redirect(request.url)
-        elif uploadFile:
-
-            # build filename/path #
-            filename      = werkzeug.utils.secure_filename(uploadFile.filename)
-            projectIdSafe = werkzeug.utils.secure_filename(str(projectId))
-            projectDir    = os.path.join(app.config["UPLOAD_FOLDER"], projectIdSafe)
-            fullpath      = os.path.join(projectDir, filename)
-            
-            # create project directory if not exits #
-            if not os.path.isdir(projectDir):
-                os.mkdir(projectDir)
-
-            # save file #
-            uploadFile.save(fullpath)
-
-            # try to determine contents of the file #
-            fileType = filedetection.detectType(fullpath)
-
-            # record file in database #
-            db.session.merge(AssotiatedFile(fullpath=fullpath, sha512=0, 
-                                projectid=projectId, filetype=fileType))
-            db.session.commit()
-            return ("", 204)
-        else:
-            return ("Bad Upload (POST) Request", 405)
-    elif flask.request.method == 'GET':
-        
-        # get path arg #
-        fullpath = flask.request.args.get("fullpath")
-        if not fullpath:
-            return ("Missing fullpath arg in URL", 405)
-       
-        # determine path type #
-        isSamba = fullpath.startswith("\\\\")
-
-        if isSamba:
-            response = flask.make_response(fsbackend.getFile(fullpath))
-            response.headers.set('Content-Type', mimetypes.guess_type(fullpath))
-            name = os.path.basename(fullpath)
-            response.headers.set('Content-Disposition', 'attachment', filename=name)
-            return response
-        else:
-            fileEntry = db.session.query(AssotiatedFile).filter(
-                            AssotiatedFile.fullpath == fullpath).first()
-            if not fileEntry:
-                dirname = os.path.dirname(fullpath).rstrip("/")
-                c = db.session.query(ProjectPath).filter(ProjectPath.projectpath==dirname).first()
-                if c:
-                    return flask.send_from_directory(dirname, os.path.basename(fullpath))
-            if fileEntry:
-                relativePathUploadDir = fileEntry.fullpath.replace(app.config["UPLOAD_FOLDER"], "")
-                return flask.send_from_directory(app.config["UPLOAD_FOLDER"], relativePathUploadDir)
-            else:
-                return ("Pfad nicht in Projektordner. Zugriff Verweigert", 400)
-    elif flask.request.method == 'DELETE':
-        fullpath = flask.request.args.get("fullpath")
-        fileEntry = db.session.query(AssotiatedFile).filter(
-                        AssotiatedFile.fullpath == fullpath).first()
-        if fileEntry:
-            db.session.delete(fileEntry)
-            # always use a secure path here !! (the db path is secure)#
-            os.remove(fileEntry.fullpath)
-            db.session.commit()
-            return ("", 204)
-        else:
-            return ("No such file: {}".format(fullpath), 404)
+    if isSamba:
+        response = flask.make_response(fsbackend.getFile(fullpath))
+        response.headers.set('Content-Type', mimetypes.guess_type(fullpath))
+        name = os.path.basename(fullpath)
+        response.headers.set('Content-Disposition', 'attachment', filename=name)
+        return response
     else:
-        return ("{} not implemented".format(flask.request.method), 405)
+        dirname = os.path.dirname(fullpath).rstrip("/")
+        print("Request from directory:", fullpath, dirname)
+        pp = db.session.query(ProjectPath).filter(ProjectPath.projectpath==dirname).first()
+        if pp:
+            fqPath = os.path.join(flask.current_app.config["FILESYSTEM_PROJECTS_BASE_PATH"],
+                                    dirname)
+            return flask.send_from_directory(fqPath, os.path.basename(fullpath))
+        else:
+            return ("Pfad nicht in Projektordner. Zugriff Verweigert", 400)
         
 @app.route("/modifying")
 def isBeingModifyed():
@@ -828,6 +729,7 @@ class ContractLocation(db.Model):
                 dt = "0" + dt
             projectDir  = "P-{}-{}".format(dt, lfn)
 
+        return projectDir
 
 class SearchHelper(db.Model):
     __tablename__ = "search_helper"

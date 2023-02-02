@@ -66,7 +66,8 @@ class BWAEntry:
 
         diff = dict()
         for col in range(0, 11):
-            dbValue = dbEntry.rawRow[col]
+            #dbValue = dbEntry.rawRow[col]
+            dbValue = None
             bwaValue = self.rawRow[col].value
             if dbValue and dbValue != bwaValue:
                 diff.update( { col : (bwaValue, dbValue) } )
@@ -78,8 +79,8 @@ class BWAEntry:
 
 def _getLineNrFromLfn(wbSheet, lfn, mustExist=True):
 
-    getHeaderRow = wbSheet.row(0)
-    firstRowLfn = int(wbSheet.row(1)[BWA_COL_LFN].value)
+    getHeaderRow = wbSheet.row(1)
+    firstRowLfn = int(wbSheet.row(2)[BWA_COL_LFN].value)
 
     # naive assumption first
     targetRow = lfn - firstRowLfn + 1
@@ -155,11 +156,11 @@ def checkFileLocked(filename):
     return any([ "lock" in x for x in os.listdir(dirname)])
 
 
-def getPaidStateForFile(smbfile, app):
-    tmp = smbfile.split(".docx")[0].split("-")
+def getPaidStateForFile(name):
+    tmp = name.split(".docx")[0].split("-")
     lfn = int(tmp[-1])
     pidShort = tmp[-2]
-    entry = getBwaEntryForLfn(app.config["BWA_FILE"], lfn)
+    entry = getBwaEntryForLfn(flask.current_app.config["BWA_FILE"], lfn)
     return entry and entry.state == 10
 
 def bwa():
@@ -181,7 +182,7 @@ def bwa():
        
         lfn = int(projectId[4:]) 
         
-        if not projectId.startswith("22") or lfn < 977: 
+        if not projectId.startswith("23") or lfn < 977: 
             return ("BWA Entries before P-2201-0977 are not supported", 401) 
 
         bwaEntry = getBwaEntryForLfn(flask.current_app.config["BWA_FILE"], lfn)

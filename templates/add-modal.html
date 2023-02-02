@@ -17,14 +17,6 @@
             <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <div id="modal-body-main" class="modal-body">
-        <div class="mx-2" style="width: 75%;" id="suggestions">
-        </div>
-        <button class="btn-sm btn-primary" style="max-width: 25%; display: none;" id="suggestions-btn" onclick="applySuggestion()">Apply</button>
-        <hr id="suggestions-hr" style="display: none;">
-        <div id="modal-body">
-        </div>
-      </div>
       <div class="modal-footer">
         <button style="display: none; float: left;" 
                 disabled="" id="modal-delete-button" type="button"
@@ -37,6 +29,14 @@
         </button>
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Abbrechen</button>
         <button type="button" class="btn btn-primary" onclick="submitForm()">Speichern</button>
+      </div>
+      <div id="modal-body-main" class="modal-body">
+        <div class="mx-2" style="width: 75%;" id="suggestions">
+        </div>
+        <button class="btn-sm btn-primary" style="max-width: 25%; display: none;" id="suggestions-btn" onclick="applySuggestion()">Apply</button>
+        <hr id="suggestions-hr" style="display: none;">
+        <div id="modal-body">
+        </div>
       </div>
     </div>
   </div>

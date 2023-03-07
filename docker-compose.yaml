@@ -1,0 +1,22 @@
+services:
+    postgres:
+        image: postgres
+        restart: always
+        environment:
+            POSTGRES_PASSWORD: ${PG_PASS}
+            POSTGRES_DB: ${PG_DB}
+            POSTGRES_USER: ${PG_USER}
+        ports:
+            - ${OUT_PORT}:5432
+        volumes:
+            - /var/lib/postgresql/data:$PG_DATA_LOCATION
+    clocations:
+        image: atlantis-contract-locations
+        restart: always
+        after: postgres
+        ports:
+            - 5000:5000
+        volumes:
+            - /app/config.py:${CONFIG_FILE}
+            - /app/templates/:${TEMPLATES_DIR}
+            - /app/BWA.xls:${BWA_FILE}

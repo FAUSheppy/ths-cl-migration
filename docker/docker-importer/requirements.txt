@@ -1,1 +1,2 @@
 SQLAlchemy>=1.4.23
+psycopg2-binary>=2.8.6

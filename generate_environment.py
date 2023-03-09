@@ -20,6 +20,7 @@ if __name__ == "__main__":
         pguser = config.PG_USER
         pgdb   = config.PG_DB
         pgpass = config.PG_PASS
+        pghost = config.PG_HOST
     except AttributeError as e:
         print("Missing {}".format(str(e).split(" ")[-1]))
         sys.exit(1)
@@ -30,9 +31,9 @@ if __name__ == "__main__":
     for key in outkeys:
         outdict.update({key : config.__dict__[key]})
 
-    engineFmtString = "postgresql+psycopg2://{user}:{password}@127.0.0.1:5432/{db}"
+    engineFmtString = "postgresql+psycopg2://{user}:{password}@{host}:5432/{db}"
     outdict.update({ "SQLALCHEMY_DATABASE_URI" : engineFmtString.format(user=config.PG_USER,
-                                    password=config.PG_PASS, db=config.PG_DB) })
+                                password=config.PG_PASS, db=config.PG_DB, host=config.PG_HOST) })
 
     DOCKER_ENV_FILES = [ "./docker/docker-compose-importer/.env",
                          "./docker/docker-compose-main/.env" ]
@@ -40,5 +41,12 @@ if __name__ == "__main__":
     for fname in DOCKER_ENV_FILES:
         with open(fname, "w") as f:
             for key, value in outdict.items():
-                value = value.replace("\\", "\\\\") # escape backslash
-                f.write('{}="{}"\n'.format(key, value))
+
+                if type(value) == bool:
+                    continue
+                if type(value) == str:
+                    value = value.replace("\\", "\\\\") # escape backslash
+                    value = value.replace(" ", "\\ ") # escape space
+
+                fmtString = '{}={}\n'
+                f.write(fmtString.format(key, value))

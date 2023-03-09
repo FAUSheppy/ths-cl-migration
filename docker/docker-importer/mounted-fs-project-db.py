@@ -12,6 +12,7 @@ import sqlalchemy
 from sqlalchemy import Column, Integer, String, Boolean, or_, and_
 from sqlalchemy.orm import declarative_base
 import os
+import config
 
 base   = declarative_base()
 engine = None
@@ -53,22 +54,31 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Start THS-Contract Locations')
 
-    parser.add_argument('ENGINE',
+    parser.add_argument('--engine',
         help="Engine connection string, e.g. postgresql+psycopg2://user:pass@localhost/ths")
-    parser.add_argument('BASE_PATH', type=str, help='Base path to search in')
+    parser.add_argument('--base-path', type=str, help='Base path to search in')
     parser.add_argument('--start', type=int, default=2008, help='Year to start in')
     parser.add_argument('--end',   type=int, default=2023, help='Year to end in')
 
+    engine = args.engine
+    if not engine:
+        import config
+        engine = config.SQLALCHEMY_DATABASE_URI
+
+    base_path = args.base_path
+    if not base_path:
+        import config
+        base_path = config.FILESYSTEM_PROJECTS_BASE_PATH
 
     args = parser.parse_args()
-    engine = sqlalchemy.create_engine(args.ENGINE)
+    engine = sqlalchemy.create_engine(engine)
     sm = sessionmaker(bind=engine)
     
     base.metadata.create_all(engine)
    
-    paths = [ "{}/THS_Proj/Jahr {}/".format(args.BASE_PATH, x)
+    paths = [ "{}/THS_Proj/Jahr {}/".format(base_path, x)
                     for x in range(args.start, args.end + 1)]
 
     for yearPath in paths:
         print("Loading:", yearPath)
-        load(yearPath, args.BASE_PATH + "/")
+        load(yearPath, base_path + "/")

@@ -17,4 +17,4 @@ RUN apt remove git -y
 RUN apt autoremove -y
 
 ENTRYPOINT ["python"] 
-CMD ["inotifywatch.py", "$ENGINE_STRING"]
+CMD ["inotifywatch.py"]

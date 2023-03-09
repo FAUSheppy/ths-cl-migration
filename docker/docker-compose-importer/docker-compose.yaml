@@ -3,4 +3,4 @@ services:
         image: atlantis-contract-importer
         volumes:
             - /app/config.py:$CONFIG_FILE
-            - /app/proj/:$PROJECT_DIR
+            - /app/proj/:$FILESYSTEM_PROJECTS_BASE_PATH

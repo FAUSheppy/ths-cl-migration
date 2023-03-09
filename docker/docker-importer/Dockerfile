@@ -17,4 +17,4 @@ RUN apt remove git -y
 RUN apt autoremove -y
 
 ENTRYPOINT ["python"] 
-CMD ["mounted-fs-project-db.py", "$ENGINE_STRING"]
+CMD ["mounted-fs-project-db.py", "--start", "2022" ]

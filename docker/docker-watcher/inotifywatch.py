@@ -1,6 +1,8 @@
 import inotify.adapters
 from inotify.constants import *
+
 from config import FILESYSTEM_PROJECTS_BASE_PATH
+from config import SQLALCHEMY_DATABASE_URI
 
 import argparse
 import os
@@ -65,11 +67,15 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Project Filesystem listener')
 
-    parser.add_argument('ENGINE',
+    parser.add_argument('--engine',
         help="Engine connection string, e.g. postgresql+psycopg2://user:pass@localhost/ths")
     args = parser.parse_args()
 
-    engine = sqlalchemy.create_engine(args.ENGINE)
+    engine_string = args.engine
+    if not engine_string:
+        engine_string = SQLALCHEMY_DATABASE_URI
+
+    engine = sqlalchemy.create_engine(engine_string)
     sm = sessionmaker(bind=engine)
     base.metadata.create_all(engine)
 

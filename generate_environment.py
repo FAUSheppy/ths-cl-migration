@@ -40,4 +40,5 @@ if __name__ == "__main__":
     for fname in DOCKER_ENV_FILES:
         with open(fname, "w") as f:
             for key, value in outdict.items():
+                value = value.replace("\\", "\\\\") # escape backslash
                 f.write('{}="{}"\n'.format(key, value))

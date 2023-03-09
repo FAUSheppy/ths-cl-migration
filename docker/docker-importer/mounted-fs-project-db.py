@@ -3,6 +3,7 @@
 import argparse
 import stat
 import glob
+import time
 
 from sqlalchemy import Column, Integer, String, Boolean, or_, and_
 from sqlalchemy.orm import sessionmaker, declarative_base
@@ -59,6 +60,7 @@ if __name__ == "__main__":
     parser.add_argument('--base-path', type=str, help='Base path to search in')
     parser.add_argument('--start', type=int, default=2008, help='Year to start in')
     parser.add_argument('--end',   type=int, default=2023, help='Year to end in')
+    args = parser.parse_args()
 
     engine = args.engine
     if not engine:
@@ -70,15 +72,16 @@ if __name__ == "__main__":
         import config
         base_path = config.FILESYSTEM_PROJECTS_BASE_PATH
 
-    args = parser.parse_args()
     engine = sqlalchemy.create_engine(engine)
     sm = sessionmaker(bind=engine)
     
     base.metadata.create_all(engine)
    
-    paths = [ "{}/THS_Proj/Jahr {}/".format(base_path, x)
+    paths = [ "{}/Jahr {}/".format(base_path, x)
                     for x in range(args.start, args.end + 1)]
 
     for yearPath in paths:
         print("Loading:", yearPath)
         load(yearPath, base_path + "/")
+
+    time.sleep(2000)

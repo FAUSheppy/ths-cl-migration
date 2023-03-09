@@ -20,7 +20,7 @@ services:
             - 5000:5000
         volumes:
             - $CONFIG_FILE:/app/config.py
-            - $FILESYSTEM_PROJECTS_BASE_PATH:/app/proj/
+            - $PROJECT_ROOT_DIR:/app/proj/
             - $TEMPLATES_DIR:/app/document-templates/
             - $BWA_FILE:/app/BWA.xls
     watcher:
@@ -30,4 +30,11 @@ services:
             - postgres
         volumes:
             - $CONFIG_FILE:/app/config.py
-            - $FILESYSTEM_PROJECTS_BASE_PATH:/app/proj/
+            - $PROJECT_ROOT_DIR:/app/proj/
+    importer:
+        image: atlantis-contract-importer
+        depends_on:
+            - postgres
+        volumes:
+            - $CONFIG_FILE:/app/config.py
+            - $PROJECT_ROOT_DIR:/app/proj/

@@ -2,7 +2,8 @@ import xlrd
 import xlutils.copy
 import os
 import flask
-from server import ProjectPath, ContractLocation
+#from server import ProjectPath, ContractLocation
+import server
 
 BWA_COL_LFN = 1
 

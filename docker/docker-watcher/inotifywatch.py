@@ -1,9 +1,6 @@
 import inotify.adapters
 from inotify.constants import *
-
-from config import FILESYSTEM_PROJECTS_BASE_PATH
-from config import SQLALCHEMY_DATABASE_URI
-
+import config
 import argparse
 import os
 import stat
@@ -35,11 +32,15 @@ def save(projectId, fullpath, projectDir):
     session.merge(projectDirectory)
     session.commit()
 
-def inotifyRun():
+def inotifyRun(project_path):
 
     inotifyMask = (IN_MOVE | IN_CREATE | IN_DELETE | IN_DELETE_SELF | IN_ONLYDIR )
     inotifyMask = IN_ALL_EVENTS
-    i = inotify.adapters.InotifyTree(FILESYSTEM_PROJECTS_BASE_PATH, mask=inotifyMask)
+
+    if not project_path:
+        project_path = "/app/proj/" # docker path
+
+    i = inotify.adapters.InotifyTree(project_path, mask=inotifyMask)
 
     for event in i.event_gen(yield_nones=False):
 
@@ -69,14 +70,16 @@ if __name__ == "__main__":
 
     parser.add_argument('--engine',
         help="Engine connection string, e.g. postgresql+psycopg2://user:pass@localhost/ths")
+    parser.add_argument('--project-path', help="Project path for Contract struct")
     args = parser.parse_args()
 
     engine_string = args.engine
     if not engine_string:
-        engine_string = SQLALCHEMY_DATABASE_URI
+        engine_string = config.SQLALCHEMY_DATABASE_URI
 
+    print(engine_string)
     engine = sqlalchemy.create_engine(engine_string)
     sm = sessionmaker(bind=engine)
     base.metadata.create_all(engine)
 
-    inotifyRun()
+    inotifyRun(args.project_path)

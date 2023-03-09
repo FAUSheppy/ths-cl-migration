@@ -27,3 +27,4 @@ error.log
 .backup_info
 id.txt
 .~lock*
+env

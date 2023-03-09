@@ -18,5 +18,13 @@ services:
             - 5000:5000
         volumes:
             - /app/config.py:$CONFIG_FILE
+            - /app/proj/:$PROJECT_DIR
             - /app/templates/:$TEMPLATES_DIR
             - /app/BWA.xls:$BWA_FILE
+    cwatcher:
+        image: atlantis-contract-watcher
+        restart: always
+        after: postgres
+        volumes:
+            - /app/config.py:$CONFIG_FILE
+            - /app/proj/:$PROJECT_DIR

@@ -1,9 +1,0 @@
-OUTPORT=5433
-PG_DATA_LOCATION=./data/postgres/
-TEMPLATES_DIR=./data/document-templates/
-CONFIG_FILE=./data/config.py
-BWA_FILE=./data/bwa.xls
-
-PG_USER=ths
-PG_DB=ths
-#PG_PASS=

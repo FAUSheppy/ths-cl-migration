@@ -614,8 +614,8 @@ def init():
     # must commit tables before adding triggers #
     db.session.commit()
 
-    db.session.execute(TRIGGER_FOR_SEARCHABLE_STRING_1)
-    db.session.execute(TRIGGER_FOR_SEARCHABLE_STRING_2)
+    db.session.execute(sqlalchemy.sql.text(TRIGGER_FOR_SEARCHABLE_STRING_1))
+    db.session.execute(sqlalchemy.sql.text(TRIGGER_FOR_SEARCHABLE_STRING_2))
     db.session.commit()
     print("Init Done")
 

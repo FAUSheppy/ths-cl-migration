@@ -161,7 +161,7 @@ def getPaidStateForFile(name):
     tmp = name.split(".docx")[0].split("-")
     lfn = int(tmp[-1])
     pidShort = tmp[-2]
-    entry = getBwaEntryForLfn(flask.current_app.config["BWA_FILE"], lfn)
+    entry = getBwaEntryForLfn(flask.current_app.config["BWA_FILE_INTERNAL"], lfn)
     print(lfn)
     print(entry.rawRow)
     print("paid date:", entry.paidDateRaw, entry.dueDateRaw, entry.state, entry.netto)
@@ -174,10 +174,10 @@ def bwa():
         cl = db.session.query(ContractLocation).filter( 
                                 ContractLocation.projectid == projectId).first() 
         
-        if checkFileLocked(flask.current_app.config["BWA_FILE"]):
+        if checkFileLocked(flask.current_app.config["BWA_FILE_INTERNAL"]):
             return ("BWA File locked, refusing modification, close the file on all computers", 423)
 
-        saveClToBwa(flask.current_app.config["BWA_FILE"], cl, 
+        saveClToBwa(flask.current_app.config["BWA_FILE_INTERNAL"], cl, 
                         overwrite=flask.request.json["overwrite"]) 
         return ("", 204) 
     else: 
@@ -189,7 +189,7 @@ def bwa():
         if not projectId.startswith("23") or lfn < 977: 
             return ("BWA Entries before P-2201-0977 are not supported", 401) 
 
-        bwaEntry = getBwaEntryForLfn(flask.current_app.config["BWA_FILE"], lfn)
+        bwaEntry = getBwaEntryForLfn(flask.current_app.config["BWA_FILE_INTERNAL"], lfn)
         dbEntry  = db.session.query(ContractLocation).filter(
                         ContractLocation.projectid == projectId).first()
 

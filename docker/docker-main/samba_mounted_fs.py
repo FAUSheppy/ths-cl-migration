@@ -44,6 +44,15 @@ def listFiles(path):
         raise ValueError("Path does not exist or not a valid path: '{}'".format(path))
 
 def carefullySaveFile(content, path):
+
+    # fix path if nessesary
+    if path.startswith(flask.current_app.config["CLIENT_PATH_PREFIX"]):
+        path = path.replace(flask.current_app.config["CLIENT_PATH_PREFIX"], "")
+
+    if not path.startswith(flask.current_app.config["FILESYSTEM_PROJECTS_BASE_PATH"]):
+        path = os.path.join(flask.current_app.config["FILESYSTEM_PROJECTS_BASE_PATH"], path)
+
+    # check path exists #
     if os.path.exists(path):
         return (None, WARNING_PATH_EXISTS_NO_CHANGE.format(path))
     else:

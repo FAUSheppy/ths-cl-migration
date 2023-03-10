@@ -567,8 +567,12 @@ def newDocumentFromTemplate():
                     path, error = fsbackend.carefullySaveFile(instance, 
                                         os.path.join(pp.projectpath, retFname))
                     if error:
-                        return ("Fehler, Datei existiert bereits.", 403)
-                    return ("OK: {}".format(path), 200)
+                        return (error, 403)
+
+                    displayPath = path.replace(app.config["FILESYSTEM_PROJECTS_BASE_PATH"],
+                                               app.config["CLIENT_PATH_PREFIX"])
+
+                    return ("OK: {}".format(displayPath), 200)
                 else:
                     return ("Fehler: Projekt nicht mehr mit einem Pfad assoziert", 404)
             else:

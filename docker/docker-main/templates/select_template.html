@@ -38,18 +38,24 @@
   <div class="container mt-5">
   {% for key in templatesKeysSorted %}
   <div class="row w-100 my-2 template-line">
-    <b class="col-6 mt-2">{{ key }}</b>
-    <button class="col-3 btn-info" style="width: 100%;"
-      onclick="saveDocumentTemplate('{{ projectId }}', '{{ key }}', false, {{ reportsJsBool }})">
-      Download
-    </button>
+    <b class="col-5 mt-2">{{ key }}</b>
+    <div class="col-3">
+      <button class="btn-info" style="width: 80%;"
+        onclick="saveDocumentTemplate('{{ projectId }}', '{{ key }}', false, {{ reportsJsBool }})">
+        Download
+      </button>
+    </div>
     {% if projectPathAvailiable %}
-      <button class="col-3 btn-primary mb-2" style="width: 100%;"
+    <div class="col-4">
+      <button class="btn-primary w-100"
        onclick="saveDocumentTemplate('{{ projectId }}', '{{ key }}', true, {{ reportsJsBool }})">
        In Projektordner Speichern
-      </button>
+      </div>
+    </button>
     {% endif %}
-    <h6 id="save-document-error-field-{{ key }}" class="card-subtitle" style="color: red;"></h6>
+    <h6 id="save-document-error-field-{{ key }}" class="w-100 mt-2 card-subtitle"
+        style="color: red;">
+    </h6>
   </div>
   <hr></hr>
   {% endfor %}

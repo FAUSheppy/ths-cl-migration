@@ -27,10 +27,16 @@ def analyseDocument(fileItem):
     
     invoice = docx.Document(fileItem.fullpath)
     table = invoice.tables[TABLE_INVOICE_INFO]
-    
-    netto  = float(table.rows[-3].cells[COL_VALUE].text.replace(",","."))
-    vat    = float(table.rows[-2].cells[COL_VALUE].text.replace(",","."))
-    brutto = float(table.rows[-1].cells[COL_VALUE].text.replace(",","."))
+   
+    netto  = 0
+    vat    = 0
+    brutto = 0
+    try:
+        netto  = float(table.rows[-3].cells[COL_VALUE].text.replace(",","."))
+        vat    = float(table.rows[-2].cells[COL_VALUE].text.replace(",","."))
+        brutto = float(table.rows[-1].cells[COL_VALUE].text.replace(",","."))
+    except IndexError:
+        return None
     
     lastPrinted = invoice.core_properties.last_printed
     

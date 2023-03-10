@@ -632,6 +632,8 @@ def init():
 
     db.session.execute(sqlalchemy.sql.text(TRIGGER_FOR_SEARCHABLE_STRING_1))
     db.session.execute(sqlalchemy.sql.text(TRIGGER_FOR_SEARCHABLE_STRING_2))
+    db.session.execute(sqlalchemy.sql.text(DOCUMENT_VIEW))
+
     db.session.commit()
     print("Init Done")
 

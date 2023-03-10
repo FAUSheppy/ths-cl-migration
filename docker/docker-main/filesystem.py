@@ -98,22 +98,20 @@ class DocumentTemplate:
         self.fullpath = fullpath
         self.name = os.path.basename(fullpath)
 
-def getTemplates(path=""):
-    if path:
-        retDict = dict()
-        basepath = os.path.join("./document-templates/", path)
+def getTemplates(path="."):
 
-        if not os.path.isdir(basepath):
-            return dict()
+    retDict = dict()
+    basepath = os.path.join("./document-templates/", path)
 
-        for fname in os.listdir(basepath):
-            if fname.endswith(".docx"):
-                fullpath = os.path.join(basepath, fname)
-                retDict.update({ fname : { "description" : "", "year" : 0 }})
-        return retDict
+    if not os.path.isdir(basepath):
+        return dict()
 
-    with open("./document-templates/templates.json", encoding="utf-8") as f:
-        return json.loads(f.read())
+    for fname in os.listdir(basepath):
+        if fname.endswith(".docx"):
+            fullpath = os.path.join(basepath, fname)
+            retDict.update({ fname : { "description" : "", "year" : 0 }})
+
+    return retDict
 
 def getDocumentInstanceFromTemplate(path, projectId, lfn, app):
     print(path)

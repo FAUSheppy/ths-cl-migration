@@ -17,4 +17,4 @@ RUN apt autoremove -y
 COPY ./ .
 
 ENTRYPOINT ["python"] 
-CMD ["mounted-fs-project-db.py", "--start", "2022" ]
+CMD ["mounted-fs-project-db.py"]

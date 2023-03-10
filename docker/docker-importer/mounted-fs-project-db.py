@@ -21,7 +21,7 @@ sm =  None
 
 class ProjectPath(base):
     __tablename__ = "project_paths"
-    projectid       = Column(String, primary_key=True)
+    projectid       = Column(Integer, primary_key=True)
     projectpath     = Column(String)
 
 def isProjectDir(filename):
@@ -36,7 +36,7 @@ def pidFromPath(filename):
         return None
     idWithDash = idWithDashList[1]
     pid = idWithDash.replace("-", "")
-    return pid
+    return int(pid)
 
 def load(root, removePrefix=""):
 

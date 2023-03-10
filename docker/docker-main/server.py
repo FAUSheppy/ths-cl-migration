@@ -225,7 +225,7 @@ def smbFileList():
                                                      app.config["CLIENT_PATH_PREFIX"])
 
         return flask.render_template("samba-file-not-found.html", projectDir=projectDir,
-                                        searchPath=searchPath,
+                                        searchPath=clientSearchPathDisplay,
                                         projectId=projectId,
                                         showResetButton=dbPathEmpty)
     else:

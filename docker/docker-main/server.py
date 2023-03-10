@@ -525,7 +525,9 @@ def newDocumentFromTemplate():
         if pp and (app.config["SAMBA"] or app.config["FILESYSTEM_PROJECTS_BASE_PATH"]):
             projectPathAvailiable = bool(pp.projectpath)
 
+        templatesKeysSorted = sorted(documentTemplateDict.keys(), key=str.casefold)
         return flask.render_template("select_template.html",
+                                        templatesKeysSorted=templatesKeysSorted,
                                         templatesDict=documentTemplateDict,
                                         projectId=projectId,
                                         projectPathAvailiable=projectPathAvailiable,

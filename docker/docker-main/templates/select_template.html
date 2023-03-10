@@ -6,61 +6,55 @@
 
 <body>
   {% include 'navbar.html' %}
-  <div class="mx-lg-5" style="text-align: center;">
+  <div class="container" style="text-align: center;">
+
     <div class="w-100 my-5" style="min-height: 1px;">
-    {% if yearFilter %}
-        <h4 class="float-left mr-5">{{ yearFilter }}</h4>
-        <button onclick="window.location = window.location + '&nofilter=true'" class="btn-success float-left mr-3">Alle Vorlagen Anzeigen</button>
-    {% elif not yearFilter and not reports %}
-        <button onclick="window.location = window.location.toString().replace('&nofilter=true','')" class="btn-success float-left mr-3">Nur Vorlagen für Jahr des Projektes Anzeigen</button>
-    {% endif %}
-    {% if reports %}
-        <button onclick="window.location = window.location.toString().replace('&reports=true','')" class="btn-info float-left mr-3">Rechnungsvorlagen Anzeigen</button>
-    {% else %}
+
+      {% if reports %}
+        <button onclick="window.location = window.location.toString().replace('&reports=true','')" class="btn-info float-left">Rechnungsvorlagen Anzeigen</button>
+      {% else %}
         <button onclick="window.location = window.location + '&reports=true'" class="btn-info float-left">Berichtvorlagen Anzeigen</button>
-    {% endif %}
+      {% endif %}
+
     </div>
     
     {% if projectId == 0%}
-    <h5 style="border-style: solid; padding: 10px; border-color: red; max-width: 800px; margin: auto;">
-    Ein Dokument für Projekt-Id 0 wird erstellt. Dies ist eine spezielle Id mit Platzhaltern Informationen. Um das Dokument nachträglich mit einer Projekt-Id zu verknüpfen, folgen sie bitte
-    den im Bild aufgeführten Schritten!
-    <br>
-    <hr>
-    <button class="mx-auto btn btn-info center" data-toggle="collapse" data-target="#help" aria-expanded="false" aria-controls="help">Hier Klicken um das Hilfsbild anzuzeigen!</button>
-    </h5>
-    
-    <br>
-    
-    <img id="help" class="my-4 collapse" style="width: 60%; border-style: solid" src="/static/ms-word-pid-help.png"></img>
-    <hr>
+      <h5 style="border-style: solid; padding: 10px; border-color: red; max-width: 800px; margin: auto;">
+      Ein Dokument für Projekt-Id 0 wird erstellt. Dies ist eine spezielle Id mit Platzhaltern Informationen. Um das Dokument nachträglich mit einer Projekt-Id zu verknüpfen, folgen sie bitte
+      den im Bild aufgeführten Schritten!
+      <br>
+      <hr>
+      <button class="mx-auto btn btn-info center" data-toggle="collapse" data-target="#help" aria-expanded="false" aria-controls="help">Hier Klicken um das Hilfsbild anzuzeigen!</button>
+      </h5>
+      
+      <br>
+      
+      <img id="help" class="my-4 collapse" style="width: 60%; border-style: solid" src="/static/ms-word-pid-help.png"></img>
+      <hr>
     {% endif %}
 
-    <div class="row">
-    {% for key in templatesDict.keys() %}
-    <div class="template-card m-3 card col-3" style="width: 18rem;">
-        <div class="card-body">
-          <h5 class="card-title">{{ key }}</h5>
-          <h6 class="card-subtitle mb-2 text-muted"></h6>
-          <hr class="my-4">
-          <p class="card-text">{{ templatesDict[key]["description"] }}</p>
-          <button class="btn-info mb-2" style="width: 100%;"
-                  onclick="saveDocumentTemplate('{{ projectId }}', '{{ key }}', false, {{ reportsJsBool }})">
-            Download
-          </button>
-          {% if projectPathAvailiable %}
-          <button class="btn-primary mb-2" style="width: 100%;"
-                  onclick="saveDocumentTemplate('{{ projectId }}', '{{ key }}', true, {{ reportsJsBool }})">
-            In Projektordner Speichern
-          </button>
-          {% endif %}
-          <h6 id="save-document-error-field-{{ key }}"
-                  class="card-subtitle mt-3" style="color: red;"></h6>
-        </div>
-    </div>
-    {% endfor %}
-    </div>
   </div>
+
+  <div class="container mt-5">
+  {% for key in templatesKeysSorted %}
+  <div class="row w-100 my-2 template-line">
+    <b class="col-6 mt-2">{{ key }}</b>
+    <button class="col-3 btn-info" style="width: 100%;"
+      onclick="saveDocumentTemplate('{{ projectId }}', '{{ key }}', false, {{ reportsJsBool }})">
+      Download
+    </button>
+    {% if projectPathAvailiable %}
+      <button class="col-3 btn-primary mb-2" style="width: 100%;"
+       onclick="saveDocumentTemplate('{{ projectId }}', '{{ key }}', true, {{ reportsJsBool }})">
+       In Projektordner Speichern
+      </button>
+    {% endif %}
+    <h6 id="save-document-error-field-{{ key }}" class="card-subtitle" style="color: red;"></h6>
+  </div>
+  <hr></hr>
+  {% endfor %}
+  </div>
+
 </body>
 
 </html>

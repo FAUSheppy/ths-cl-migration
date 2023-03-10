@@ -5,9 +5,8 @@ RUN apt install python3-pip git curl -y
 RUN python3 -m pip install waitress
 RUN python3 -m pip install --upgrade pip
 
+WORKDIR /app
 RUN mkdir templates static
-COPY templates/* templates/
-COPY static/* static/
 
 # static js/css bootstrap etc
 RUN mkdir -p static/js static/css static/fontawesome/css static/js/addons
@@ -24,10 +23,11 @@ RUN curl -s -o static/js/datatables.min.js        https://cdn.atlantishq.de/stat
 RUN curl -s -o static/js/mdb.min.js               https://cdn.atlantishq.de/static/js/mdb.min.js
 RUN curl -s -o static/js/addons/datatables.min.js https://cdn.atlantishq.de/static/js/addons/datatables.min.js
 
-WORKDIR /app
-COPY ./ .
-
 RUN python3 -m pip install --no-cache-dir -r requirements.txt
+
+COPY ./ .
+COPY templates/* templates/
+COPY static/* static/
 
 #HEALTHCHECK --interval=5m --timeout=5s CMD /usr/bin/curl http://localhost:5000/ || exit 1
 EXPOSE 5000/tcp

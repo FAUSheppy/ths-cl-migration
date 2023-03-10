@@ -158,10 +158,14 @@ def checkFileLocked(filename):
 
 
 def getPaidStateForFile(name):
+
     tmp = name.split(".docx")[0].split("-")
     lfn = int(tmp[-1])
     pidShort = tmp[-2]
     entry = getBwaEntryForLfn(flask.current_app.config["BWA_FILE_INTERNAL"], lfn)
+    if not entry:
+        return None
+
     print(lfn)
     print(entry.rawRow)
     print("paid date:", entry.paidDateRaw, entry.dueDateRaw, entry.state, entry.netto)

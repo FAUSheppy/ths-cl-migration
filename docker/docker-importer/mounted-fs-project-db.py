@@ -15,6 +15,11 @@ from sqlalchemy.orm import declarative_base
 import os
 import config
 
+import datetime
+import json
+
+STATUS_FILE = "import_status.json"
+
 base   = declarative_base()
 engine = None
 sm =  None
@@ -80,8 +85,21 @@ if __name__ == "__main__":
     paths = [ "{}/Jahr {}/".format(base_path, x)
                     for x in range(args.start, args.end + 1)]
 
+    status = dict()
+    if os.path.isfile(STATUS_FILE):
+        with open(STATUS_FILE) as f:
+            status = json.load(f)
+
     for yearPath in paths:
+
+        if yearPath in status:
+            t = datetime.datetime.fromisoformat(status[yearPath])
+            if t - datetime.datetime.now() < datetime.timedelta(days=7):
+                continue
+            
         print("Loading:", yearPath)
         load(yearPath, base_path + "/")
+        status.update({ yearPath : datetime.datetime.now().isoformat() })
 
-    time.sleep(2000)
+    with open(STATUS_FILE, "w") as f:
+        f.write(json.dumps(status, indent=2))

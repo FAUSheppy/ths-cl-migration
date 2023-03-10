@@ -241,8 +241,13 @@ def smbFileList():
             return ("Keine Dateien vorhanden", 200)
 
         fileListItems = sorted([ filesystem.FileItem(path) for path in filesInProjectDir ])
+
+        # fix client display path
+        clientBasePathDisplay = trueProjectDir.replace(app.config["FILESYSTEM_PROJECTS_BASE_PATH"],
+                                                     app.config["CLIENT_PATH_PREFIX"])
+
         return flask.render_template("file-list.html", fileListItems=fileListItems,
-                                        basePath=trueProjectDir,
+                                        basePath=clientBasePathDisplay,
                                         localfile=app.config["LOCAL_FILE_ID"])
 
 @app.route('/files', methods=['GET'])

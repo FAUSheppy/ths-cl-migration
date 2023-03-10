@@ -1,7 +1,0 @@
-version: "3"
-services:
-    clocations:
-        image: atlantis-contract-importer
-        volumes:
-            - $CONFIG_FILE:/app/config.py
-            - $FILESYSTEM_PROJECTS_BASE_PATH:/app/proj/

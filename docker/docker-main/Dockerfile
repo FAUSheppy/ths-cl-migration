@@ -23,6 +23,7 @@ RUN curl -s -o static/js/datatables.min.js        https://cdn.atlantishq.de/stat
 RUN curl -s -o static/js/mdb.min.js               https://cdn.atlantishq.de/static/js/mdb.min.js
 RUN curl -s -o static/js/addons/datatables.min.js https://cdn.atlantishq.de/static/js/addons/datatables.min.js
 
+COPY requirements.txt .
 RUN python3 -m pip install --no-cache-dir -r requirements.txt
 
 COPY ./ .

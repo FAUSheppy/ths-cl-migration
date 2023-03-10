@@ -26,15 +26,15 @@ RUN curl -s -o static/js/addons/datatables.min.js https://cdn.atlantishq.de/stat
 COPY requirements.txt .
 RUN python3 -m pip install --no-cache-dir -r requirements.txt
 
+RUN apt remove git -y
+RUN apt autoremove -y
+
 COPY ./ .
 COPY templates/* templates/
 COPY static/* static/
 
 #HEALTHCHECK --interval=5m --timeout=5s CMD /usr/bin/curl http://localhost:5000/ || exit 1
 EXPOSE 5000/tcp
-
-RUN apt remove git -y
-RUN apt autoremove -y
 
 ENTRYPOINT ["waitress-serve"] 
 CMD ["--host", "0.0.0.0", "--port", "5000", "--call", "app:createApp"]

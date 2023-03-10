@@ -219,6 +219,11 @@ def smbFileList():
     if not trueProjectDir:
         db.session.merge(ProjectPath(projectid=projectId, projectpath=""))
         db.session.commit()
+
+        # fix search path for client display
+        clientSearchPathDisplay = searchPath.replace(app.config["FILESYSTEM_PROJECTS_BASE_PATH"],
+                                                     app.config["CLIENT_PATH_PREFIX"])
+
         return flask.render_template("samba-file-not-found.html", projectDir=projectDir,
                                         searchPath=searchPath,
                                         projectId=projectId,

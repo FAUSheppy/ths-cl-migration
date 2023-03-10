@@ -65,7 +65,7 @@ DOCUMENT_VIEW = '''
         cl.date_parsed,
         SUBSTRING((cl.projectid)::character varying(30) FROM 1 FOR 4) AS projectid_short,
         SUBSTRING((cl.projectid)::character varying(30) FROM 5 FOR 4) AS projectid_lfn,
-        REPLACE(REGEXP_REPLACE(ad.dates, '(.*),', '\1 und ' ), ',', ', ')
+        REPLACE(REGEXP_REPLACE(ad.dates, '(.*),', '\1 und ' ), ',', ', ') AS additional_dates
     FROM 
         contract_locations AS cl
         LEFT JOIN additional_dates AS ad ON cl.projectid = ad.projectid; 

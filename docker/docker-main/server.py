@@ -619,7 +619,8 @@ def afterRequest(response):
 def init():
     app.config["DB"] = db
     db.create_all()
-   
+  
+    from sqlitetrigger import DOCUMENT_VIEW
     if "sqlite" in app.config["SQLALCHEMY_DATABASE_URI"]:
         from sqlitetrigger import TRIGGER_FOR_SEARCHABLE_STRING_1, TRIGGER_FOR_SEARCHABLE_STRING_2
     elif "postgresql" in app.config["SQLALCHEMY_DATABASE_URI"]:

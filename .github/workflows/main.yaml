@@ -32,7 +32,23 @@ jobs:
         name: Build and push Image
         uses: docker/build-push-action@v3
         with:
-          context: .
+          context: ./docker/docker-main/
           platforms: linux/amd64
           push: true
-          tags: "${{ secrets.REGISTRY }}/athq/auftragsorte:latest"
+          tags: "${{ secrets.REGISTRY }}/ths/atlantis-contract-watcher:latest"
+      -
+        name: Build and push Image
+        uses: docker/build-push-action@v3
+        with:
+          context: ./docker/docker-watcher/
+          platforms: linux/amd64
+          push: true
+          tags: "${{ secrets.REGISTRY }}/ths/atlantis-contract-watcher:latest"
+      -
+        name: Build and push Image
+        uses: docker/build-push-action@v3
+        with:
+          context: ./docker/docker-importer/
+          platforms: linux/amd64
+          push: true
+          tags: "${{ secrets.REGISTRY }}/ths/atlantis-contract-importer:latest"

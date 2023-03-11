@@ -35,8 +35,7 @@ if __name__ == "__main__":
     outdict.update({ "SQLALCHEMY_DATABASE_URI" : engineFmtString.format(user=config.PG_USER,
                                 password=config.PG_PASS, db=config.PG_DB, host=config.PG_HOST) })
 
-    DOCKER_ENV_FILES = [ "./docker/docker-compose-importer/.env",
-                         "./docker/docker-compose-main/.env" ]
+    DOCKER_ENV_FILES = [ "./docker/docker-compose-main/.env" ]
 
     for fname in DOCKER_ENV_FILES:
         with open(fname, "w") as f:

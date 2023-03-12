@@ -38,7 +38,7 @@ def inotifyRun(project_path):
     inotifyMask = IN_ALL_EVENTS
 
     if not project_path:
-        project_path = "/app/proj/" # docker path
+        project_path = "/app/proj/Jahr 2023/" # docker path
 
     i = inotify.adapters.InotifyTree(project_path, mask=inotifyMask)
 

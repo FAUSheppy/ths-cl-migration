@@ -32,9 +32,9 @@ def analyseDocument(fileItem):
     vat    = 0
     brutto = 0
     try:
-        netto  = float(table.rows[-3].cells[COL_VALUE].text.replace(",","."))
-        vat    = float(table.rows[-2].cells[COL_VALUE].text.replace(",","."))
-        brutto = float(table.rows[-1].cells[COL_VALUE].text.replace(",","."))
+        netto  = float(table.rows[-3].cells[COL_VALUE].text.replace(".", "").replace(",","."))
+        vat    = float(table.rows[-2].cells[COL_VALUE].text.replace(".", "").replace(",","."))
+        brutto = float(table.rows[-1].cells[COL_VALUE].text.replace(".", "").replace(",","."))
     except IndexError:
         return None
     

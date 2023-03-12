@@ -151,6 +151,8 @@ def getDocumentInstanceFromTemplate(path, projectId, lfn, app):
     fileContentTmp = fileContentTmp.replace('''SELECT * FROM &quot;ths_word_helper&quot;''',
         '''SELECT * FROM &quot;ths_word_helper&quot; WHERE &quot;projectid&quot; = {}'''.format(projectId))
     fileContentTmp = fileContentTmp.replace("localhost", app.config["DB_SERVER"]) #TODO dafug?
+    fileContentTmp = fileContentTmp.replace("192.168.178.67", app.config["DB_SERVER"])
+    fileContentTmp = fileContentTmp.replace("5432", str(app.config["PG_OUTSIDE_PORT"]))
     
     with open("debug_post.xml", "w") as f:
         f.write(fileContentTmp)

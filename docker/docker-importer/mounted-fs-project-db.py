@@ -41,7 +41,14 @@ def pidFromPath(filename):
         return None
     idWithDash = idWithDashList[1]
     pid = idWithDash.replace("-", "")
-    return int(pid)
+
+    try:
+        pidAsInt = int(pid)
+        return pidAsInt
+    except ValueError:
+        print("Invalid path-PID: {}".format(filename))
+    
+    return None
 
 def load(root, removePrefix=""):
 

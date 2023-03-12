@@ -12,7 +12,7 @@ services:
         volumes:
             - $PG_DATA_LOCATION:/var/lib/postgresql/data
     main:
-        image: atlantis-contract-main
+        image: registry.atlantishq.de/ths/atlantis-contract-main
         restart: always
         depends_on:
             - postgres
@@ -24,7 +24,7 @@ services:
             - $TEMPLATES_DIR:/app/document-templates/
             - $BWA_FILE:/app/BWA.xls
     watcher:
-        image: atlantis-contract-watcher
+        image: registry.atlantishq.de/ths/atlantis-contract-watcher
         restart: always
         depends_on:
             - postgres
@@ -32,7 +32,7 @@ services:
             - $CONFIG_FILE:/app/config.py
             - $PROJECT_ROOT_DIR:/app/proj/
     importer:
-        image: atlantis-contract-importer
+        image: registry.atlantishq.de/ths/atlantis-contract-importer
         depends_on:
             - postgres
         volumes:

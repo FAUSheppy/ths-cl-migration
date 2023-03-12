@@ -17,7 +17,7 @@ services:
         depends_on:
             - postgres
         ports:
-            - 5000:5000
+            - 5100:5000
         volumes:
             - $CONFIG_FILE:/app/config.py
             - $PROJECT_ROOT_DIR:/app/proj/

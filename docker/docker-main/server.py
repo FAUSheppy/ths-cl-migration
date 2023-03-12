@@ -23,10 +23,6 @@ from sqlalchemy.sql import func, text
 import sqlalchemy
 from flask_sqlalchemy import SQLAlchemy
 
-import flask_wtf as fwtf
-import wtforms as forms
-import wtforms.validators as validators
-
 import error
 from constants import *
 from formentry import FormEntry, formEntryArrayFromColNames
@@ -36,7 +32,6 @@ import filedetection
 import notifications
 import bwa
 from flask_cors import CORS
-import smbprotocol.exceptions
 
 app = flask.Flask("THS-ContractLocations", static_folder=None)
 CORS(app)
@@ -876,18 +871,6 @@ if __name__ == "__main__":
     parser.add_argument('--interface', default="localhost", help='Interface to run on')
     parser.add_argument('--port', default="5000", help='Port to run on')
 
-    parser.add_argument('--smbserver', help='SMB Server Target')
-    parser.add_argument('--smbuser',   help='SMB User')
-    parser.add_argument('--smbpass',   help='SMB Password')
-    parser.add_argument('--smbshare',  default="THS", help='SMB Password')
-
     args = parser.parse_args()
-
-    #app.config["SMB_SERVER"] = args.smbserver
-    #app.config["SMB_USER"]   = args.smbuser
-    #app.config["SMB_PASS"]   = args.smbpass
-    #app.config["SMB_SHARE"]  = args.smbshare
-
-    #app.config["DOC_TEMPLATE_PATH"] = "document-templates"
 
     app.run(host=args.interface, port=args.port)

@@ -29,15 +29,15 @@ jobs:
           username: ${{ secrets.REGISTRY_USER }}
           password: ${{ secrets.REGISTRY_PASS }}
       -
-        name: Build and push Image
+        name: Contract-Main
         uses: docker/build-push-action@v3
         with:
           context: ./docker/docker-main/
           platforms: linux/amd64
           push: true
-          tags: "${{ secrets.REGISTRY }}/ths/atlantis-contract-watcher:latest"
+          tags: "${{ secrets.REGISTRY }}/ths/atlantis-contract-main:latest"
       -
-        name: Build and push Image
+        name: Contract-Watcher
         uses: docker/build-push-action@v3
         with:
           context: ./docker/docker-watcher/
@@ -45,7 +45,7 @@ jobs:
           push: true
           tags: "${{ secrets.REGISTRY }}/ths/atlantis-contract-watcher:latest"
       -
-        name: Build and push Image
+        name: Contract-Importer
         uses: docker/build-push-action@v3
         with:
           context: ./docker/docker-importer/

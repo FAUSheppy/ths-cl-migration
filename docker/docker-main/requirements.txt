@@ -1,6 +1,5 @@
 Flask>=2.0.1
 Flask-SQLAlchemy>=2.5.1
-smbprotocol>=1.8.3
 SQLAlchemy>=1.4.23
 waitress>=1.4.4
 Werkzeug>=2.0.1

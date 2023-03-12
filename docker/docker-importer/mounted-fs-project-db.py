@@ -18,6 +18,7 @@ import config
 import datetime
 import json
 
+PG_MAX_INT  = 2147483647
 STATUS_FILE = "import_status.json"
 
 base   = declarative_base()
@@ -44,6 +45,8 @@ def pidFromPath(filename):
 
     try:
         pidAsInt = int(pid)
+        if pidAsInt >= PG_MAX_INT:
+            raise ValueError()
         return pidAsInt
     except ValueError:
         print("Invalid path-PID: {}".format(filename))

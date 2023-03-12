@@ -1,11 +1,15 @@
 FROM python:3.9-slim-buster
 
 RUN apt update
-RUN apt install python3-pip git curl -y
-RUN python3 -m pip install waitress
+RUN apt install python3-pip -y
 RUN python3 -m pip install --upgrade pip
+RUN apt install curl -y
+RUN apt autoremove -y
+RUN apt clean
 
 WORKDIR /app
+
+RUN python3 -m pip install waitress
 RUN mkdir templates static
 
 # static js/css bootstrap etc
@@ -25,9 +29,6 @@ RUN curl -s -o static/js/addons/datatables.min.js https://cdn.atlantishq.de/stat
 
 COPY requirements.txt .
 RUN python3 -m pip install --no-cache-dir -r requirements.txt
-
-RUN apt remove git -y
-RUN apt autoremove -y
 
 COPY ./ .
 COPY templates/* templates/

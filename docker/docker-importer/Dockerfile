@@ -14,4 +14,4 @@ RUN python3 -m pip install --no-cache-dir -r requirements.txt
 COPY ./ .
 
 ENTRYPOINT ["python"] 
-CMD ["mounted-fs-project-db.py"]
+CMD ["mounted-fs-project-db.py", "--start", "2020"]

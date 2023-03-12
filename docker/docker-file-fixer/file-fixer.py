@@ -74,10 +74,14 @@ if __name__ == "__main__":
     parser.add_argument('--base-path', required=True, type=str, help='Base path to search in')
     parser.add_argument('--start', type=int, default=2020, help='Year to start in')
     parser.add_argument('--end',   type=int, default=2023, help='Year to end in')
+    parser.add_argument('--base-path-only', action="store_const", const=True, default=False)
     args = parser.parse_args()
 
     paths = [ "{}/Jahr {}/".format(args.base_path, x)
                     for x in range(args.start, args.end + 1)]
+
+    if args.base_path_only:
+        paths = [ args.base_path ]
 
     oldIP = "192.168.178.67"
     newIP = "192.168.178.80"

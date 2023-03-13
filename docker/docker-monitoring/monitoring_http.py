@@ -48,4 +48,10 @@ if __name__ == "__main__":
                               "status" : status,
                               "info" : "\n" + error.strip("\n")})
 
+    status = "UNKNOWN"
+    if error:
+        status = "CRITICAL"
+    else:
+        status = "OK"
+
     r.raise_for_status()

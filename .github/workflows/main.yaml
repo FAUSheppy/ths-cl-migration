@@ -74,7 +74,7 @@ jobs:
           tags: "${{ secrets.REGISTRY }}/ths/atlantis-contract-importer:latest"
 
       -
-        name: Contract-Importer
+        name: Contract-Monitoring
         uses: docker/build-push-action@v3
         if: steps.filter.outputs.monitoring == 'true'
         with:

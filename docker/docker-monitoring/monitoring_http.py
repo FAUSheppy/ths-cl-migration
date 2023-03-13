@@ -15,11 +15,11 @@ if __name__ == "__main__":
     project_id        = config.PROJECT_ID or 0
     timeout           = config.MONITORING_TIMEOUT or 10
 
-    main      = requests.get("{}/".format(url), timeout=args.timeout)
-    entry     = requests.get("{}/entry-content?projectId={}".format(url, args.project_id), timeout=args.timeout)
-    documents = requests.get("{}/new-document?projectId={}".format(url, args.project_id), timeout=args.timeout)
+    main      = requests.get("{}/".format(url), timeout=timeout)
+    entry     = requests.get("{}/entry-content?projectId={}".format(url, project_id), timeout=timeout)
+    documents = requests.get("{}/new-document?projectId={}".format(url, project_id), timeout=timeout)
     downloadFormat = "{}/new-document?projectId={}&template=BD_Leckortung.docx"
-    documentDownload = requests.head(downloadFormat.format(url, args.project_id), timeout=args.timeout)
+    documentDownload = requests.head(downloadFormat.format(url, project_id), timeout=timeout)
     
     error = ""
     try:

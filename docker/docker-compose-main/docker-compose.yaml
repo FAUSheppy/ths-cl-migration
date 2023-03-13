@@ -38,3 +38,10 @@ services:
         volumes:
             - $CONFIG_FILE:/app/config.py
             - $PROJECT_ROOT_DIR:/app/proj/
+    monitoring:
+        image: registry.atlantishq.de/ths/atlantis-contract-monitoring
+        depends_on:
+            - postgres
+            - main
+        volumes:
+            - $CONFIG_FILE:/app/config.py

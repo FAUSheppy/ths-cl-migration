@@ -189,12 +189,15 @@ def smbFileList():
         dbPathEmpty = not bool(pp.projectpath)
         if pp.projectpath:
             fullpath = filesystem.addBasePath(pp.projectpath)
-            files = fsbackend.listFiles(fullpath)
-            # delete db entry if fail #
-            if not files:
-                pp.projectpath = ""
-                db.session.merge(pp)
-                db.session.commit()
+            try:
+                files = fsbackend.listFiles(fullpath)
+            except ValueError:
+                # delete db entry if fail #
+                if not files:
+                    pp.projectpath = ""
+                    db.session.merge(pp)
+                    db.session.commit()
+                    dbPathEmpty = True
 
     # search for project if fail #
     cl = db.session.query(ContractLocation).filter(

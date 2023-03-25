@@ -44,7 +44,7 @@ TRIGGER_FOR_SEARCHABLE_STRING_2 = '''
             WHERE projectid = NEW.projectid;
     END;'''
 
-DOCUMENT_VIEW = '''
+DOCUMENT_VIEW = r'''
     CREATE OR REPLACE VIEW ths_word_helper AS
     SELECT
         cl.lfn,

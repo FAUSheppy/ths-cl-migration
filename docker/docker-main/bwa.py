@@ -160,8 +160,17 @@ def checkFileLocked(filename):
 def getPaidStateForFile(name):
 
     tmp = name.split(".docx")[0].split("-")
-    lfn = int(tmp[-1])
-    pidShort = tmp[-2]
+    lfn = None
+    pidShort = None
+
+    try:
+        lfn = int(tmp[-1])
+        pidShort = tmp[-2]
+    except ValueError as e:
+        print(e)
+        print("Invalid LFN or PID: {} {}".format(lfn, pidShort))
+        return None
+
     entry = getBwaEntryForLfn(flask.current_app.config["BWA_FILE_INTERNAL"], lfn)
     if not entry:
         return None

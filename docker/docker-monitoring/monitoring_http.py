@@ -57,6 +57,10 @@ if __name__ == "__main__":
                                   "status" : status,
                                   "info" : "\n" + error.strip("\n")})
 
-        r.raise_for_status()
+        try:
+            r.raise_for_status()
+        except requests.HTTPError as e:
+            print(e)
+            print("Error submitting result, continue...")
 
         time.sleep(5*60)

@@ -59,7 +59,7 @@ if __name__ == "__main__":
                                   "info" : "\n" + error.strip("\n")})
         except requests.exceptions.ConnectionError as e:
             print("ERROR: {}".format(e))
-        except requests.exceptions.ConnectTimeout as e
+        except requests.exceptions.ConnectTimeout as e:
             print("ERROR: {}".format(e))
 
 

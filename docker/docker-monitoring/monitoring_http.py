@@ -51,11 +51,17 @@ if __name__ == "__main__":
         else:
             status = "OK"
 
-        r = requests.post(monitoring_server, 
+        try:
+            r = requests.post(monitoring_server, 
                             json={"service" : service_name,
                                   "token" : monitoring_token,
                                   "status" : status,
                                   "info" : "\n" + error.strip("\n")})
+        except requests.exceptions.ConnectionError as e:
+            print("ERROR: {}".format(e))
+        except requests.exceptions.ConnectTimeout as e
+            print("ERROR: {}".format(e))
+
 
         try:
             r.raise_for_status()

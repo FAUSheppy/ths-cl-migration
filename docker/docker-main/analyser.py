@@ -24,8 +24,15 @@ def analyseDocument(fileItem):
     COL_STRING_INFO = 1
     COL_CURRENCY    = 2
     COL_VALUE       = 3
-    
-    invoice = docx.Document(fileItem.fullpath)
+  
+    invoice = None
+    try:
+        invoice = docx.Document(fileItem.fullpath)
+    except docx.opc.exceptions.PackageNotFoundError as e:
+        print("Error opening Invoice")
+        print(e)
+        return None
+
     table = invoice.tables[TABLE_INVOICE_INFO]
    
     netto  = 0

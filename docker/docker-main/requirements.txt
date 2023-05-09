@@ -1,4 +1,4 @@
-Flask=2.2.4
+Flask==2.2.4
 Flask-SQLAlchemy>=2.5.1
 SQLAlchemy>=1.4.23
 waitress>=1.4.4

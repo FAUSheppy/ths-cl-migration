@@ -61,7 +61,9 @@ class FileItem:
 
         filetype = ""
         fname = self.name.lower()
-        if fname.endswith("docx") or fname.endswith("doc"):
+        if "~$" in fname: # docx lockfile (keep first)
+            return "unknown"
+        elif fname.endswith("docx") or fname.endswith("doc"):
             if "Rechnung" in self.name or "R-" in self.name:
                 filetype = "Dokument (Rechnung)"
             else:

@@ -77,7 +77,7 @@ DOCUMENT_VIEW = r'''
                 ),
                 ',', ', '
             ),
-            '$und', ' und'
+            '^und', ' und'
         ) AS additional_dates
     FROM 
         contract_locations AS cl

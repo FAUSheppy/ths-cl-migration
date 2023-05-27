@@ -40,6 +40,7 @@ services:
             - $PROJECT_ROOT_DIR:/app/proj/
     monitoring:
         image: registry.atlantishq.de/ths/atlantis-contract-monitoring
+        restart: always
         depends_on:
             - postgres
             - main

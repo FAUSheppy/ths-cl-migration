@@ -98,13 +98,17 @@ function deleteProjectPath(){
 }
 
 function deleteEntry(){
-    projectId = document.getElementById("projectid-input").value
-    xhr = new XMLHttpRequest();
-    xhr.open("DELETE", "/");
-    xhr.onload = formSubmitFinished
-    formData = new FormData();
-    formData.append("id", projectId)
-    xhr.send(formData);
+    if(!confirm("ACHTUNG ACHTUNG ACHTUNG: \nEintrag wirklich unwideruflich löschen?")){
+        return
+    }else{
+        projectId = document.getElementById("projectid-input").value
+        xhr = new XMLHttpRequest();
+        xhr.open("DELETE", "/");
+        xhr.onload = formSubmitFinished
+        formData = new FormData();
+        formData.append("id", projectId)
+        xhr.send(formData);
+    }
 }
 
 function deleteFile(fullpath){

@@ -1,7 +1,7 @@
-FROM python:3.9-slim-buster
+FROM python:3.9-slim-bookworm
 
 RUN apt update
-RUN apt install python3-pip -y
+RUN apt install python3-pip libxml2-dev libxslt-dev -y
 RUN python3 -m pip install --upgrade pip
 RUN apt install curl -y
 RUN apt autoremove -y

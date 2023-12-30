@@ -1,15 +1,11 @@
-FROM python:3.9-slim-bookworm
+FROM python:3-alpine
 
-RUN apt update
-RUN apt install python3-pip libxml2-dev libxslt-dev -y
-RUN python3 -m pip install --upgrade pip
-RUN apt install curl -y
-RUN apt autoremove -y
-RUN apt clean
+RUN pip install --upgrade pip
+RUN apk add --no-cache curl
 
 WORKDIR /app
 
-RUN python3 -m pip install waitress
+RUN pip install waitress
 RUN mkdir templates static
 
 # static js/css bootstrap etc
@@ -28,15 +24,15 @@ RUN curl -s -o static/js/mdb.min.js               https://cdn.atlantishq.de/stat
 RUN curl -s -o static/js/addons/datatables.min.js https://cdn.atlantishq.de/static/js/addons/datatables.min.js
 
 COPY requirements.txt .
-RUN python3 -m pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY ./ .
 COPY templates/* templates/
 COPY static/* static/
 COPY static/ms-word-pid-help.png static/ms-word-pid-help.png
 
-#HEALTHCHECK --interval=5m --timeout=5s CMD /usr/bin/curl http://localhost:5000/ || exit 1
+HEALTHCHECK --interval=5m --timeout=5s CMD /usr/bin/curl http://localhost:5000/ || exit 1
 EXPOSE 5000/tcp
 
-ENTRYPOINT ["waitress-serve"] 
+ENTRYPOINT ["waitress-serve"]
 CMD ["--host", "0.0.0.0", "--port", "5000", "--call", "app:createApp"]

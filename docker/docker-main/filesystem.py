@@ -150,8 +150,15 @@ def getDocumentInstanceFromTemplate(path, projectId, lfn, app):
     # TODO make this configurable
     fileContentTmp = fileContentTmp.replace('''<w:mailMerge>''',
         '''<w:mailMerge><w:viewMergedData/><w:activeRecord w:val="1"/>''')
+
+    # delete project ID zero if its in the file #
+    fileContentTmp = fileContentTmp.replace(" WHERE &quot;projectid&quot; = '0'", "")
+
+    # input the correct project id #
     fileContentTmp = fileContentTmp.replace('''SELECT * FROM &quot;ths_word_helper&quot;''',
         '''SELECT * FROM &quot;ths_word_helper&quot; WHERE &quot;projectid&quot; = {}'''.format(projectId))
+
+    # fix old IPs that may still hide in the file #
     fileContentTmp = fileContentTmp.replace("localhost", app.config["DB_SERVER"]) #TODO dafug?
     fileContentTmp = fileContentTmp.replace("192.168.178.67", app.config["DB_SERVER"])
     fileContentTmp = fileContentTmp.replace("5432", str(app.config["PG_OUTSIDE_PORT"]))

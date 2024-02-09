@@ -128,7 +128,7 @@ def saveClToBwa(filename, cl, overwrite=False):
             print("Writing to {}-{}: {}".format(targetRow, i, clValue))
             wb.get_sheet(0).write(targetRow, i, clValue)
 
-    print("WOULD HAVE SAVED BWA (deactivated)"
+    print("WOULD HAVE SAVED BWA (deactivated)")
     # wb.save(filename)
 
 

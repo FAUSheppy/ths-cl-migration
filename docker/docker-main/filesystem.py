@@ -152,6 +152,7 @@ def getDocumentInstanceFromTemplate(path, projectId, lfn, app):
         '''<w:mailMerge><w:viewMergedData/><w:activeRecord w:val="1"/>''')
 
     # delete project ID zero if its in the file #
+    fileContentTmp = fileContentTmp.replace(" WHERE &quot;projectid&quot; = 0", "")
     fileContentTmp = fileContentTmp.replace(" WHERE &quot;projectid&quot; = '0'", "")
 
     # input the correct project id #

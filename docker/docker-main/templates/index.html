@@ -15,10 +15,11 @@
         <thead>
             <tr>
                 {% for item in headerCol %}
-                {% if item in ['tel_1', 'mobil', 'fax'] }
+                {% if item in ['tel_1', 'mobil', 'fax'] %}
                 <!-- skip -->
                 {% else %}
                 <th class="th-sm font-weighIt-bold">{{ item }}</th>
+                {% endif %}
                 {% endfor %}
             </tr>
         </thead>
@@ -29,10 +30,6 @@
         $(document).ready(function () {
             dt = $('#tableMain').DataTable({
                 pageLength: 50,
-                order: [
-                    [13, 'desc'] /* date */
-                    [0, 'desc'] /* lfn */
-                ],
                 serverSide: true,
                     ajax: {
                     url: '/data-source',

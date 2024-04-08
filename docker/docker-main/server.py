@@ -41,6 +41,7 @@ app.config['SECRET_KEY'] = "secret"
 app.config['UPLOAD_FOLDER'] = "uploads/"
 db = SQLAlchemy(app)
 
+DATE_COL = 11
 
 # debug logging #
 # import logging
@@ -459,7 +460,7 @@ def entrySuggestionQuery():
 
 @app.route("/data-source", methods=["POST"])
 def dataSource():
-    cols = getDbSchema()
+    cols = getDbSchema(filterCols=True)
 
     # do not display certain fields in main data-table #
     cols = list(filter(lambda x: x not in ["tel_1", "mobil", "fax"], cols))
@@ -684,6 +685,10 @@ class ContractLocation(db.Model):
 
     def getColByNumber(self, nr):
         nr = int(nr)
+
+        if nr == DATE_COL:
+            return self.date_parsed
+
         value = getattr(self, getDbSchema()[nr])
         return value
 
@@ -768,16 +773,20 @@ class StaticProjectPathIndex(db.Model):
 
 class DataTable():
     
-    def __init__(self, d, cols):
+    def __init__(self, d, cols=None):
         self.draw  = int(d["draw"])
         self.start = int(d["start"])
         self.length = int(d["length"])
         self.trueLength = -1
         self.searchValue = d["search[value]"]
         self.searchIsRegex = d["search[regex]"]
-        self.cols = getDbSchema(filterCols=True)
+        self.cols = cols or getDbSchema(filterCols=True)
         self.orderByCol = int(d["order[0][column]"])
         self.orderDirection = d["order[0][dir]"]
+
+        # order by date during search rather than lfn #
+        if self.orderByCol == 0 and self.searchValue:
+            self.orderByCol = DATE_COL # auftragsdatum
 
         # order variable for use with pythong sorted etc #
         self.orderAsc = self.orderDirection == "asc"

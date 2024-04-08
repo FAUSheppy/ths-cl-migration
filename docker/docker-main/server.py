@@ -687,7 +687,10 @@ class ContractLocation(db.Model):
         nr = int(nr)
 
         if nr == DATE_COL:
-            return self.date_parsed
+            try:
+                return datetime.datetime.strptime(self.auftragsdatum, DB_DATE_FORMAT)
+            except ValueError:
+                return datetime.datetime.now() - datetime.timedelta(hours=24*365*100)
 
         value = getattr(self, getDbSchema()[nr])
         return value
@@ -787,6 +790,7 @@ class DataTable():
         # order by date during search rather than lfn #
         if self.orderByCol == 0 and self.searchValue:
             self.orderByCol = DATE_COL # auftragsdatum
+            self.orderDirection = "desc"
 
         # order variable for use with pythong sorted etc #
         self.orderAsc = self.orderDirection == "asc"
@@ -854,6 +858,7 @@ class DataTable():
                                     ContractLocation.projectid == int(pId)).first()
                 if singleResult:
                     results.append(singleResult)
+
                 results = sorted(results, key=lambda cl: cl.getColByNumber(self.orderByCol), 
                                     reverse=not self.orderAsc)
         else:

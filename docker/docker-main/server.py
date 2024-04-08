@@ -460,6 +460,9 @@ def entrySuggestionQuery():
 @app.route("/data-source", methods=["POST"])
 def dataSource():
     cols = getDbSchema()
+
+    # do not display certain fields in main data-table #
+    cols = list(filter(lambda x: x not in ["tel_1", "mobil", "fax"], cols))
     dt = DataTable(flask.request.form.to_dict(), cols)
     jsonDict = dt.get()
     return flask.Response(json.dumps(jsonDict), 200, mimetype='application/json')

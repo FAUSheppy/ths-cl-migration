@@ -8,7 +8,6 @@ import datetime
 import os.path
 import werkzeug.utils
 import datetime
-#import samba
 import samba_mounted_fs
 import samba_mounted_fs as fsbackend
 import mimetypes

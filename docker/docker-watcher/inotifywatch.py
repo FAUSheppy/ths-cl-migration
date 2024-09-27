@@ -68,8 +68,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Project Filesystem listener')
 
-    parser.add_argument('--engine',
-        help="Engine connection string, e.g. postgresql+psycopg2://user:pass@localhost/ths")
+    parser.add_argument('--engine', help="Connection String e.g. postgresql+psycopg2://user:pass@localhost/ths")
     parser.add_argument('--project-path', help="Project path for Contract struct")
     args = parser.parse_args()
 

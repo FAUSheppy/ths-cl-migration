@@ -32,6 +32,7 @@ if __name__ == "__main__":
         input("Auth Missmatch")
         sys.exit(1)
     elif file.endswith(".docx"):
+        file = file.replace(":/", ":")
         app = WORD_PATH
     elif file.lower().endswith(".jpg"):
         app = PICTURE
